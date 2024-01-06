@@ -1,77 +1,50 @@
 services:
+  common_environment:
+      image: ghcr.io/thelovinator1/panso:latest
+      environment:
+        - SECRET_KEY=${SECRET_KEY}
+        - DEBUG=${DEBUG}
+        - ADMIN_EMAIL=${ADMIN_EMAIL}
+        - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+        - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+        - REDIS_HOST=redis
+        - REDIS_PASSWORD=${REDIS_PASSWORD}
+        - POSTGRES_HOST=postgres
+        - POSTGRES_PORT=5432
+        - POSTGRES_DB=${POSTGRES_DB}
+        - POSTGRES_USER=${POSTGRES_USER}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+        - ADMIN_PAGE_PATH=${ADMIN_PAGE_PATH}
+      volumes:
+        - /mnt/Fourteen/Docker/Panso/staticfiles:/app/staticfiles
   panso:
     container_name: panso
-    image: ghcr.io/thelovinator1/panso:latest
     restart: always
     networks:
       - redis
       - db
       - web
-    environment:
-      - SECRET_KEY=${SECRET_KEY}
-      - DEBUG=${DEBUG}
-      - ADMIN_EMAIL=${ADMIN_EMAIL}
-      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
-      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
-      - REDIS_HOST=redis
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - ADMIN_PAGE_PATH=${ADMIN_PAGE_PATH}
-    volumes:
-      - /mnt/Fourteen/Docker/Panso/staticfiles:/app/staticfiles
+    extends:
+      service: common_environment
   celery:
     container_name: celery
-    image: ghcr.io/thelovinator1/panso:latest
     restart: always
     networks:
       - redis
       - db
       - web
-    environment:
-      - SECRET_KEY=${SECRET_KEY}
-      - DEBUG=${DEBUG}
-      - ADMIN_EMAIL=${ADMIN_EMAIL}
-      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
-      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
-      - REDIS_HOST=redis
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - ADMIN_PAGE_PATH=${ADMIN_PAGE_PATH}
-    volumes:
-      - /mnt/Fourteen/Docker/Panso/staticfiles:/app/staticfiles
+     extends:
+      service: common_environment
     command: celery -A panso worker -l INFO
   flower:
     container_name: flower
-    image: ghcr.io/thelovinator1/panso:latest
     restart: always
     networks:
       - redis
       - db
       - web
-    environment:
-      - SECRET_KEY=${SECRET_KEY}
-      - DEBUG=${DEBUG}
-      - ADMIN_EMAIL=${ADMIN_EMAIL}
-      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
-      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
-      - REDIS_HOST=redis
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PORT=5432
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - ADMIN_PAGE_PATH=${ADMIN_PAGE_PATH}
-    volumes:
-      - /mnt/Fourteen/Docker/Panso/staticfiles:/app/staticfiles
+     extends:
+      service: common_environment
     command: celery -A panso flower
   web:
     container_name: web
