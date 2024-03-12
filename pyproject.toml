@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "panso"
+version = "0.1.0"
+description = "A price comparison tool for the Swedish market."
+authors = ["Joakim Hellsén <tlovinator@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+httpx = "^0.27.0"
+django = "^5.0.3"
+environs = {extras = ["django"], version = "^11.0.0"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+exclude = ["migrations"]
+fix = true
+unsafe-fixes = true
+preview = true
+select = ["ALL"]
+ignore = [
+    "CPY001", # Missing copyright notice at top of file
+    "ERA001", # Found commented-out code
+    "FIX002", # Line contains TODO
+    "D100",   # Checks for undocumented public module definitions.
+    "D101",   # Checks for undocumented public class definitions.
+]
+line-length = 120
+
+[tool.ruff.pydocstyle]
+convention = "google"
