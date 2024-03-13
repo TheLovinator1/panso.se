@@ -11,23 +11,54 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
-from environs import Env
+from dotenv import find_dotenv, load_dotenv
 
-# https://github.com/sloria/environs?tab=readme-ov-file#usage-with-django
-env = Env()
-env.read_env()
+load_dotenv(find_dotenv(), verbose=True)
 
-DEBUG: bool = env.bool("DEBUG", default=False)
+DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
 BASE_DIR: Path = Path(__file__).resolve().parent.parent
-SECRET_KEY: str = env.str("SECRET_KEY")
-ALLOWED_HOSTS = []
+SECRET_KEY: str = os.getenv("SECRET_KEY", "django-insecure")
+ALLOWED_HOSTS: list[str] = [".panso.se", ".localhost", "127.0.0.1"]
+INTERNAL_IPS: list[str] = ["127.0.0.1", "localhost", "192.168.1.143"]
+USE_X_FORWARDED_HOST = True
+SECURE_REFERRER_POLICY = "no-referrer-when-downgrade"
+ROOT_URLCONF = "panso.urls"
+WSGI_APPLICATION = "panso.wsgi.application"
+SITE_ID = 1
 
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "Europe/Stockholm"
+USE_I18N = True
+USE_TZ = True
+DECIMAL_SEPARATOR = ","
+THOUSAND_SEPARATOR = " "
+
+ADMINS: list[tuple] = [("TheLovinator", "tlovinator@gmail.com")]
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER: str = os.getenv(key="EMAIL_HOST_USER", default="webmaster@localhost")
+EMAIL_HOST_PASSWORD: str = os.getenv(key="EMAIL_HOST_PASSWORD", default="")
+EMAIL_SUBJECT_PREFIX = "[Panso] "
+EMAIL_USE_LOCALTIME = True
+EMAIL_TIMEOUT = 10
+DEFAULT_FROM_EMAIL: str = os.getenv(key="EMAIL_HOST_USER", default="webmaster@localhost")
+SERVER_EMAIL: str = os.getenv(key="EMAIL_HOST_USER", default="webmaster@localhost")
+
+STATIC_URL = "static/"
+STATIC_ROOT: Path = BASE_DIR / "staticfiles"
+STATICFILES_DIRS: list[Path] = [BASE_DIR / "static"]
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Application definition
 INSTALLED_APPS: list[str] = [
+    "panso.apps.PansoConfig",
     "django.contrib.admin",
+    "django.contrib.sitemaps",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -45,13 +76,11 @@ MIDDLEWARE: list[str] = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "panso.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
-        "APP_DIRS": True,
+        "DIRS": [BASE_DIR / "templates"],
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
@@ -59,23 +88,38 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
             ],
+            "loaders": [
+                (
+                    "django.template.loaders.cached.Loader",
+                    [
+                        "django.template.loaders.filesystem.Loader",
+                        "django.template.loaders.app_directories.Loader",
+                    ],
+                ),
+            ],
         },
     },
 ]
 
-WSGI_APPLICATION = "panso.wsgi.application"
-
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+database_name: str = os.getenv("DATABASE_NAME", default=str(Path(BASE_DIR / "data" / "panso.sqlite3")))
+
+# Get the folder path of the database file
+database_folder: Path = Path(database_name).parent
+
+# Create the folder if it does not exist
+database_folder.mkdir(parents=True, exist_ok=True)
+
+
 DATABASES: dict[str, dict[str, str | Path | bool]] = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "panso.sqlite3",
+        "NAME": database_name,
         "ATOMIC_REQUESTS": True,
     },
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -94,18 +138,16 @@ AUTH_PASSWORD_VALIDATORS: list[dict[str, str]] = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
-LANGUAGE_CODE = "en-us"
-TIME_ZONE = "Europe/Stockholm"
-USE_I18N = True
-USE_TZ = True
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-STATIC_URL = "static/"
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+if not DEBUG:
+    CACHES: dict[str, dict[str, str]] = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+            "LOCATION": "cache_table",
+        },
+    }
+else:
+    CACHES: dict[str, dict[str, str]] = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+        },
+    }

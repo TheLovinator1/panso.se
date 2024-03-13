@@ -20,11 +20,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import URLPattern, path
 
 if TYPE_CHECKING:
     from django.urls.resolvers import URLResolver
 
-urlpatterns: list[URLResolver] = [
-    path("admin/", admin.site.urls),
+from panso.views import panso
+
+app_name: str = "panso"
+
+urlpatterns: list[URLResolver | URLPattern] = [
+    path(route="admin/", view=admin.site.urls),
+    path(route="", view=panso.index, name="index"),
+    path(route="robots.txt", view=panso.robots_txt, name="robots_txt"),
 ]
