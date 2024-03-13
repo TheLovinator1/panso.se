@@ -24,15 +24,6 @@ app = typer.Typer(
 @app.command()
 def migrate() -> None:
     """Apply database migrations."""
-    # Take a backup of the database before migrating
-    file_safe_datetime = datetime.now(tz=datetime.now().astimezone().tzinfo).strftime(
-        "%Y-%m-%d_%H-%M-%S",
-    )
-    call_command(
-        command_name="dumpdata",
-        output=f"data/backup/{file_safe_datetime}.json.gz",
-        format="json",
-    )
     call_command(command_name="migrate")
     print("[green]Migrations applied.[/green]")
 
@@ -77,6 +68,20 @@ def makemigrations() -> None:
     call_command(command_name="makemigrations")
     print("[green]Migrations created.[/green]")
     print("[yellow]Please run `migrate` to apply the migrations.[/yellow]")
+
+
+@app.command()
+def backup() -> None:
+    """Backup the database."""
+    file_safe_datetime = datetime.now(tz=datetime.now().astimezone().tzinfo).strftime(
+        "%Y-%m-%d_%H-%M-%S",
+    )
+    call_command(
+        command_name="dumpdata",
+        output=f"data/backup/{file_safe_datetime}.json.gz",
+        format="json",
+    )
+    print("[green]Database backed up to backup.json.[/green]")
 
 
 if __name__ == "__main__":
