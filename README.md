@@ -26,7 +26,6 @@ pre-commit run --all-files
 - `DEBUG` - Determines whether your Django project is in debug mode. Setting this to true enables detailed error pages and other debug-specific features, useful during development. For production environments, this should be set to false to avoid exposing sensitive information. Accepts true or false (case insensitive).
 - `EMAIL_HOST_USER` - Gmail address to send emails from.
 - `EMAIL_HOST_PASSWORD` - [Gmail app password](https://support.google.com/mail/answer/185833?hl=en).
-- `DATABASE_NAME` - The name or path of your project's database file. By default, this is set to a SQLite database named panso.sqlite3 within a data directory in your project's base directory.
 
 ## Contributing
 
@@ -47,6 +46,11 @@ The directory structure is as follows:
 - `panso/tests.py` - Tests using [Django Unit Test framework](https://docs.djangoproject.com/en/5.0/topics/testing/overview/).
 - `templates` - The HTML templates for the project. `base.html` is the base template that other templates extend.
 - `static` - The static files for the project (e.g., CSS, JavaScript, images).
+
+## Data
+
+- The main database is stored in /data/panso.sqlite3.
+- Logs are stored in /data/{date}.log.
 
 ## Contact
 

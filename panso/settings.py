@@ -14,6 +14,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from django.utils import timezone
 from dotenv import find_dotenv, load_dotenv
 
 load_dotenv(find_dotenv(), verbose=True)
@@ -104,19 +105,12 @@ TEMPLATES = [
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-database_name: str = os.getenv("DATABASE_NAME", default=str(Path(BASE_DIR / "data" / "panso.sqlite3")))
-
-# Get the folder path of the database file
-database_folder: Path = Path(database_name).parent
-
-# Create the folder if it does not exist
+database_folder: Path = BASE_DIR / "data"
 database_folder.mkdir(parents=True, exist_ok=True)
-
-
 DATABASES: dict[str, dict[str, str | Path | bool]] = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": database_name,
+        "NAME": database_folder / "panso.sqlite3",
         "ATOMIC_REQUESTS": True,
     },
 }
@@ -151,3 +145,31 @@ else:
             "BACKEND": "django.core.cache.backends.dummy.DummyCache",
         },
     }
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+        },
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": BASE_DIR / "data" / "logs" / f"{timezone.now().strftime('%Y%m%d')}.log",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+        "django.utils.autoreload": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}

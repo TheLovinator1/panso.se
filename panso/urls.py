@@ -30,7 +30,7 @@ from panso.views import panso
 app_name: str = "panso"
 
 urlpatterns: list[URLResolver | URLPattern] = [
-    path(route="admin/", view=admin.site.urls),
     path(route="", view=panso.index, name="index"),
+    path(route="admin/", view=admin.site.urls),
     path(route="robots.txt", view=panso.robots_txt, name="robots_txt"),
 ]
