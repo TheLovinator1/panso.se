@@ -11,6 +11,17 @@
             ],
             "django": true,
             "autoStartBrowser": false,
+        },
+        {
+            "name": "Python: Launch Scrapy Spider",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "scrapy",
+            "args": [
+                "runspider",
+                "${file}"
+            ],
+            "console": "integratedTerminal"
         }
     ]
 }

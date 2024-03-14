@@ -163,7 +163,7 @@ LOGGING = {
     "loggers": {
         "django": {
             "handlers": ["console", "file"],
-            "level": "DEBUG",
+            "level": "INFO",
             "propagate": True,
         },
         "django.utils.autoreload": {

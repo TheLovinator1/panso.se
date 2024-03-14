@@ -1,5 +1,8 @@
 {
     "cSpell.words": [
+        "asgiref",
+        "errback",
+        "getall",
         "getpreferredencoding",
         "leftright",
         "makemigrations",

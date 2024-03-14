@@ -18,6 +18,9 @@ python manage.py test
 # Optional
 pre-commit install
 pre-commit run --all-files
+
+# Crawlers
+scrapy crawl webhallen
 ```
 
 ## Environment Variables
