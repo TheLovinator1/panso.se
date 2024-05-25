@@ -1,0 +1,2 @@
+django>=0.0.dev0
+ruff
