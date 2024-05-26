@@ -38,7 +38,7 @@ python_files = ["test_*.py"]
 [tool.coverage.report]
 show_missing = true
 fail_under = 100
-exclude_also = ["if TYPE_CHECKING:"]
+exclude_also = ["if TYPE_CHECKING:", "if not DEBUG:"]
 
 [tool.coverage.html]
 directory = "htmlcov"
