@@ -9,27 +9,106 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/dev/ref/settings/
 """
 
+import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+from platformdirs import user_data_dir
+
+DEBUG: bool = os.getenv(key="DJANGO_DEBUG", default="True").lower() == "true"
+
+# Load environment variables from .env file
+load_dotenv(verbose=True)
+
+# Logging configuration
+LOGGING: dict[str, int | bool | dict[str, dict[str, str]] | dict[str, dict[str, list[str] | str | bool]]] = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "": {
+            "handlers": ["console"],
+            "level": "DEBUG" if DEBUG else "INFO",
+            "propagate": True,
+        },
+        "django.utils.autoreload": {  # Remove spam
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}
+
+
+# Where the data is stored
+DATA_DIR: Path = Path(user_data_dir(appname="Panso", appauthor="TheLovinator", roaming=True, ensure_exists=True))
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR: Path = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-hd8cikm+e&%#x4^d-r6zui1be*er+@cls33mpzbwjawp2belq7"  # noqa: S105
+SECRET_KEY: str = os.getenv(
+    key="DJANGO_SECRET_KEY",
+    default="django-insecure-hd8cikm+e&%#x4^d-r6zui1be*er+@cls33mpzbwjawp2belq7",
+)
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_PROXY_SSL_HEADER: tuple[str, str] = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = True
+USE_X_FORWARDED_HOST = True
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+ADMINS: list[tuple[str, str]] = [("Joakim Hellsén", "tlovinator@gmail.com")]
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: list[str] = []
+if not DEBUG:
+    ALLOWED_HOSTS: list[str] = [".panso.se"]
 
+ROOT_URLCONF = "config.urls"
+WSGI_APPLICATION = "config.wsgi.application"
+SITE_ID = 1
+
+# Use a 64-bit integer as the primary key
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Internationalization
+# https://docs.djangoproject.com/en/dev/topics/i18n/
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "Europe/Stockholm"
+USE_I18N = True
+USE_TZ = True
+
+# Use gmail for sending emails
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER: str = os.getenv(key="EMAIL_HOST_USER", default="webmaster@localhost")
+EMAIL_HOST_PASSWORD: str = os.getenv(key="EMAIL_HOST_PASSWORD", default="")
+EMAIL_SUBJECT_PREFIX = "[Panso] "
+EMAIL_USE_LOCALTIME = True
+EMAIL_TIMEOUT = 10
+DEFAULT_FROM_EMAIL: str = os.getenv(key="EMAIL_HOST_USER", default="webmaster@localhost")
+SERVER_EMAIL: str = os.getenv(key="EMAIL_HOST_USER", default="webmaster@localhost")
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/dev/howto/static-files/
+# STATIC_ROOT will be used by Nginx to serve static files
+STATIC_URL = "static/"
+STATIC_ROOT: Path = BASE_DIR / "staticfiles"
 
 # Application definition
-
-INSTALLED_APPS = [
+INSTALLED_APPS: list[str] = [
+    "panso.apps.PansoConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -38,7 +117,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 ]
 
-MIDDLEWARE = [
+MIDDLEWARE: list[str] = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -48,42 +127,72 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
-        "APP_DIRS": True,
+        "DIRS": [BASE_DIR / "templates"],
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "panso.context_processors.get_cringe_quotes",
+            ],
+            "loaders": [
+                (
+                    "django.template.loaders.cached.Loader",
+                    [
+                        "django.template.loaders.filesystem.Loader",
+                        "django.template.loaders.app_directories.Loader",
+                    ],
+                ),
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = "config.wsgi.application"
-
 
 # Database
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
-
-DATABASES = {
+# https://blog.pecar.me/django-sqlite-benchmark
+DATABASES: dict[str, dict[str, str | Path | dict[str, str]]] = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": DATA_DIR / "panso.sqlite3",
+        "OPTIONS": {
+            "init_command": "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;",
+            "transaction_mode": "IMMEDIATE",
+        },
     },
 }
+
+REDIS_HOST: str = os.getenv(key="REDIS_HOST", default="")
+REDIS_PORT: str = os.getenv(key="REDIS_PORT", default="")
+REDIS_PASSWORD: str = os.getenv(key="REDIS_PASSWORD", default="")
+
+if not DEBUG and REDIS_HOST and REDIS_PORT and REDIS_PASSWORD:
+    SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+    SESSION_CACHE_ALIAS = "default"
+
+    REDIS_LOCATION: str = f"redis://{REDIS_HOST}:{REDIS_PORT}/1"
+    CACHES: dict[str, dict[str, str | dict[str, str]]] = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_LOCATION,
+            "OPTIONS": {
+                "PARSER_CLASS": "redis.connection._HiredisParser",
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+                "PASSWORD": REDIS_PASSWORD,
+            },
+        },
+    }
 
 
 # Password validation
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
+AUTH_PASSWORD_VALIDATORS: list[dict[str, str]] = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
@@ -97,26 +206,3 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/dev/topics/i18n/
-
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
-
-USE_I18N = True
-
-USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/dev/howto/static-files/
-
-STATIC_URL = "static/"
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/dev/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

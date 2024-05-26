@@ -1,2 +1,7 @@
 django>=0.0.dev0
+django-redis
+httpx
+platformdirs
+python-dotenv
+redis[hiredis]
 ruff
