@@ -5,3 +5,9 @@ platformdirs
 python-dotenv
 redis[hiredis]
 ruff
+djlint
+pytest
+pytest-django
+pytest-cov
+pytest-xdist
+coverage

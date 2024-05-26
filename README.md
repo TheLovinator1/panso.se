@@ -13,8 +13,10 @@ This Django-based web application allows users to compare prices of various prod
 ## Requirements
 
 - Latest version of [Python](https://www.python.org/downloads/)
-- [PostgreSQL 16](https://www.postgresql.org/download/)
-- [Docker](https://www.docker.com/get-started) (Only used in production)
+- [Garnet](https://github.com/microsoft/garnet) (Or other Redis alternative)
+- [Docker](https://www.docker.com/get-started)
+
+If you have Docker you can start Garnet with `docker-compose up garnet` otherwise download the [executable](https://github.com/microsoft/garnet/releases).
 
 ## Installation
 
@@ -79,20 +81,14 @@ celery -A panso beat --loglevel=info
 
 To access the admin interface, go to `http://localhost:8000/admin/` and log in with the superuser account created earlier.
 
-### Production Deployment
-
-TODO: Add instructions for deploying the application in a production environment.
 
 ### Running Tests
 
 To run the tests, use the following command:
 
 ```bash
-# Using Django's manage.py command to run Pytest
-python manage.py test
-
-# Or using pytest directly
-pytest
+# Remember to start the Garnet server before running the tests
+pytest -v -n 8
 ```
 
 ## Contributing

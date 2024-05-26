@@ -4,20 +4,18 @@ services:
     restart: always
     ulimits:
       memlock: -1
+    env_file:
+      - .env
     ports:
       - "6379:6379"
-    network_mode: "host"
-    command: [
-        # Total log memory used in bytes
-        "--memory",
-        "8000000000",
-        "--auth",
-        "Password",
-        "--password",
-        "${GARNET_PASSWORD}",
-        "--aof",
-        "True",
-      ]
+    # network_mode: "host"
+    command: --memory 8g --auth Password --password ${GARNET_PASSWORD} # --storage-tier True --logdir /logdir
     volumes:
-      - /Docker/panso.se/garnet/data:/data
-      - /Docker/panso.se/garnet/logdir:/logdir
+      #- /Docker/panso.se/garnet/data:/data
+      #- /Docker/panso.se/garnet/logdir:/logdir
+      - data:/data
+      - logdir:/logdir
+
+volumes:
+  data:
+  logdir:

@@ -17,13 +17,28 @@ lint.ignore = [
     "D106",   # Checks for undocumented public class definitions, for nested classes.
     "ERA001", # Found commented-out code
     "FIX002", # Line contains TODO
+    "COM812",
+    "ISC001",
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests.py" = [
+"**/tests/**" = [
     "ARG",     # Unused function args -> fixtures nevertheless are functionally relevant...
     "FBT",     # Don't care about booleans as positional arguments in tests, e.g. via @pytest.mark.parametrize()
     "PLR2004", # Magic value used in comparison, ...
     "S101",    # asserts allowed in tests...
     "S311",    # Standard pseudo-random generators are not suitable for cryptographic purposes
 ]
+
+# https://pytest-django.readthedocs.io/en/latest/
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 100
+exclude_also = ["if TYPE_CHECKING:"]
+
+[tool.coverage.html]
+directory = "htmlcov"

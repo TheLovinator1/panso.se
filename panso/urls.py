@@ -1,7 +1,7 @@
-"""URL configuration for config project.
+"""URL configuration for panso project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/dev/topics/http/urls/
+    https://docs.djangoproject.com/en/5.0/topics/http/urls/
 
 Examples:
 Function views
@@ -15,11 +15,22 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.contrib import admin
-from django.urls import include, path
-from django.urls.resolvers import URLResolver
+from __future__ import annotations
 
-urlpatterns: list[URLResolver] = [
+from typing import TYPE_CHECKING
+
+from django.contrib import admin
+from django.urls import URLPattern, path
+
+if TYPE_CHECKING:
+    from django.urls.resolvers import URLResolver
+
+from .views import IndexView, RobotsTxtView
+
+app_name: str = "panso"
+
+urlpatterns: list[URLResolver | URLPattern] = [
+    path(route="", view=IndexView.as_view(), name="index"),
     path(route="admin/", view=admin.site.urls),
-    path(route="", view=include("panso.urls")),
+    path(route="robots.txt", view=RobotsTxtView.as_view(), name="robots_txt"),
 ]

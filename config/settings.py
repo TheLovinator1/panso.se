@@ -138,7 +138,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "panso.context_processors.get_cringe_quotes",
             ],
             "loaders": [
                 (
@@ -168,26 +167,26 @@ DATABASES: dict[str, dict[str, str | Path | dict[str, str]]] = {
     },
 }
 
-REDIS_HOST: str = os.getenv(key="REDIS_HOST", default="")
-REDIS_PORT: str = os.getenv(key="REDIS_PORT", default="")
-REDIS_PASSWORD: str = os.getenv(key="REDIS_PASSWORD", default="")
+# We use https://github.com/microsoft/garnet for caching
+GARNET_HOST: str = os.getenv(key="GARNET_HOST", default="")
+GARNET_PORT: str = os.getenv(key="GARNET_PORT", default="")
+GARNET_PASSWORD: str = os.getenv(key="GARNET_PASSWORD", default="")
+GARNET_LOCATION: str = f"redis://{GARNET_HOST}:{GARNET_PORT}"
 
-if not DEBUG and REDIS_HOST and REDIS_PORT and REDIS_PASSWORD:
-    SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-    SESSION_CACHE_ALIAS = "default"
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
 
-    REDIS_LOCATION: str = f"redis://{REDIS_HOST}:{REDIS_PORT}/1"
-    CACHES: dict[str, dict[str, str | dict[str, str]]] = {
-        "default": {
-            "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": REDIS_LOCATION,
-            "OPTIONS": {
-                "PARSER_CLASS": "redis.connection._HiredisParser",
-                "CLIENT_CLASS": "django_redis.client.DefaultClient",
-                "PASSWORD": REDIS_PASSWORD,
-            },
+CACHES: dict[str, dict[str, str | dict[str, str]]] = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": GARNET_LOCATION,
+        "OPTIONS": {
+            "PARSER_CLASS": "redis.connection._HiredisParser",
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PASSWORD": GARNET_PASSWORD,
         },
-    }
+    },
+}
 
 
 # Password validation
