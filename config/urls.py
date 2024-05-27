@@ -21,5 +21,6 @@ from django.urls.resolvers import URLResolver
 
 urlpatterns: list[URLResolver] = [
     path(route="admin/", view=admin.site.urls),
-    path(route="", view=include("panso.urls")),
+    path(route="", view=include("panso.urls"), name="panso"),
+    path(route="webhallen/", view=include("webhallen.urls"), name="webhallen"),
 ]

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}<title>Webhallen products - Panso</title>{% endblock %}
+{% block description %}Panso.se has {{ products_length }} products.{% endblock %}
+{% block keywords %}Panso, Panso.se, webhallen, products{% endblock %}
+{% block content %}
+    <h1>Webhallen products</h1>
+    <p>{{ products_length }} products.</p>
+    <ul>
+        {% for product in products %}
+            <li>{{ product.product_id }} - {{ product.created_at|date }}</li>
+        {% empty %}
+            <li>No products yet.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

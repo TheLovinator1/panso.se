@@ -65,16 +65,14 @@ python manage.py runserver
 
 ### Populating the database
 
-[Celery](https://docs.celeryproject.org/en/stable/) is used to periodically fetch product data from various vendors and update the database. To start the Celery worker, run the following command:
+The web scrapers are written with [Scrapy](https://scrapy.org/) and can be found in the `clutter` directory. To populate the database with products and vendors, run the following commands:
 
 ```bash
-celery -A panso worker --loglevel=info
-```
+# Current spiders
+scrapy list
 
-To schedule periodic tasks, start the Celery beat:
-
-```bash
-celery -A panso beat --loglevel=info
+# For example, to run the "webhallen" spider
+scrapy crawl webhallen
 ```
 
 ### Admin Interface

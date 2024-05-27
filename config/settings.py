@@ -106,9 +106,15 @@ SERVER_EMAIL: str = os.getenv(key="EMAIL_HOST_USER", default="webmaster@localhos
 STATIC_URL = "static/"
 STATIC_ROOT: Path = BASE_DIR / "staticfiles"
 
+
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+
 # Application definition
 INSTALLED_APPS: list[str] = [
     "panso.apps.PansoConfig",
+    "webhallen.apps.WebhallenConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -166,15 +172,13 @@ DATABASES: dict[str, dict[str, str | Path | dict[str, str]]] = {
         },
     },
 }
-
 # We use https://github.com/microsoft/garnet for caching
 GARNET_HOST: str = os.getenv(key="GARNET_HOST", default="")
 GARNET_PORT: str = os.getenv(key="GARNET_PORT", default="")
 GARNET_PASSWORD: str = os.getenv(key="GARNET_PASSWORD", default="")
-GARNET_LOCATION: str = f"redis://{GARNET_HOST}:{GARNET_PORT}"
 
-SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-SESSION_CACHE_ALIAS = "default"
+# TODO(TheLovinator): Use Unix socket instead of TCP in production  # noqa: TD003
+GARNET_LOCATION: str = f"redis://{GARNET_HOST}:{GARNET_PORT}"
 
 CACHES: dict[str, dict[str, str | dict[str, str]]] = {
     "default": {

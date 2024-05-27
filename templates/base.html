@@ -2,7 +2,6 @@
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
     <head>
-        <!-- Head start -->
         <meta charset="UTF-8">
         <meta name="description"
               content="{% block description %}Panso{% endblock %}">
@@ -12,10 +11,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         {% block title %}<title>Panso</title>{% endblock %}
         <link rel="icon" href="{% static 'favicon.ico' %}" sizes="32x32">
-        <!-- Canonical link -->
         {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
-        <!-- Canonical link end -->
-        <!-- Head end -->
         <style>
             html {
                 max-width: 88ch;
@@ -121,9 +117,7 @@
                         <a href="/api/v1/docs">OpenAPI</a> |
                         <a href="https://github.com/TheLovinator1/Panso.se">GitHub</a> |
                         <a href="https://github.com/sponsors/TheLovinator1">Donate</a>
-                        <!-- Show login if not logged in -->
                         {% if not user.is_authenticated %}| <a href=''>Login</a>{% endif %}
-                        <!-- Show username if logged in -->
                         {% if user.is_authenticated %}| <a href=''>{{ user.username }}</a>{% endif %}
                     </div>
                 </div>

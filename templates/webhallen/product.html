@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}<title>{{ product.name }}</title>{% endblock %}
+{% block description %}Panso.se has {{ products_length }} products.{% endblock %}
+{% block keywords %}Panso, Panso.se, webhallen, products{% endblock %}
+{% block content %}
+    <h1>{{ product.name }}</h1>
+    <p>created_at={{ product.created_at|date }}</p>
+    <p>modified_at={{ product.modified_at|date }}</p>
+    <p>last_scraped_json_at={{ product.last_scraped_json_at|date }}</p>
+    <p>url={{ product.url }}</p>
+    <p>last_exception={{ product.last_exception }}</p>
+    <h2>Latest JSON</h2>
+    {% if product.jsons.latest %}
+        <code>{{ product.jsons.latest.json }}</code>
+    {% else %}
+        <p>No JSON found</p>
+    {% endif %}
+{% endblock %}

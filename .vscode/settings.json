@@ -1,9 +1,14 @@
 {
     "cSpell.words": [
+        "asgiref",
         "belq",
         "cikm",
+        "CLOSESPIDER",
         "createsuperuser",
+        "errback",
+        "ERRORCOUNT",
         "Hiredis",
+        "jsons",
         "loglevel",
         "mpzbwjawp",
         "readytorun"
