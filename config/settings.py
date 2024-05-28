@@ -46,11 +46,12 @@ LOGGING: dict[str, int | bool | dict[str, dict[str, str]] | dict[str, dict[str, 
 
 
 # Where the data is stored
+# Linux: ~/.local/share/Panso
+# Windows: %appdata%\TheLovinator\Panso
 DATA_DIR: Path = Path(user_data_dir(appname="Panso", appauthor="TheLovinator", roaming=True, ensure_exists=True))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR: Path = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
@@ -104,8 +105,7 @@ SERVER_EMAIL: str = os.getenv(key="EMAIL_HOST_USER", default="webmaster@localhos
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 # STATIC_ROOT will be used by Nginx to serve static files
 STATIC_URL = "static/"
-STATIC_ROOT: Path = BASE_DIR / "staticfiles"
-
+STATIC_ROOT: Path = DATA_DIR / "staticfiles"
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "default"
