@@ -3,6 +3,7 @@ django-auto-prefetch
 django-redis
 django>=0.0.dev0
 djlint
+gunicorn
 platformdirs
 pytest
 pytest-cov
