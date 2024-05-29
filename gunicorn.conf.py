@@ -1,6 +1,6 @@
 import multiprocessing
 
-wsgi_app: str = "config.wsgi.application"
+wsgi_app: str = "config.wsgi:application"
 bind = "0.0.0.0:8000"
 
 # The number of worker processes for handling requests.

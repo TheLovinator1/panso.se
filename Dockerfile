@@ -14,7 +14,8 @@ COPY --chown=appuser:appuser . /app
 WORKDIR /app
 
 # Create a virtual environment and activate it
-RUN python -m venv /app/.venv && . /app/.venv/bin/activate
+RUN python -m venv /app/.venv
+ENV PATH="/app/.venv/bin:$PATH"
 
 # Install application dependencies
 RUN pip install --no-cache-dir -r requirements.txt
@@ -23,7 +24,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8000
 
 # Database and STATIC_ROOT are stored in /home/appuser/.local/share/Panso
-VOLUME /home/appuser/.local/share/Panso
+VOLUME ["/home/appuser/.local/share/Panso"]
 
 # Run startup script
 CMD ["./docker-entrypoint.sh"]
