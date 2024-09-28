@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{{ title|default:"Panso.se - Jämför priser" }}</title>
+        <meta name="description"
+            content="Panso.se hjälper dig jämföra priser över 1000+ produkter och butiker i Sverige. Hitta de bästa erbjudandena för GPU:er, CPU:er, RAM och mer.">
+        <meta name="keywords" content="priser, datordelar, datorer, jämför priser, sverige, grafikkort">
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:title" content='{{ title|default:"Panso.se - Jämför priser" }}'>
+        <meta property="og:description"
+            content="Panso.se hjälper dig jämföra priser över 1000+ produkter och butiker i Sverige. Hitta de bästa erbjudandena för GPU:er, CPU:er, RAM och mer.">
+        <meta property="og:image" content="https://panso.se/static/images/logo.png">
+        <meta property="og:url" content="https://panso.se/">
+        <meta property="og:type" content="website">
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image">
+        <meta property="twitter:title" content='{{ title|default:"Panso.se - Jämför priser" }}'>
+        <meta property="twitter:description"
+            content="Panso.se hjälper dig jämföra priser över 1000+ produkter och butiker i Sverige. Hitta de bästa erbjudandena för GPU:er, CPU:er, RAM och mer.">
+        <meta property="twitter:image" content="https://panso.se/static/images/logo.png">
+        <meta property="twitter:url" content="https://panso.se/">
+
+        <!-- Bootstrap 5 CDN -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+            integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    </head>
+
+    <body class="content-width">
+        <div class="container">
+            <!-- Navigation -->
+            <nav role="navigation" aria-label="Main navigation">
+                <small>
+                    <div class="container">
+                        <div class="d-flex justify-content-around">
+                            <!-- Datorkomponenter -->
+                            <div class="d-inline-block">
+                                <strong>Datorkomponenter</strong>
+                                <ul class="list-inline">
+                                    <li class="list-inline-item"><a href="">Grafikkort</a></li>
+                                    <li class="list-inline-item"><a href="">Processor</a></li>
+                                    <li class="list-inline-item"><a href="">Minne</a></li>
+                                    <li class="list-inline-item"><a href="">Lagring</a></li>
+                                    <li class="list-inline-item"><a href="">Moderkort</a></li>
+                                    <li class="list-inline-item"><a href="">Nätaggregat</a></li>
+                                    <li class="list-inline-item"><a href="">Kylning</a></li>
+                                    <li class="list-inline-item"><a href="">Chassi</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- Tillbehör -->
+                            <div class="d-inline-block">
+                                <strong>Tillbehör</strong>
+                                <ul class="list-inline">
+                                    <li class="list-inline-item"><a href="">Datormus</a></li>
+                                    <li class="list-inline-item"><a href="">Tangentbord</a></li>
+                                    <li class="list-inline-item"><a href="">Hörlurar</a></li>
+                                    <li class="list-inline-item"><a href="">Skärmar</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- Bärbart -->
+                            <div class="d-inline-block">
+                                <strong>Bärbart</strong>
+                                <ul class="list-inline">
+                                    <li class="list-inline-item"><a href="">Laptops</a></li>
+                                    <li class="list-inline-item"><a href="">Telefoner</a></li>
+                                    <li class="list-inline-item"><a href="">Surfplattor</a></li>
+                                    <li class="list-inline-item"><a href="">Smartklockor</a></li>
+                                </ul>
+                            </div>
+
+                            <!-- Nätverk -->
+                            <div class="d-inline-block">
+                                <strong>Nätverk</strong>
+                                <ul class="list-inline">
+                                    <li class="list-inline-item"><a href="">Router</a></li>
+                                    <li class="list-inline-item"><a href="">Switch</a></li>
+                                    <li class="list-inline-item"><a href="">Accesspunkt</a></li>
+                                    <li class="list-inline-item"><a href="">Nätverkskort</a></li>
+                                    <li class="list-inline-item"><a href="">Nätverkskabel</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </small>
+            </nav>
+            <hr />
+
+            <!-- Content -->
+            <main class="my-4">
+                {% block content %}
+                <div class="text-center">Hello, world!</div>
+                {% endblock content %}
+            </main>
+            <hr />
+
+            <!-- Footer -->
+            <footer class="text-center mt-4">
+                <small>
+                    <div class="d-flex justify-content-between">
+                        <!-- Discord username -->
+                        <div class="d-inline-block">Discord: <strong>TheLovinator#9276</strong></div>
+                        <!-- Search form -->
+                        <div class="d-flex justify-content-center mb-4">
+                            <form role="search" action='' method="get" class="d-flex" aria-label="Search form">
+                                <input id="searchInput" type="search" name="q" class="form-control me-2"
+                                    placeholder="Search" aria-label="Search input">
+                                <button type="submit" class="btn btn-primary" aria-label="Search button">Search</button>
+                            </form>
+                        </div>
+                    </div>
+                </small>
+            </footer>
+        </div>
+        <script>
+            // Set theme to the user's preferred color scheme
+            function updateTheme() {
+                const colorMode = window.matchMedia("(prefers-color-scheme: dark)").matches ?
+                    "dark" :
+                    "light";
+                document.querySelector("html").setAttribute("data-bs-theme", colorMode);
+            }
+
+            // Set theme on load
+            updateTheme()
+
+            // Update theme when the preferred scheme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme)
+        </script>
+
+        {% comment %}
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"></script>
+        {% endcomment %}
+
+    </body>
+
+</html>

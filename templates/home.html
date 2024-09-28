@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Välkommen till panso.se</h1>
+
+{% if user.is_authenticated %}
+<h2>Välkommen, {{ user.username }}!</h2>
+<p>Du är inloggad.</p>
+<p><a href="{% url 'account_logout' %}">Logga ut</a></p>
+{% endif %}
+
+<!-- Search form -->
+<form action="" method="get">
+    <div class="input-group mb-3">
+        <input type="text" class="form-control" name="q" placeholder="Sök efter produkter..."
+            aria-label="Sök efter produkter..." aria-describedby="button-addon2">
+        <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Sök</button>
+    </div>
+</form>
+
+<h2>Populära produkter</h2>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Produkt 1</h5>
+                <a href="" class="btn btn-primary">Visa produkt</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Produkt 2</h5>
+                <a href="" class="btn btn-primary">Visa produkt</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Produkt 3</h5>
+                <a href="" class="btn btn-primary">Visa produkt</a>
+            </div>
+        </div>
+    </div>
+    <h2>Bra deals</h2>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Deal 1</h5>
+                    <a href="" class="btn btn-primary">Visa produkt</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Deal 2</h5>
+                    <a href="" class="btn btn-primary">Visa produkt</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Deal 3</h5>
+                    <a href="" class="btn btn-primary">Visa produkt</a>
+                </div>
+            </div>
+        </div>
+        <h2>Snabblänkar</h2>
+
+        <ul>
+            <li><a href="">Kontakta oss</a></li>
+            <li><a href="">Om oss</a></li>
+            <li><a href="">Köpvillkor</a></li>
+        </ul>
+
+        <h2>Logga in eller registrera dig</h2>
+
+        <ul>
+            {% if not user.is_authenticated %}
+            <li><a href="{% url 'account_signup' %}">Registrera dig</a></li>
+            <li><a href="{% url 'account_login' %}">Logga in</a></li>
+            {% endif %}
+            <li><a href="{% url 'account_reset_password' %}">Återställ lösenord</a></li>
+        </ul>
+    </div>
+</div>
+{% endblock content %}

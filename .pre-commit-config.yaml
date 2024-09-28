@@ -33,21 +33,21 @@ repos:
 
   # Automatically upgrade your Django project code
   - repo: https://github.com/adamchainz/django-upgrade
-    rev: "1.17.0"
+    rev: "1.21.0"
     hooks:
       - id: django-upgrade
         args: [--target-version, "5.1"]
 
   # Run Pyupgrade on all Python files. This will upgrade the code to Python 3.12.
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.2
+    rev: v3.17.0
     hooks:
       - id: pyupgrade
         args: ["--py312-plus"]
 
   # An extremely fast Python linter and formatter.
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.5
+    rev: v0.6.8
     hooks:
       - id: ruff-format
       - id: ruff
@@ -55,6 +55,6 @@ repos:
 
   # Static checker for GitHub Actions workflow files.
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.0
+    rev: v1.7.2
     hooks:
       - id: actionlint
