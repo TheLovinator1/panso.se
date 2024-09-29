@@ -14,10 +14,7 @@ DATA_DIR: Path = Path(user_data_dir(appname="Panso", appauthor="TheLovinator", r
 SECRET_KEY: str | None = os.getenv("DJANGO_SECRET_KEY")
 DEBUG: bool = os.getenv(key="DJANGO_DEBUG", default="False").lower() == "true"
 
-ALLOWED_HOSTS: list[str] = []
-if not DEBUG:
-    ALLOWED_HOSTS: list[str] = [".panso.se"]
-
+ALLOWED_HOSTS: list[str] = [] if DEBUG else [".panso.se"]
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 ADMINS: list[tuple[str, str]] = [("Joakim Hellsén", "tlovinator@gmail.com")]
 SITE_ID = 1
@@ -124,6 +121,7 @@ TEMPLATES = [
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
+        # %APPDATA%/TheLovinator/Panso/panso.sqlite3
         "NAME": DATA_DIR / "panso.sqlite3",
         "OPTIONS": {
             "init_command": "PRAGMA journal_mode=wal; PRAGMA synchronous=1; PRAGMA mmap_size=134217728; PRAGMA journal_size_limit=67108864; PRAGMA cache_size=2000;",  # noqa: E501
