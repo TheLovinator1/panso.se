@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import sys
 from pathlib import Path
@@ -73,6 +75,7 @@ INSTALLED_APPS: list[str] = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.github",
+    "panso",
 ]
 
 MIDDLEWARE: list[str] = [

@@ -6,13 +6,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{{ title|default:"Panso.se - Jämför priser" }}</title>
         <meta name="description"
-            content="Panso.se hjälper dig jämföra priser över 1000+ produkter och butiker i Sverige. Hitta de bästa erbjudandena för GPU:er, CPU:er, RAM och mer.">
+            content="{{ description|default:'Panso.se hjälper dig jämföra priser över 1000+ produkter och butiker i Sverige. Hitta de bästa erbjudandena för GPU:er, CPU:er, RAM och mer.' }}">
         <meta name="keywords" content="priser, datordelar, datorer, jämför priser, sverige, grafikkort">
 
         <!-- Open Graph / Facebook -->
         <meta property="og:title" content='{{ title|default:"Panso.se - Jämför priser" }}'>
         <meta property="og:description"
-            content="Panso.se hjälper dig jämföra priser över 1000+ produkter och butiker i Sverige. Hitta de bästa erbjudandena för GPU:er, CPU:er, RAM och mer.">
+            content="{{ description|default:'Panso.se hjälper dig jämföra priser över 1000+ produkter och butiker i Sverige. Hitta de bästa erbjudandena för GPU:er, CPU:er, RAM och mer.' }}">
         <meta property="og:image" content="https://panso.se/static/images/logo.png">
         <meta property="og:url" content="https://panso.se/">
         <meta property="og:type" content="website">
@@ -21,7 +21,7 @@
         <meta property="twitter:card" content="summary_large_image">
         <meta property="twitter:title" content='{{ title|default:"Panso.se - Jämför priser" }}'>
         <meta property="twitter:description"
-            content="Panso.se hjälper dig jämföra priser över 1000+ produkter och butiker i Sverige. Hitta de bästa erbjudandena för GPU:er, CPU:er, RAM och mer.">
+            content="{{ description|default:'Panso.se hjälper dig jämföra priser över 1000+ produkter och butiker i Sverige. Hitta de bästa erbjudandena för GPU:er, CPU:er, RAM och mer.' }}">
         <meta property="twitter:image" content="https://panso.se/static/images/logo.png">
         <meta property="twitter:url" content="https://panso.se/">
 

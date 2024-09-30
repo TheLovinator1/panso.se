@@ -44,6 +44,7 @@ preview = true
 line-length = 120
 lint.select = ["ALL"]
 lint.pydocstyle.convention = "google"
+lint.isort.required-imports = ["from __future__ import annotations"]
 lint.ignore = [
     "ANN201", # Checks that public functions and methods have return type annotations.
     "ARG001", # Checks for the presence of unused arguments in function definitions.
