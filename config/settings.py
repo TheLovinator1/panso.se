@@ -164,10 +164,8 @@ LOGGING = {
             "level": "DEBUG",
             "propagate": True,
         },
-        "django.utils.autoreload": {  # Remove spam
-            "handlers": ["console"],
-            "level": "INFO",
-            "propagate": True,
+        "asyncio": {  # Hide "Using selector: SelectSelector" spam
+            "level": "WARNING",
         },
     },
 }

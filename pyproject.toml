@@ -30,6 +30,7 @@ pytest-randomly = "^3.15.0"
 python-dotenv = "^1.0.1"
 scrapy = "^2.11.2"
 sentry-sdk = { extras = ["django"], version = "^2.14.0" }
+twisted = { extras = ["http2", "tls"], version = "^24.7.0" }
 
 [build-system]
 requires = ["poetry-core"]
