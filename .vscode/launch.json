@@ -11,6 +11,17 @@
             "django": true,
             "autoStartBrowser": false,
             "program": "${workspaceFolder}\\manage.py"
+        },
+        {
+            "name": "Scrape Webhallen Products",
+            "type": "debugpy",
+            "request": "launch",
+            "args": [
+                "json_products"
+            ],
+            "django": true,
+            "autoStartBrowser": false,
+            "program": "${workspaceFolder}\\manage.py"
         }
     ]
 }

@@ -3,11 +3,11 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
-from django.core.asgi import get_asgi_application
+from django.core.wsgi import get_wsgi_application
 
 if TYPE_CHECKING:
-    from django.core.handlers.asgi import ASGIHandler
+    from django.core.handlers.wsgi import WSGIHandler
 
 os.environ.setdefault(key="DJANGO_SETTINGS_MODULE", value="config.settings")
 
-application: ASGIHandler = get_asgi_application()
+application: WSGIHandler = get_wsgi_application()

@@ -2,7 +2,10 @@
     "cSpell.language": "en,sv-SE",
     "cSpell.words": [
         "allauth",
+        "asgiref",
         "htmx",
-        "socialaccount"
+        "makemigrations",
+        "socialaccount",
+        "startapp"
     ]
 }

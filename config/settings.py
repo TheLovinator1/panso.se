@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 
+import hishel
 from django.contrib import messages
 from dotenv import load_dotenv
 from platformdirs import user_data_dir
@@ -21,7 +22,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 ADMINS: list[tuple[str, str]] = [("Joakim Hellsén", "tlovinator@gmail.com")]
 SITE_ID = 1
 ROOT_URLCONF = "config.urls"
-ASGI_APPLICATION = "config.asgi.application"
+WSGI_APPLICATION = "config.wsgi.application"
 INTERNAL_IPS: list[str] = ["127.0.0.1", "::1"]
 LOGIN_REDIRECT_URL = "/"
 ACCOUNT_LOGOUT_REDIRECT_URL = "/"
@@ -55,7 +56,6 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 INSTALLED_APPS: list[str] = [
-    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -75,7 +75,8 @@ INSTALLED_APPS: list[str] = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
     "allauth.socialaccount.providers.github",
-    "panso",
+    "panso.apps.PansoConfig",
+    "webhallen.apps.WebhallenConfig",
 ]
 
 MIDDLEWARE: list[str] = [
@@ -122,9 +123,10 @@ TEMPLATES = [
 
 
 DATABASES = {
+    # The default database is used for the main application.
+    # %APPDATA%/TheLovinator/Panso/panso.sqlite3
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        # %APPDATA%/TheLovinator/Panso/panso.sqlite3
         "NAME": DATA_DIR / "panso.sqlite3",
         "OPTIONS": {
             "init_command": "PRAGMA journal_mode=wal; PRAGMA synchronous=1; PRAGMA mmap_size=134217728; PRAGMA journal_size_limit=67108864; PRAGMA cache_size=2000;",  # noqa: E501
@@ -132,25 +134,26 @@ DATABASES = {
     },
 }
 
+
 AUTHENTICATION_BACKENDS: list[str] = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-# AUTH_PASSWORD_VALIDATORS: list[dict[str, str]] = [
-#     {
-#         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-#     },
-#     {
-#         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-#     },
-#     {
-#         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-#     },
-#     {
-#         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-#     },
-# ]
+AUTH_PASSWORD_VALIDATORS: list[dict[str, str]] = [
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
+]
 
 LOGGING = {
     "version": 1,
@@ -196,4 +199,17 @@ if ENABLE_DEBUG_TOOLBAR:
     # Customize the config to support turbo and htmx boosting.
     DEBUG_TOOLBAR_CONFIG: dict[str, str] = {"ROOT_TAG_EXTRA_ATTRS": "data-turbo-permanent hx-preserve"}
 
-# TODO(TheLovinator): https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#htmx  # noqa: TD003
+# Store HTTP responses in a cache.
+storage = hishel.FileStorage(
+    base_path=DATA_DIR / "cache",
+)
+controller = hishel.Controller(
+    cacheable_methods=["GET", "HEAD", "OPTIONS"],
+    cacheable_status_codes=[200, 203, 204, 206, 300, 301, 308, 404, 405, 410, 414, 501],
+)
+HISHEL_CLIENT = hishel.CacheClient(
+    storage=storage,
+    controller=controller,
+    follow_redirects=True,
+    http2=True,
+)
