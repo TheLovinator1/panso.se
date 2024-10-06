@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from django.contrib import admin
 
-from .models import (
+from .models.scraped import WebhallenProductJSON
+from .models.sitemaps import (
     SitemapArticle,
     SitemapCampaign,
     SitemapCategory,
@@ -11,7 +12,6 @@ from .models import (
     SitemapManufacturer,
     SitemapProduct,
     SitemapSection,
-    WebhallenProductJSON,
 )
 
 admin.site.register(SitemapArticle)
