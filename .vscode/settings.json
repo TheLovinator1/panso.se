@@ -10,6 +10,7 @@
         "noinput",
         "pipx",
         "socialaccount",
-        "startapp"
+        "startapp",
+        "virtualenvs"
     ]
 }

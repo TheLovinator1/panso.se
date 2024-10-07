@@ -35,12 +35,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker run -d -p 6379:6379 --name garnet ghcr.io/microsoft/garnet --auth Password --password test123
-      - uses: actions/setup-python@v5
+      - name: Set up python
+        id: setup-python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: "poetry"
-      - run: pipx install poetry
-      - run: poetry install
+
+      - name: Load cached Poetry installation
+        id: cached-poetry
+        uses: actions/cache@v4
+        with:
+          path: ~/.local # the path depends on the OS
+          key: poetry-0 # increment to reset cache
+
+      - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          virtualenvs-path: .venv
+          installer-parallel: true
+
+      - name: Load cached venv if available
+        id: cached-poetry-dependencies
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --no-interaction --no-root
+
       - run: poetry run python manage.py makemigrations --check
       - run: poetry run python manage.py migrate
       - run: poetry run python manage.py collectstatic --noinput
