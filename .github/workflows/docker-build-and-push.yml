@@ -35,10 +35,13 @@ jobs:
           POSTGRES_USER: panso
           POSTGRES_DB: panso
         options: >-
-          --health-cmd pg_isready -U $POSTGRES_USER
+          --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - uses: actions/checkout@v4
       - run: docker run -d -p 6379:6379 --name garnet ghcr.io/microsoft/garnet --auth Password --password test123
