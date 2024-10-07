@@ -8,6 +8,7 @@
         "htmx",
         "makemigrations",
         "noinput",
+        "pipx",
         "socialaccount",
         "startapp"
     ]

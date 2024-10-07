@@ -39,6 +39,7 @@ jobs:
         with:
           python-version: "3.12"
           cache: "poetry"
+      - run: pipx install poetry
       - run: poetry install
       - run: poetry run python manage.py makemigrations --check
       - run: poetry run python manage.py migrate
