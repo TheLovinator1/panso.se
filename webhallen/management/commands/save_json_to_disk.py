@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from django.core.management.base import BaseCommand
 
-from webhallen.models import WebhallenProductJSON
+from webhallen.models.scraped import WebhallenProductJSON
 
 if TYPE_CHECKING:
     from django.db.models.manager import BaseManager

@@ -15,8 +15,10 @@ import logging
 import time
 from typing import TYPE_CHECKING
 
+import auto_prefetch
 import httpx
 from django.conf import settings
+from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from django.utils import timezone
 
@@ -28,7 +30,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 HTTP_STATUS_TOO_MANY_REQUESTS = 429
 
 
-class WebhallenProductJSON(models.Model):
+class WebhallenProductJSON(auto_prefetch.Model):
     """A single product from Webhallen."""
 
     webhallen_id = models.PositiveBigIntegerField(unique=True, help_text="Webhallen product ID")
@@ -37,9 +39,10 @@ class WebhallenProductJSON(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False, help_text="When the data was fetched")
     updated_at = models.DateTimeField(auto_now=True, editable=False, help_text="When the data was last updated")
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         verbose_name: str = "Webhallen data"
         verbose_name_plural: str = "Webhallen data"
+        indexes: tuple[GinIndex] = (GinIndex(fields=["data"]),)
 
     def __str__(self) -> str:
         return f"{self.webhallen_id} - (https://www.webhallen.com/se/product/{self.webhallen_id})"

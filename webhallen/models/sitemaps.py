@@ -17,6 +17,7 @@ import logging
 import re
 from typing import TYPE_CHECKING
 
+import auto_prefetch
 from django.conf import settings
 from django.db import models
 
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class SitemapHome(models.Model):
+class SitemapHome(auto_prefetch.Model):
     """Saves https://www.webhallen.com/sitemap.home.xml to the database."""
 
     sitemap = models.TextField(help_text="The sitemap XML")
@@ -34,7 +35,7 @@ class SitemapHome(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False, help_text="When the data was fetched")
     updated_at = models.DateTimeField(auto_now=True, editable=False, help_text="When the data was last updated")
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         verbose_name: str = "Webhallen Sitemap - home"
         verbose_name_plural: str = "Webhallen Sitemap - home"
 
@@ -54,7 +55,7 @@ class SitemapHome(models.Model):
         logger.info("Fetched sitemap home")
 
 
-class SitemapSection(models.Model):
+class SitemapSection(auto_prefetch.Model):
     """Saves https://www.webhallen.com/sitemap.section.xml to the database."""
 
     sitemap = models.TextField(help_text="The sitemap XML")
@@ -62,7 +63,7 @@ class SitemapSection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False, help_text="When the data was fetched")
     updated_at = models.DateTimeField(auto_now=True, editable=False, help_text="When the data was last updated")
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         verbose_name: str = "Webhallen Sitemap - section"
         verbose_name_plural: str = "Webhallen Sitemap - section"
 
@@ -88,7 +89,7 @@ class SitemapSection(models.Model):
         return self.sitemap
 
 
-class SitemapCategory(models.Model):
+class SitemapCategory(auto_prefetch.Model):
     """Saves https://www.webhallen.com/sitemap.category.xml to the database."""
 
     sitemap = models.TextField(help_text="The sitemap XML")
@@ -96,7 +97,7 @@ class SitemapCategory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False, help_text="When the data was fetched")
     updated_at = models.DateTimeField(auto_now=True, editable=False, help_text="When the data was last updated")
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         verbose_name: str = "Webhallen Sitemap - category"
         verbose_name_plural: str = "Webhallen Sitemap - category"
 
@@ -122,7 +123,7 @@ class SitemapCategory(models.Model):
         return self.sitemap
 
 
-class SitemapCampaign(models.Model):
+class SitemapCampaign(auto_prefetch.Model):
     """Saves https://www.webhallen.com/sitemap.campaign.xml to the database."""
 
     sitemap = models.TextField(help_text="The sitemap XML")
@@ -130,7 +131,7 @@ class SitemapCampaign(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False, help_text="When the data was fetched")
     updated_at = models.DateTimeField(auto_now=True, editable=False, help_text="When the data was last updated")
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         verbose_name: str = "Webhallen Sitemap - campaign"
         verbose_name_plural: str = "Webhallen Sitemap - campaign"
 
@@ -156,7 +157,7 @@ class SitemapCampaign(models.Model):
         return self.sitemap
 
 
-class SitemapInfoPages(models.Model):
+class SitemapInfoPages(auto_prefetch.Model):
     """Saves https://www.webhallen.com/sitemap.infoPages.xml to the database."""
 
     sitemap = models.TextField(help_text="The sitemap XML")
@@ -164,7 +165,7 @@ class SitemapInfoPages(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False, help_text="When the data was fetched")
     updated_at = models.DateTimeField(auto_now=True, editable=False, help_text="When the data was last updated")
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         verbose_name: str = "Webhallen Sitemap - info pages"
         verbose_name_plural: str = "Webhallen Sitemap - info pages"
 
@@ -190,7 +191,7 @@ class SitemapInfoPages(models.Model):
         return self.sitemap
 
 
-class SitemapProduct(models.Model):
+class SitemapProduct(auto_prefetch.Model):
     """Saves https://www.webhallen.com/sitemap.product.xml to the database."""
 
     sitemap = models.TextField(help_text="The sitemap XML")
@@ -198,7 +199,7 @@ class SitemapProduct(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False, help_text="When the data was fetched")
     updated_at = models.DateTimeField(auto_now=True, editable=False, help_text="When the data was last updated")
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         verbose_name: str = "Webhallen Sitemap - product"
         verbose_name_plural: str = "Webhallen Sitemap - product"
 
@@ -247,7 +248,7 @@ class SitemapProduct(models.Model):
         return 0
 
 
-class SitemapManufacturer(models.Model):
+class SitemapManufacturer(auto_prefetch.Model):
     """Saves https://www.webhallen.com/sitemap.manufacturer.xml to the database."""
 
     sitemap = models.TextField(help_text="The sitemap XML")
@@ -255,7 +256,7 @@ class SitemapManufacturer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False, help_text="When the data was fetched")
     updated_at = models.DateTimeField(auto_now=True, editable=False, help_text="When the data was last updated")
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         verbose_name: str = "Webhallen Sitemap - manufacturer"
         verbose_name_plural: str = "Webhallen Sitemap - manufacturer"
 
@@ -281,7 +282,7 @@ class SitemapManufacturer(models.Model):
         return self.sitemap
 
 
-class SitemapArticle(models.Model):
+class SitemapArticle(auto_prefetch.Model):
     """Saves https://www.webhallen.com/sitemap.article.xml to the database."""
 
     sitemap = models.TextField(help_text="The sitemap XML")
@@ -289,7 +290,7 @@ class SitemapArticle(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, editable=False, help_text="When the data was fetched")
     updated_at = models.DateTimeField(auto_now=True, editable=False, help_text="When the data was last updated")
 
-    class Meta:
+    class Meta(auto_prefetch.Model.Meta):
         verbose_name: str = "Webhallen Sitemap - article"
         verbose_name_plural: str = "Webhallen Sitemap - article"
 

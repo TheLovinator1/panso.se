@@ -6,7 +6,8 @@ from django.core.management.base import BaseCommand
 from httpx import HTTPStatusError
 from sitemap_parser import SiteMapParser, Url, UrlSet
 
-from webhallen.models import SitemapProduct, WebhallenProductJSON
+from webhallen.models.scraped import WebhallenProductJSON
+from webhallen.models.sitemaps import SitemapProduct
 
 logger: logging.Logger = logging.getLogger(__name__)
 

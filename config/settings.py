@@ -5,7 +5,6 @@ import sys
 from pathlib import Path
 
 import hishel
-from django.contrib import messages
 from dotenv import load_dotenv
 from platformdirs import user_data_dir
 
@@ -51,10 +50,6 @@ DEFAULT_FROM_EMAIL: str = os.getenv(key="EMAIL_HOST_USER", default="webmaster@lo
 SERVER_EMAIL: str = os.getenv(key="EMAIL_HOST_USER", default="webmaster@localhost")
 ACCOUNT_EMAIL_VERIFICATION = "none"
 
-# https://github.com/django-crispy-forms/crispy-bootstrap5
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
-CRISPY_TEMPLATE_PACK = "bootstrap5"
-
 INSTALLED_APPS: list[str] = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -66,10 +61,7 @@ INSTALLED_APPS: list[str] = [
     "django_browser_reload",
     "django_filters",
     "django_htmx",
-    "crispy_forms",
-    "crispy_bootstrap5",
     "ninja",
-    "simple_history",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -87,7 +79,6 @@ MIDDLEWARE: list[str] = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "simple_history.middleware.HistoryRequestMiddleware",
     "allauth.account.middleware.AccountMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
@@ -123,15 +114,24 @@ TEMPLATES = [
 
 
 DATABASES = {
-    # The default database is used for the main application.
-    # %APPDATA%/TheLovinator/Panso/panso.sqlite3
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": DATA_DIR / "panso.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("POSTGRES_DB", "panso"),
+        "USER": os.getenv("POSTGRES_USER", "panso"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", ""),
+        "HOST": os.getenv("POSTGRES_HOST", "192.168.1.2"),
+        "PORT": os.getenv("POSTGRES_PORT", "5432"),
         "OPTIONS": {
-            "init_command": "PRAGMA journal_mode=wal; PRAGMA synchronous=1; PRAGMA mmap_size=134217728; PRAGMA journal_size_limit=67108864; PRAGMA cache_size=2000;",  # noqa: E501
+            "pool": True,
         },
     },
+    # "default": {
+    #     "ENGINE": "django.db.backends.sqlite3",
+    #     "NAME": DATA_DIR / "panso.sqlite3",
+    #     "OPTIONS": {
+    #        "init_command": "PRAGMA journal_mode=wal; PRAGMA synchronous=1; PRAGMA mmap_size=134217728; PRAGMA journal_size_limit=67108864; PRAGMA cache_size=2000;",  # noqa: E501
+    #     },
+    # },
 }
 
 
@@ -174,15 +174,6 @@ LOGGING = {
             "level": "WARNING",
         },
     },
-}
-
-# Use Bootstrap classes instead of Django's default classes.
-MESSAGE_TAGS: dict[int, str] = {
-    messages.DEBUG: "alert-info",
-    messages.INFO: "alert-info",
-    messages.SUCCESS: "alert-success",
-    messages.WARNING: "alert-warning",
-    messages.ERROR: "alert-danger",
 }
 
 # Only enable the toolbar when we're in debug mode and we're
