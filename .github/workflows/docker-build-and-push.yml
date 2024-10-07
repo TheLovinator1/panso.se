@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Test and Build Docker Image
 
 on:
   push:
@@ -11,9 +11,51 @@ on:
   workflow_dispatch:
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      DJANGO_SECRET_KEY: 1234567890
+      DJANGO_DEBUG: False
+      ADMIN_EMAIL: 4153203+TheLovinator1@users.noreply.github.com
+      EMAIL_HOST_USER: test@example.com
+      EMAIL_HOST_PASSWORD: test123
+      GARNET_HOST: localhost
+      GARNET_PORT: 6379
+      GARNET_PASSWORD: test123
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker run -d -p 6379:6379 --name garnet ghcr.io/microsoft/garnet --auth Password --password test123
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "poetry"
+      - run: poetry install
+      - run: poetry run python manage.py makemigrations --check
+      - run: poetry run python manage.py migrate
+      - run: poetry run python manage.py collectstatic --noinput
+      # - run: poetry run coverage run -m pytest -v
+      # - run: poetry run coverage report -m
+      - run: docker kill garnet
   build:
     runs-on: ubuntu-latest
-
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: read
+      packages: write
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    needs: test
     steps:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
