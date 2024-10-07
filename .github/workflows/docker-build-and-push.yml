@@ -27,9 +27,20 @@ jobs:
       POSTGRES_DB: panso
       POSTGRES_HOST: localhost
       POSTGRES_PORT: 5432
+    services:
+      postgres:
+        image: postgres:17-bookworm
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: panso
+          POSTGRES_DB: panso
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
-      - run: docker run -d -p 5432:5432 --name panso_postgres -e POSTGRES_PASSWORD=postgres postgres:17-bookworm
       - run: docker run -d -p 6379:6379 --name garnet ghcr.io/microsoft/garnet --auth Password --password test123
       - name: Set up python
         id: setup-python
@@ -68,7 +79,6 @@ jobs:
       - run: poetry run python manage.py collectstatic --noinput
       # - run: poetry run coverage run -m pytest -v
       # - run: poetry run coverage report -m
-      - run: docker kill panso_postgres
       - run: docker kill garnet
   build:
     runs-on: ubuntu-latest
