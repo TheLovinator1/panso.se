@@ -801,13 +801,13 @@ hyperframe = ">=6.0,<7"
 
 [[package]]
 name = "hishel"
-version = "0.0.32"
+version = "0.0.33"
 description = "Persistent cache implementation for httpx and httpcore"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "hishel-0.0.32-py3-none-any.whl", hash = "sha256:62807cd16f3e2f69f1d12182fb8e167ba8dd763cf1039479dfd13fc15ce5d684"},
-    {file = "hishel-0.0.32.tar.gz", hash = "sha256:64d674c058d59920995f01db8dea12408c526de9d5d112ac955dbe2485ceae1c"},
+    {file = "hishel-0.0.33-py3-none-any.whl", hash = "sha256:6e6c6cdaf432ff4c4981e7792ef7d1fa4c8ede58b9dbbcefb9ab3fc9770f2a07"},
+    {file = "hishel-0.0.33.tar.gz", hash = "sha256:ab5b2661d5e2252f305fd0fb20e8c76bfab3ea73458f20f2591c53c37b270089"},
 ]
 
 [package.dependencies]
@@ -2376,4 +2376,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "2db9e912b1464629a28460cd3e637ebb6d4e50e13306f419230a7c6ceebe145a"
+content-hash = "bb5324bd0f4a0711945ed06b0564af5a709dcb5de03e2da5f19c9587e9aa20c1"
