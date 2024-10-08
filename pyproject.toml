@@ -89,3 +89,7 @@ show_missing = true
 fail_under = 100
 exclude_also = ["if TYPE_CHECKING:", "if not DEBUG:"]
 omit = ["*/tests/*", "*/migrations/*"]
+
+# https://github.com/astral-sh/ruff/issues/12200#issuecomment-2244480290
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"panso.settings".msg = "See https://docs.djangoproject.com/en/dev/topics/settings/#using-settings-in-python-code. Use 'from django.conf import settings' instead."
