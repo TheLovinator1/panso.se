@@ -511,13 +511,13 @@ files = [
 
 [[package]]
 name = "django"
-version = "5.1.1"
+version = "5.1.2"
 description = "A high-level Python web framework that encourages rapid development and clean, pragmatic design."
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "Django-5.1.1-py3-none-any.whl", hash = "sha256:71603f27dac22a6533fb38d83072eea9ddb4017fead6f67f2562a40402d61c3f"},
-    {file = "Django-5.1.1.tar.gz", hash = "sha256:021ffb7fdab3d2d388bc8c7c2434eb9c1f6f4d09e6119010bbb1694dda286bc2"},
+    {file = "Django-5.1.2-py3-none-any.whl", hash = "sha256:f11aa87ad8d5617171e3f77e1d5d16f004b79a2cf5d2e1d2b97a6a1f8e9ba5ed"},
+    {file = "Django-5.1.2.tar.gz", hash = "sha256:bd7376f90c99f96b643722eee676498706c9fd7dc759f55ebfaf2c08ebcdf4f0"},
 ]
 
 [package.dependencies]
@@ -554,13 +554,13 @@ steam = ["python3-openid (>=3.0.8)"]
 
 [[package]]
 name = "django-auto-prefetch"
-version = "1.9.0"
+version = "1.10.0"
 description = "Automatically prefetch foreign key values as needed."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "django_auto_prefetch-1.9.0-py3-none-any.whl", hash = "sha256:2bcc1d4551a952cc73124d339319570392aece390cedffbd9585d94f802eef47"},
-    {file = "django_auto_prefetch-1.9.0.tar.gz", hash = "sha256:b447a0342a734bd3c718f9721598042721edce1a95b81df5b5a167dd0997f347"},
+    {file = "django_auto_prefetch-1.10.0-py3-none-any.whl", hash = "sha256:9d096aba3e7844f7f88b3216c66debcbc7abfa5943642f60ae400bb6050dda23"},
+    {file = "django_auto_prefetch-1.10.0.tar.gz", hash = "sha256:d86ac16be05cd218d84234d7fb01beda6daa2336b8861602c44ad166e4079566"},
 ]
 
 [package.dependencies]
@@ -1299,13 +1299,13 @@ testing = ["pytest", "pytest-benchmark"]
 
 [[package]]
 name = "pre-commit"
-version = "3.8.0"
+version = "4.0.0"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "pre_commit-3.8.0-py2.py3-none-any.whl", hash = "sha256:9a90a53bf82fdd8778d58085faf8d83df56e40dfe18f45b19446e26bf1b3a63f"},
-    {file = "pre_commit-3.8.0.tar.gz", hash = "sha256:8bb6494d4a20423842e198980c9ecf9f96607a07ea29549e180eef9ae80fe7af"},
+    {file = "pre_commit-4.0.0-py2.py3-none-any.whl", hash = "sha256:0ca2341cf94ac1865350970951e54b1a50521e57b7b500403307aed4315a1234"},
+    {file = "pre_commit-4.0.0.tar.gz", hash = "sha256:5d9807162cc5537940f94f266cbe2d716a75cfad0d78a317a92cac16287cfed6"},
 ]
 
 [package.dependencies]
@@ -2376,4 +2376,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "bb5324bd0f4a0711945ed06b0564af5a709dcb5de03e2da5f19c9587e9aa20c1"
+content-hash = "61d8c18ff6712215db8000a5526718a63b828cf5c2a8cc73e93a4b7aa821117f"
