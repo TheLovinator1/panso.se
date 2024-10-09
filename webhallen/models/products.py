@@ -189,8 +189,154 @@ class MainCategoryPath(auto_prefetch.Model):
     url_name = models.TextField(help_text="URL name")
 
 
+class Parts(auto_prefetch.Model):
+    """Parts of a product."""
+
+    comb = models.TextField(help_text="Comb")
+    nnv = models.FloatField(help_text="NNV")  # TODO(TheLovinator): What is this?  # noqa: TD003
+    text_value = models.TextField(help_text="Text value")
+    unit = models.TextField(help_text="Unit")
+    value = models.TextField(help_text="Value")
+
+
+class Component(auto_prefetch.Model):
+    """Component of a product."""
+
+    name = models.TextField(help_text="Name")
+    value = models.TextField(help_text="Value")
+    attribute_id = models.PositiveBigIntegerField(help_text="Attribute ID")
+    parts = models.ManyToManyField(Parts, help_text="Parts")
+
+
+class Header(auto_prefetch.Model):
+    """Header of a product.
+
+    Note: All the field names are translated from Swedish to English.
+    """
+
+    packaged_quantity = models.ManyToManyField(Component, help_text="Packaged quantity")
+    brand = models.ManyToManyField(Component, help_text="Brand")
+    product_line = models.ManyToManyField(Component, help_text="Product line")
+    manufacturer = models.ManyToManyField(Component, help_text="Manufacturer")
+    model = models.ManyToManyField(Component, help_text="Model")
+    compatibility = models.ManyToManyField(Component, help_text="Compatibility")
+    country_specific_batches = models.ManyToManyField(Component, help_text="Country-specific batches")
+    localization = models.ManyToManyField(Component, help_text="Localization")
+    game_publisher = models.ManyToManyField(Component, help_text="Game publisher")
+    game_developer = models.ManyToManyField(Component, help_text="Game developer")
+    edition = models.ManyToManyField(Component, help_text="Edition")
+    batch = models.ManyToManyField(Component, help_text="Batch")
+    manufacturer_model_number = models.ManyToManyField(Component, help_text="Manufacturer's model number")
+    release_date = models.ManyToManyField(Component, help_text="Release date")
+    series = models.ManyToManyField(Component, help_text="Series")
+
+
+class DimensionsAndWeight(auto_prefetch.Model):
+    """Dimensions and weight of a product."""
+
+    weight = models.ManyToManyField(Component, help_text="Weight")
+    length = models.ManyToManyField(Component, help_text="Length")
+    width = models.ManyToManyField(Component, help_text="Width")
+    height = models.ManyToManyField(Component, help_text="Height")
+    length_in_meters = models.ManyToManyField(Component, help_text="Length in meters")
+    diameter = models.ManyToManyField(Component, help_text="Diameter")
+    comments = models.ManyToManyField(Component, help_text="Comments")
+    thickness = models.ManyToManyField(Component, help_text="Thickness")
+    volume = models.ManyToManyField(Component, help_text="Volume")
+    comment = models.ManyToManyField(Component, help_text="Comment")
+    min_height = models.ManyToManyField(Component, help_text="Minimum height")
+    backrest_height = models.ManyToManyField(Component, help_text="Backrest height")
+    backrest_width = models.ManyToManyField(Component, help_text="Backrest width")
+    max_length = models.ManyToManyField(Component, help_text="Maximum length")
+
+
+class General(auto_prefetch.Model):
+    product_type = models.ManyToManyField(Component, help_text="Product type")
+    accessory_category = models.ManyToManyField(Component, help_text="Accessory category")
+    consumable_subcategory = models.ManyToManyField(Component, help_text="Consumable subcategory")
+    technology = models.ManyToManyField(Component, help_text="Technology")
+    printer_consumables_class = models.ManyToManyField(Component, help_text="Printer consumables class")
+    subcategory = models.ManyToManyField(Component, help_text="Subcategory")
+    category = models.ManyToManyField(Component, help_text="Category")
+    installation_type = models.ManyToManyField(Component, help_text="Installation type")
+    designed_for = models.ManyToManyField(Component, help_text="Designed for")
+    environment = models.ManyToManyField(Component, help_text="Environment")
+    number_of_set_parts = models.ManyToManyField(Component, help_text="Number of set parts")
+    suitable_for = models.ManyToManyField(Component, help_text="Suitable for")
+    features = models.ManyToManyField(Component, help_text="Features")
+    learning = models.ManyToManyField(Component, help_text="Learning")
+    min_age = models.ManyToManyField(Component, help_text="Minimum age")
+    max_age = models.ManyToManyField(Component, help_text="Maximum age")
+    one_board_computer_included = models.ManyToManyField(Component, help_text="One board computer included")
+    waterproof = models.ManyToManyField(Component, help_text="Waterproof")
+    dimmer = models.ManyToManyField(Component, help_text="Dimmer")
+    cable_length = models.ManyToManyField(Component, help_text="Cable length")
+    supported_wattage_for_light_bulb = models.ManyToManyField(Component, help_text="Supported wattage for light bulb")
+    number_of_installed_light_bulbs = models.ManyToManyField(Component, help_text="Number of installed light bulbs")
+    number_of_supported_light_bulbs = models.ManyToManyField(Component, help_text="Number of supported light bulbs")
+    battery_included = models.ManyToManyField(Component, help_text="Battery included")
+    switch_type = models.ManyToManyField(Component, help_text="Switch type")
+    switch_location = models.ManyToManyField(Component, help_text="Switch location")
+    clamp_mount = models.ManyToManyField(Component, help_text="Clamp mount")
+    tool_set_parts = models.ManyToManyField(Component, help_text="Tool set parts")
+    socket = models.ManyToManyField(Component, help_text="Socket")
+    socket_size = models.ManyToManyField(Component, help_text="Socket size")
+    tip = models.ManyToManyField(Component, help_text="Tip")
+    tip_size = models.ManyToManyField(Component, help_text="Tip size")
+    size = models.ManyToManyField(Component, help_text="Size")
+    shape = models.ManyToManyField(Component, help_text="Shape")
+    tracking_data = models.ManyToManyField(Component, help_text="Tracking data")
+    solution = models.ManyToManyField(Component, help_text="Solution")
+    character_theme = models.ManyToManyField(Component, help_text="Character theme")
+    AC_adapter_included = models.ManyToManyField(Component, help_text="AC adapter included")
+    style = models.ManyToManyField(Component, help_text="Style")
+    recommended_for = models.ManyToManyField(Component, help_text="Recommended for")
+    recommended_use = models.ManyToManyField(Component, help_text="Recommended use")
+    connection = models.ManyToManyField(Component, help_text="Connection")
+    type = models.ManyToManyField(Component, help_text="Type")
+    total_length = models.ManyToManyField(Component, help_text="Total length")
+    payment_technology = models.ManyToManyField(Component, help_text="Payment technology")
+    mechanism = models.ManyToManyField(Component, help_text="Mechanism")
+    tilt_lock = models.ManyToManyField(Component, help_text="Tilt lock")
+    headrest = models.ManyToManyField(Component, help_text="Headrest")
+    armrest = models.ManyToManyField(Component, help_text="Armrest")
+    tilt = models.ManyToManyField(Component, help_text="Tilt")
+    ergonomic = models.ManyToManyField(Component, help_text="Ergonomic")
+    tilt_tension_adjustment = models.ManyToManyField(Component, help_text="Tilt tension adjustment")
+
+    # TODO(TheLovinator): Rename in API to class when exporting  # noqa: TD003
+    _class = models.ManyToManyField(Component, help_text="Class")
+    kit_contents = models.ManyToManyField(Component, help_text="Kit contents")
+    media_subcategory = models.ManyToManyField(Component, help_text="Media subcategory")
+    indoor_outdoor = models.ManyToManyField(Component, help_text="Indoor/outdoor")
+    thermometer_scale = models.ManyToManyField(Component, help_text="Thermometer scale")
+    usage_modes = models.ManyToManyField(Component, help_text="Usage modes")
+    car_power_adapter_included = models.ManyToManyField(Component, help_text="Car power adapter included")
+    built_in_components = models.ManyToManyField(Component, help_text="Built-in components")
+    arm_construction = models.ManyToManyField(Component, help_text="Arm construction")
+    number_of_modules = models.ManyToManyField(Component, help_text="Number of modules")
+    number_of_component_sets = models.ManyToManyField(Component, help_text="Number of component sets")
+    number_of_sockets = models.ManyToManyField(Component, help_text="Number of sockets")
+    output_connection_type = models.ManyToManyField(Component, help_text="Output connection type")
+    output_bar_configuration = models.ManyToManyField(Component, help_text="Output bar configuration")
+    number_of_modules = models.ManyToManyField(Component, help_text="Number of modules")
+    number_of_component_sets = models.ManyToManyField(Component, help_text="Number of component sets")
+    number_of_sockets = models.ManyToManyField(Component, help_text="Number of sockets")
+    output_connection_type = models.ManyToManyField(Component, help_text="Output connection type")
+    output_bar_configuration = models.ManyToManyField(Component, help_text="Output bar configuration")
+    lock_type = models.ManyToManyField(Component, help_text="Lock type")
+    power = models.ManyToManyField(Component, help_text="Power")
+    cordless = models.ManyToManyField(Component, help_text="Cordless")
+    diameter = models.ManyToManyField(Component, help_text="Diameter")
+
+
 class Data(auto_prefetch.Model):
     """Data of a product."""
+
+    kabel = models.ManyToManyField(Component, help_text="Kabel")
+    header = models.ManyToManyField(Header, help_text="Header")
+    dimensions_and_weight = models.ManyToManyField(DimensionsAndWeight, help_text="Dimensions and weight")
+    general = models.ManyToManyField(General, help_text="General")
 
 
 class Manufacturer(auto_prefetch.Model):
@@ -290,6 +436,10 @@ class User(auto_prefetch.Model):
     avatar = models.ForeignKey(Avatar, on_delete=models.CASCADE, help_text="Avatar")
 
 
+class PossibleDeliveryMethod(auto_prefetch.Model):
+    id = models.PositiveBigIntegerField(primary_key=True, help_text="Possible delivery method ID")
+
+
 class ReviewHighlight(auto_prefetch.Model):
     """Review highlight of a product."""
 
@@ -305,6 +455,44 @@ class ReviewHighlight(auto_prefetch.Model):
     product = models.ForeignKey(ReviewHighlightProduct, on_delete=models.CASCADE, help_text="Product")
     is_hype = models.BooleanField(help_text="Is hype")
     user = models.ForeignKey(User, on_delete=models.CASCADE, help_text="User")
+
+
+class ResursPartPaymentPrice(auto_prefetch.Model):
+    """https://www.webhallen.com/se/info/48-Betala-senare-med-Resurs."""
+
+    monthly_cost = models.TextField(help_text="Monthly cost")
+    duration_months = models.PositiveBigIntegerField(help_text="Duration in months")
+
+
+class Insurance(auto_prefetch.Model):
+    id = models.PositiveBigIntegerField(primary_key=True, help_text="Insurance ID")
+    name = models.TextField(help_text="Insurance name")
+    price = models.PositiveBigIntegerField(help_text="Insurance price")
+    provider = models.PositiveBigIntegerField(help_text="Insurance provider")
+    length = models.PositiveBigIntegerField(help_text="Insurance length")
+
+
+class ExcludeShippingMethod(auto_prefetch.Model):
+    """Excluded shipping method."""
+
+    id = models.PositiveBigIntegerField(primary_key=True, help_text="Exclude shipping method ID")
+
+
+class Meta(auto_prefetch.Model):
+    """Meta of a product."""
+
+    highlight_member_offer = models.BooleanField(help_text="Highlight member offer")
+    excluded_shipping_methods = models.ManyToManyField(ExcludeShippingMethod, help_text="Excluded shipping methods")
+    is_hygiene_article = models.BooleanField(help_text="Is hygiene article")
+    requires_prepayment = models.TextField(help_text="Requires prepayment")
+
+
+class FyndwareClass(auto_prefetch.Model):
+    id = models.PositiveBigIntegerField(primary_key=True, help_text="Fyndware class ID")
+    condition = models.TextField(help_text="Condition")
+    description = models.TextField(help_text="Description")
+    name = models.TextField(help_text="Name")
+    short_name = models.TextField(help_text="Short name")  # TODO(TheLovinator): Is this correct?  # noqa: TD003
 
 
 class Product(auto_prefetch.Model):
@@ -356,7 +544,7 @@ class Product(auto_prefetch.Model):
         on_delete=models.CASCADE,
         help_text="Main category path",
     )
-    # ifs_id = ????
+    # ifs_id = ???? # TODO(TheLovinator): What is this?  # noqa: TD003
     thumbnail = models.URLField(help_text="Thumbnail URL")
     package_size_id = models.PositiveBigIntegerField(help_text="Package size ID")
     long_delivery_notice = models.TextField(help_text="Long delivery notice")
@@ -382,6 +570,12 @@ class Product(auto_prefetch.Model):
     status_codes = models.ManyToManyField(StatusCode, help_text="Status codes")
     categories = models.ManyToManyField(Categories, help_text="Categories")
     review_highlight = models.ManyToManyField(ReviewHighlight, help_text="Review highlights")
+    meta = auto_prefetch.ForeignKey(Meta, on_delete=models.CASCADE, help_text="Meta")
+    insurance = models.ManyToManyField(Insurance, help_text="Insurance")
+    possible_delivery_methods = models.ManyToManyField(PossibleDeliveryMethod, help_text="Possible delivery methods")
+    resurs_part_payment_price = models.ManyToManyField(ResursPartPaymentPrice, help_text="Resurs part payment price")
+    ticket = models.TextField(help_text="Ticket")
+    fyndware_class = auto_prefetch.ForeignKey(FyndwareClass, on_delete=models.CASCADE, help_text="Fyndware class")
 
     def __str__(self) -> str:
         return f"{self.name} ({self.webhallen_id})"
