@@ -748,6 +748,35 @@ class RAM(auto_prefetch.Model):
     low_profile = models.ManyToManyField(Component, help_text="Low profile")
 
 
+class AudioOutput(auto_prefetch.Model):
+    """Audio output."""
+
+    form_factor = models.ManyToManyField(Component, help_text="Form factor")
+    type = models.ManyToManyField(Component, help_text="Type")
+    interface_type = models.ManyToManyField(Component, help_text="Interface type")
+    audio_output_mode = models.ManyToManyField(Component, help_text="Audio output mode")
+    connection_technology = models.ManyToManyField(Component, help_text="Connection technology")
+    controls = models.ManyToManyField(Component, help_text="Controls")
+    headphone_ear_parts_type = models.ManyToManyField(Component, help_text="Headphone ear parts type")
+    headphone_cup_type = models.ManyToManyField(Component, help_text="Headphone cup type")
+    available_microphone = models.ManyToManyField(Component, help_text="Available microphone")
+    interface_connector = models.ManyToManyField(Component, help_text="Interface connector")
+    frequency_response = models.ManyToManyField(Component, help_text="Frequency response")
+    impedance = models.ManyToManyField(Component, help_text="Impedance")
+    product_type = models.ManyToManyField(Component, help_text="Product type")
+    wireless_technology = models.ManyToManyField(Component, help_text="Wireless technology")
+    anc = models.ManyToManyField(Component, help_text="ANC")
+    dac_resolution = models.ManyToManyField(Component, help_text="DAC resolution")
+    max_sampling_rate = models.ManyToManyField(Component, help_text="Max sampling rate")
+    signal_processor = models.ManyToManyField(Component, help_text="Signal processor")
+    headphone_mount = models.ManyToManyField(Component, help_text="Headphone mount")
+    foldable = models.ManyToManyField(Component, help_text="Foldable")
+    sound_isolating = models.ManyToManyField(Component, help_text="Sound isolating")
+    nfc_near_field_communication = models.ManyToManyField(Component, help_text="NFC (Near Field Communication)")
+    style = models.ManyToManyField(Component, help_text="Style")
+    output_per_channel = models.ManyToManyField(Component, help_text="Output per channel")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -788,6 +817,7 @@ class Data(auto_prefetch.Model):
     power = models.ManyToManyField(Power, help_text="Power")
     heating_and_cooling = models.ManyToManyField(HeatingAndCooling, help_text="Heating and cooling")
     ram = models.ManyToManyField(RAM, help_text="RAM")
+    audio_output = models.ManyToManyField(AudioOutput, help_text="Audio output")
 
 
 class Manufacturer(auto_prefetch.Model):
