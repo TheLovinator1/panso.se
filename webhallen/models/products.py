@@ -818,6 +818,17 @@ class OpticalStorageSecondary(auto_prefetch.Model):
     type = models.ManyToManyField(Component, help_text="Type")
 
 
+class OpticalStorage(auto_prefetch.Model):
+    """Optical storage."""
+
+    write_speed = models.ManyToManyField(Component, help_text="Write speed")
+    read_speed = models.ManyToManyField(Component, help_text="Read speed")
+    rewrite_speed = models.ManyToManyField(Component, help_text="Rewrite speed")
+    type = models.ManyToManyField(Component, help_text="Type")
+    buffer_size = models.ManyToManyField(Component, help_text="Buffer size")
+    device_type = models.ManyToManyField(Component, help_text="Device type")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -863,6 +874,7 @@ class Data(auto_prefetch.Model):
     storage = models.ManyToManyField(Storage, help_text="Storage")
     optical_storage_secondary = models.ManyToManyField(OpticalStorageSecondary, help_text="Optical storage secondary")
     portable_storage_solution = models.ManyToManyField(PortableStorageSolution, help_text="Portable storage solution")
+    optical_storage = models.ManyToManyField(OpticalStorage, help_text="Optical storage")
 
 
 class Manufacturer(auto_prefetch.Model):
