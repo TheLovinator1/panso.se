@@ -12,7 +12,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class CanonicalVariant(auto_prefetch.Model):
-    """Canonical variant of a product."""
+    """Canonical variant."""
 
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Canonical variant ID")
     name = models.TextField(help_text="Variant name")
@@ -22,7 +22,7 @@ class CanonicalVariant(auto_prefetch.Model):
 
 
 class AverageRating(auto_prefetch.Model):
-    """Average rating of a product."""
+    """Average rating."""
 
     rating = models.FloatField(help_text="Rating")
     rating_type = models.TextField(help_text="Rating type")
@@ -32,7 +32,7 @@ class AverageRating(auto_prefetch.Model):
 
 
 class Categories(auto_prefetch.Model):
-    """Categories of a product."""
+    """Categories."""
 
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Category ID")
     fyndware_description = models.TextField(help_text="Fyndware description")
@@ -61,7 +61,7 @@ class VariantGroups(auto_prefetch.Model):
 
 
 class ListClass(auto_prefetch.Model):
-    """List class of a product."""
+    """List class."""
 
     # TODO(TheLovinator): Should this be a Product?  # noqa: TD003
 
@@ -80,7 +80,7 @@ class ListClass(auto_prefetch.Model):
 
 
 class Variants(auto_prefetch.Model):
-    """Variants of a product."""
+    """Variants."""
 
     canonical_variant = models.ForeignKey(CanonicalVariant, on_delete=models.CASCADE, help_text="Canonical variant")
     list = models.ForeignKey(ListClass, on_delete=models.CASCADE, help_text="List")
@@ -140,7 +140,7 @@ class Stock(auto_prefetch.Model):
 
 
 class Price(auto_prefetch.Model):
-    """The price of a product at Webhallen."""
+    """The price at Webhallen."""
 
     price = models.TextField(blank=True, help_text="Price of the product")
     currency = models.TextField(blank=True, help_text="The currency.")
@@ -162,7 +162,7 @@ class Price(auto_prefetch.Model):
 
 
 class Image(auto_prefetch.Model):
-    """An image of a product from Webhallen.
+    """An image from Webhallen.
 
     Each product has zoom, large and thumb but it is the same URL but with different arguments.
     """
@@ -175,14 +175,14 @@ class Image(auto_prefetch.Model):
 
 
 class Release(auto_prefetch.Model):
-    """Release details of a product."""
+    """Release details."""
 
     timestamp = models.DateTimeField(help_text="Timestamp")
     format = models.TextField(help_text="Format")
 
 
 class Section(auto_prefetch.Model):
-    """A section of a product."""
+    """A section."""
 
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Section ID")
     meta_title = models.TextField(help_text="Meta title")
@@ -192,7 +192,7 @@ class Section(auto_prefetch.Model):
 
 
 class MainCategoryPath(auto_prefetch.Model):
-    """The main category path of a product."""
+    """The main category path."""
 
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Main category path ID")
     fyndware_description = models.TextField(help_text="Fyndware description")
@@ -208,26 +208,26 @@ class MainCategoryPath(auto_prefetch.Model):
 
 
 class Parts(auto_prefetch.Model):
-    """Parts of a product."""
+    """Parts."""
 
-    comb = models.TextField(help_text="Comb")
-    nnv = models.FloatField(help_text="NNV")  # TODO(TheLovinator): What is this?  # noqa: TD003
-    text_value = models.TextField(help_text="Text value")
-    unit = models.TextField(help_text="Unit")
+    comb = models.TextField(help_text="Value and unit")
+    nnv = models.TextField(help_text="Numeric value. Int or float if value is number")
+    text_value = models.TextField(help_text="Text value. A string if value is number")
+    unit = models.TextField(help_text="Unit. Only if unit for value is given")
     value = models.TextField(help_text="Value")
 
 
 class Component(auto_prefetch.Model):
-    """Component of a product."""
+    """Information under the Data field."""
 
+    attribute_id = models.PositiveBigIntegerField(primary_key=True, help_text="Attribute ID")
     name = models.TextField(help_text="Name")
     value = models.TextField(help_text="Value")
-    attribute_id = models.PositiveBigIntegerField(help_text="Attribute ID")
     parts = models.ManyToManyField(Parts, help_text="Parts")
 
 
 class Header(auto_prefetch.Model):
-    """Header of a product.
+    """Header.
 
     Note: All the field names are translated from Swedish to English.
     """
@@ -250,7 +250,7 @@ class Header(auto_prefetch.Model):
 
 
 class DimensionsAndWeight(auto_prefetch.Model):
-    """Dimensions and weight of a product."""
+    """Dimensions and weight."""
 
     weight = models.ManyToManyField(Component, help_text="Weight")
     length = models.ManyToManyField(Component, help_text="Length")
@@ -269,7 +269,7 @@ class DimensionsAndWeight(auto_prefetch.Model):
 
 
 class General(auto_prefetch.Model):
-    """General information of a product."""
+    """General information."""
 
     product_type = models.ManyToManyField(Component, help_text="Product type")
     accessory_category = models.ManyToManyField(Component, help_text="Accessory category")
@@ -346,7 +346,7 @@ class General(auto_prefetch.Model):
 
 
 class Miscellaneous(auto_prefetch.Model):
-    """Miscellaneous information of a product."""
+    """Miscellaneous information."""
 
     color = models.ManyToManyField(Component, help_text="Color")
     color_category = models.ManyToManyField(Component, help_text="Color category")
@@ -405,14 +405,14 @@ class Miscellaneous(auto_prefetch.Model):
 
 
 class Cable(auto_prefetch.Model):
-    """Cable of a product."""
+    """Cable."""
 
     something = models.TextField(help_text="Something")  # TODO(TheLovinator): What is this?  # noqa: TD003
     cable = models.ManyToManyField(Component, help_text="Cable")
 
 
 class InputDevice(auto_prefetch.Model):
-    """Input device of a product."""
+    """Input device."""
 
     connection_technology = models.ManyToManyField(Component, help_text="Connection technology")
     interface = models.ManyToManyField(Component, help_text="Interface")
@@ -441,13 +441,13 @@ class InputDevice(auto_prefetch.Model):
 
 
 class ServiceAndSupport(auto_prefetch.Model):
-    """Service and support of a product."""
+    """Service and support."""
 
     service_and_support = models.ManyToManyField(Component, help_text="Service and support")
 
 
 class GrossDimensionsAndWeight(auto_prefetch.Model):
-    """Gross dimensions and weight of a product."""
+    """Gross dimensions and weight."""
 
     packing_weight = models.ManyToManyField(Component, help_text="Packing weight")
     packing_height = models.ManyToManyField(Component, help_text="Packing height")
@@ -456,7 +456,7 @@ class GrossDimensionsAndWeight(auto_prefetch.Model):
 
 
 class Consumables(auto_prefetch.Model):
-    """Consumables of a product."""
+    """Consumables."""
 
     color = models.ManyToManyField(Component, help_text="Color")
     consumable_type = models.ManyToManyField(Component, help_text="Consumable type")
@@ -465,7 +465,7 @@ class Consumables(auto_prefetch.Model):
 
 
 class Battery(auto_prefetch.Model):
-    """Battery of a product."""
+    """Battery."""
 
     included_quantity = models.ManyToManyField(Component, help_text="Included quantity")
     technology = models.ManyToManyField(Component, help_text="Technology")
@@ -486,14 +486,14 @@ class Battery(auto_prefetch.Model):
 
 
 class AVComponent(auto_prefetch.Model):
-    """AV component of a product."""
+    """AV component."""
 
     something = models.TextField(help_text="Something")  # TODO(TheLovinator): What is this?  # noqa: TD003
     av_component = models.ManyToManyField(Component, help_text="AV component")
 
 
 class RemoteControl(auto_prefetch.Model):
-    """Remote control of a product."""
+    """Remote control."""
 
     max_working_distance = models.ManyToManyField(Component, help_text="Max working distance")
     remote_control_technology = models.ManyToManyField(Component, help_text="Remote control technology")
@@ -503,7 +503,7 @@ class RemoteControl(auto_prefetch.Model):
 
 
 class VideoInput(auto_prefetch.Model):
-    """Video input of a product."""
+    """Video input."""
 
     support_for_audio_input = models.ManyToManyField(Component, help_text="Support for audio input")
     format_for_digital_video = models.ManyToManyField(Component, help_text="Format for digital video")
@@ -544,8 +544,212 @@ class VideoInput(auto_prefetch.Model):
     light_sensitivity = models.ManyToManyField(Component, help_text="Light sensitivity")
 
 
+class SystemRequirements(auto_prefetch.Model):
+    """System requirements."""
+
+    required_operating_system = models.ManyToManyField(Component, help_text="Required operating system")
+    os_family = models.ManyToManyField(Component, help_text="OS family")
+    supported_host_platform = models.ManyToManyField(Component, help_text="Supported host platform")
+
+
+class Network(auto_prefetch.Model):
+    """Network."""
+
+    type = models.ManyToManyField(Component, help_text="Type")
+    number_of_ports = models.ManyToManyField(Component, help_text="Number of ports")
+    subcategory = models.ManyToManyField(Component, help_text="Subcategory")
+    form_factor = models.ManyToManyField(Component, help_text="Form factor")
+    subtype = models.ManyToManyField(Component, help_text="Subtype")
+    managed = models.ManyToManyField(Component, help_text="Managed")
+    jumbo_frame_support = models.ManyToManyField(Component, help_text="Jumbo frame support")
+    power_over_ethernet = models.ManyToManyField(Component, help_text="Power over Ethernet")
+    connection_technology = models.ManyToManyField(Component, help_text="Connection technology")
+    data_link_protocol = models.ManyToManyField(Component, help_text="Data link protocol")
+    type_of_cabling = models.ManyToManyField(Component, help_text="Type of cabling")
+    interface_type_bus = models.ManyToManyField(Component, help_text="Interface type bus")
+    data_transfer_speed = models.ManyToManyField(Component, help_text="Data transfer speed")
+    network_transport_protocol = models.ManyToManyField(Component, help_text="Network transport protocol")
+    wireless_protocol = models.ManyToManyField(Component, help_text="Wireless protocol")
+    ac_standard = models.ManyToManyField(Component, help_text="AC standard")
+    remote_administration_protocol = models.ManyToManyField(Component, help_text="Remote administration protocol")
+    number_of_wan_ports = models.ManyToManyField(Component, help_text="Number of WAN ports")
+    network_protocol = models.ManyToManyField(Component, help_text="Network protocol")
+    builtin_switch = models.ManyToManyField(Component, help_text="Built-in switch")
+    important_functions = models.ManyToManyField(Component, help_text="Important functions")
+    network_interface = models.ManyToManyField(Component, help_text="Network interface")
+    advanced_switching = models.ManyToManyField(Component, help_text="Advanced switching")
+    remote_management_interface = models.ManyToManyField(Component, help_text="Remote management interface")
+    max_area_indoor = models.ManyToManyField(Component, help_text="Max area indoor")
+    wireless_connection = models.ManyToManyField(Component, help_text="Wireless connection")
+    lan_presentation_and_wireless_d_o = models.ManyToManyField(Component, help_text="LAN presentation and wireless D/O")
+    image_transfer_protocol_for_lan_and_wireless = models.ManyToManyField(
+        Component,
+        help_text="Image transfer protocol for LAN and wireless",
+    )
+    support_for_wireless_lan = models.ManyToManyField(Component, help_text="Support for wireless LAN")
+    cloud_managed = models.ManyToManyField(Component, help_text="Cloud managed")
+    wire_protocol = models.ManyToManyField(Component, help_text="Wire protocol")
+
+
+class SpeakerSystem(auto_prefetch.Model):
+    """Speaker system."""
+
+    connection_technology = models.ManyToManyField(Component, help_text="Connection technology")
+    amplification_type = models.ManyToManyField(Component, help_text="Amplification type")
+    speaker_configuration = models.ManyToManyField(Component, help_text="Speaker configuration")
+    continuous_current_for_sound_system_total = models.ManyToManyField(
+        Component,
+        help_text="Continuous current for sound system total",
+    )
+    system_components = models.ManyToManyField(Component, help_text="System components")
+    peak_current_for_sound_system_total = models.ManyToManyField(
+        Component,
+        help_text="Peak current for sound system total",
+    )
+    frequency_response = models.ManyToManyField(Component, help_text="Frequency response")
+    builtin_decoders = models.ManyToManyField(Component, help_text="Built-in decoders")
+    number_of_crossover_channels = models.ManyToManyField(Component, help_text="Number of crossover channels")
+    continuous_current = models.ManyToManyField(Component, help_text="Continuous current")
+    handsfree_function = models.ManyToManyField(Component, help_text="Hands-free function")
+    app_controlled = models.ManyToManyField(Component, help_text="App controlled")
+    recommended_location = models.ManyToManyField(Component, help_text="Recommended location")
+    multiple_rooms = models.ManyToManyField(Component, help_text="Multiple rooms")
+    series = models.ManyToManyField(Component, help_text="Series")
+    speaker_element_diameter_metric = models.ManyToManyField(Component, help_text="Speaker element diameter metric")
+    integrated_components = models.ManyToManyField(Component, help_text="Integrated components")
+    peak_current = models.ManyToManyField(Component, help_text="Peak current")
+
+
+class SoundSystem(auto_prefetch.Model):
+    """Sound system."""
+
+    designed_for = models.ManyToManyField(Component, help_text="Designed for")
+    type = models.ManyToManyField(Component, help_text="Type")
+    recommended_use = models.ManyToManyField(Component, help_text="Recommended use")
+    mode_for_audio_output = models.ManyToManyField(Component, help_text="Mode for audio output")
+    functions = models.ManyToManyField(Component, help_text="Functions")
+    max_actuation_distance = models.ManyToManyField(Component, help_text="Max actuation distance")
+    sub_category = models.ManyToManyField(Component, help_text="Subcategory")
+    surround_sound_effects = models.ManyToManyField(Component, help_text="Surround sound effects")
+    builtin_decoders = models.ManyToManyField(Component, help_text="Built-in decoders")
+    surround_system_class = models.ManyToManyField(Component, help_text="Surround system class")
+    speaker_system = models.ManyToManyField(Component, help_text="Speaker system")
+    surround_mode = models.ManyToManyField(Component, help_text="Surround mode")
+    digital_player_features = models.ManyToManyField(Component, help_text="Digital player features")
+    digital_audio_format = models.ManyToManyField(Component, help_text="Digital audio format")
+    combined_with = models.ManyToManyField(Component, help_text="Combined with")
+    type_of_digital_player = models.ManyToManyField(Component, help_text="Type of digital player")
+    audio_format = models.ManyToManyField(Component, help_text="Audio format")
+
+
+class PowerSupply(auto_prefetch.Model):
+    """Power supply."""
+
+    power_source = models.ManyToManyField(Component, help_text="Power source")
+    power = models.ManyToManyField(Component, help_text="Power")
+    capacity_va = models.ManyToManyField(Component, help_text="Capacity (VA)")
+    number_of_outlets = models.ManyToManyField(Component, help_text="Number of outlets")
+    supplied_voltage = models.ManyToManyField(Component, help_text="Supplied voltage")
+    mains_voltage = models.ManyToManyField(Component, help_text="Mains voltage")
+    ups_technology = models.ManyToManyField(Component, help_text="UPS technology")
+    form_factor = models.ManyToManyField(Component, help_text="Form factor")
+    voltage_dissipation = models.ManyToManyField(Component, help_text="Voltage dissipation")
+    demanded_frequency = models.ManyToManyField(Component, help_text="Required frequency")
+    demanded_voltage = models.ManyToManyField(Component, help_text="Required voltage")
+    max_electric_current = models.ManyToManyField(Component, help_text="Max electric current")
+    type = models.ManyToManyField(Component, help_text="Type")
+    required_frequency = models.ManyToManyField(Component, help_text="Required frequency")
+    type_of_input_connector = models.ManyToManyField(Component, help_text="Type of input connector")
+    type_of_output_contact = models.ManyToManyField(Component, help_text="Type of output contact")
+    modular_cable_management = models.ManyToManyField(Component, help_text="Modular cable management")
+    power_supply_compatibility = models.ManyToManyField(Component, help_text="Power supply compatibility")
+    cooling_system = models.ManyToManyField(Component, help_text="Cooling system")
+    the_80_plus_certification = models.ManyToManyField(Component, help_text="The 80 PLUS certification")
+    alternative = models.ManyToManyField(Component, help_text="Alternative")
+    cord_length = models.ManyToManyField(Component, help_text="Cord length")
+    energy_consumption_during_operation = models.ManyToManyField(
+        Component,
+        help_text="Energy consumption during operation",
+    )
+
+
+class SettingsControlsAndIndicators(auto_prefetch.Model):
+    """Settings, controls and indicators."""
+
+    number_of_fan_speed_settings = models.ManyToManyField(Component, help_text="Number of fan speed settings")
+    remote_control = models.ManyToManyField(Component, help_text="Remote control")
+    control_type = models.ManyToManyField(Component, help_text="Control type")
+    pulse_function = models.ManyToManyField(Component, help_text="Pulse function")
+    number_of_speed_settings = models.ManyToManyField(Component, help_text="Number of speed settings")
+    room_navigation = models.ManyToManyField(Component, help_text="Room navigation")
+    heating_time = models.ManyToManyField(Component, help_text="Heating time")
+    programmable_cleaning_intervals = models.ManyToManyField(Component, help_text="Programmable cleaning intervals")
+    controls_on_handle = models.ManyToManyField(Component, help_text="Controls on handle")
+
+
+class Power(auto_prefetch.Model):
+    """Power."""
+
+    power_consumption = models.ManyToManyField(Component, help_text="Power consumption")
+    power_source = models.ManyToManyField(Component, help_text="Power source")
+    voltage = models.ManyToManyField(Component, help_text="Voltage")
+    battery_charge = models.ManyToManyField(Component, help_text="Battery charge")
+    operation_time_without_mains = models.ManyToManyField(Component, help_text="Operation time without mains")
+    operation = models.ManyToManyField(Component, help_text="Operation")
+    energy_consumption_per_year = models.ManyToManyField(Component, help_text="Energy consumption per year")
+    power_consumption_operating_mode = models.ManyToManyField(Component, help_text="Power consumption operating mode")
+    energy_class = models.ManyToManyField(Component, help_text="Energy class")
+    on_off_switch = models.ManyToManyField(Component, help_text="On/off switch")
+    power_consumption_hdr_on_mode = models.ManyToManyField(Component, help_text="Power consumption HDR on mode")
+    energy_class_hdr = models.ManyToManyField(Component, help_text="Energy class HDR")
+    energy_efficiency_ratio = models.ManyToManyField(Component, help_text="EER (Energy Efficiency Ratio)")
+    ampere_capacity = models.ManyToManyField(Component, help_text="https://en.wikipedia.org/wiki/Ampacity")
+
+
+class HeatingAndCooling(auto_prefetch.Model):
+    """Heating and cooling."""
+
+    product_type = models.ManyToManyField(Component, help_text="Product type")
+    model = models.ManyToManyField(Component, help_text="Model")
+    functions = models.ManyToManyField(Component, help_text="Functions")
+    air_flow = models.ManyToManyField(Component, help_text="Air flow")
+    container_capacity = models.ManyToManyField(Component, help_text="Container capacity")
+    environment = models.ManyToManyField(Component, help_text="Environment")
+    air_flow_control = models.ManyToManyField(Component, help_text="Air flow control")
+    heating_capacity = models.ManyToManyField(Component, help_text="Heating capacity")
+    max_dehumidification_capacity = models.ManyToManyField(Component, help_text="Max dehumidification capacity")
+    cooling_capacity = models.ManyToManyField(Component, help_text="Cooling capacity")
+    cooling_capacity_btu_per_hour = models.ManyToManyField(Component, help_text="Cooling capacity (BTU per hour)")
+
+
+class RAM(auto_prefetch.Model):
+    """Random access memory (RAM)."""
+
+    data_integrity_check = models.ManyToManyField(Component, help_text="Data integrity check")
+    upgrade_type = models.ManyToManyField(Component, help_text="Upgrade type")
+    type = models.ManyToManyField(Component, help_text="Type")
+    memory_speed = models.ManyToManyField(Component, help_text="Memory speed")
+    registered_or_buffered = models.ManyToManyField(Component, help_text="Registered or buffered")
+    ram_technology = models.ManyToManyField(Component, help_text="RAM technology")
+    cas_latency = models.ManyToManyField(Component, help_text="CAS latency")
+    adaptation_to_memory_specifications = models.ManyToManyField(
+        Component,
+        help_text="Adaptation to memory specifications",
+    )
+    form_factor = models.ManyToManyField(Component, help_text="Form factor")
+    storage_capacity = models.ManyToManyField(Component, help_text="Storage capacity")
+    product_type = models.ManyToManyField(Component, help_text="Product type")
+    memory_size = models.ManyToManyField(Component, help_text="Frame size")
+    empty_slots = models.ManyToManyField(Component, help_text="Empty slots")
+    max_size_supported = models.ManyToManyField(Component, help_text="Max size supported")
+    internal_memory_ram = models.ManyToManyField(Component, help_text="Internal memory (RAM)")
+    number_of_slots = models.ManyToManyField(Component, help_text="Number of slots")
+    properties = models.ManyToManyField(Component, help_text="Properties")
+    low_profile = models.ManyToManyField(Component, help_text="Low profile")
+
+
 class Data(auto_prefetch.Model):
-    """Data of a product."""
+    """Data."""
 
     cable = models.ForeignKey(Cable, on_delete=models.CASCADE, help_text="Cable")
     header = models.ForeignKey(Header, on_delete=models.CASCADE, help_text="Header")
@@ -572,10 +776,22 @@ class Data(auto_prefetch.Model):
     av_components = models.ManyToManyField(AVComponent, help_text="AV components")
     remote_control = models.ManyToManyField(RemoteControl, help_text="Remote control")
     video_input = models.ManyToManyField(VideoInput, help_text="Video input")
+    system_requirements = models.ManyToManyField(SystemRequirements, help_text="System requirements")
+    network = models.ManyToManyField(Network, help_text="Network")
+    speaker_system = models.ManyToManyField(SpeakerSystem, help_text="Speaker system")
+    sound_system = models.ManyToManyField(SoundSystem, help_text="Sound system")
+    power_supply = models.ManyToManyField(PowerSupply, help_text="Power supply")
+    settings_controls_and_indicators = models.ManyToManyField(
+        SettingsControlsAndIndicators,
+        help_text="Settings, controls and indicators",
+    )
+    power = models.ManyToManyField(Power, help_text="Power")
+    heating_and_cooling = models.ManyToManyField(HeatingAndCooling, help_text="Heating and cooling")
+    ram = models.ManyToManyField(RAM, help_text="RAM")
 
 
 class Manufacturer(auto_prefetch.Model):
-    """Manufacturer of a product."""
+    """Manufacturer."""
 
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Manufacturer ID")
     name = models.TextField(help_text="Manufacturer name")
@@ -585,7 +801,7 @@ class Manufacturer(auto_prefetch.Model):
 
 
 class PartNumber(auto_prefetch.Model):
-    """Part number of a product."""
+    """Part number."""
 
     part_number = models.TextField(primary_key=True, help_text="Part number")
 
@@ -594,7 +810,7 @@ class PartNumber(auto_prefetch.Model):
 
 
 class EAN(auto_prefetch.Model):
-    """EAN of a product."""
+    """EAN."""
 
     ean = models.TextField(primary_key=True, help_text="EAN")
 
@@ -603,7 +819,7 @@ class EAN(auto_prefetch.Model):
 
 
 class Prices(auto_prefetch.Model):
-    """Shipping prices of a product."""
+    """Shipping prices."""
 
     price = models.PositiveBigIntegerField(help_text="Price")
     shipping_method_id = models.PositiveBigIntegerField(help_text="Shipping method ID")
@@ -612,7 +828,7 @@ class Prices(auto_prefetch.Model):
 
 
 class ShippingClass(auto_prefetch.Model):
-    """Shipping class of a product."""
+    """Shipping class."""
 
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Shipping class ID")
     order = models.PositiveBigIntegerField(help_text="Order")
@@ -620,7 +836,7 @@ class ShippingClass(auto_prefetch.Model):
 
 
 class EnergyMarking(auto_prefetch.Model):
-    """Energy marking of a product."""
+    """Energy marking."""
 
     label_content = models.TextField(help_text="Label content")  # TODO(Thelovinator): Is this used?  # noqa: TD003
     rating = models.TextField(help_text="Rating")
@@ -632,7 +848,7 @@ class EnergyMarking(auto_prefetch.Model):
 
 
 class StatusCode(auto_prefetch.Model):
-    """Status code of a product."""
+    """Status code."""
 
     status_code = models.TextField(primary_key=True, help_text="Status code")
 
@@ -672,13 +888,13 @@ class User(auto_prefetch.Model):
 
 
 class PossibleDeliveryMethod(auto_prefetch.Model):
-    """Possible delivery method of a product."""
+    """Possible delivery method."""
 
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Possible delivery method ID")
 
 
 class ReviewHighlight(auto_prefetch.Model):
-    """Review highlight of a product."""
+    """Review highlight."""
 
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Review highlight ID")
     text = models.TextField(help_text="Review highlight text")
@@ -702,7 +918,7 @@ class ResursPartPaymentPrice(auto_prefetch.Model):
 
 
 class Insurance(auto_prefetch.Model):
-    """Insurance of a product."""
+    """Insurance."""
 
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Insurance ID")
     name = models.TextField(help_text="Insurance name")
@@ -718,7 +934,7 @@ class ExcludeShippingMethod(auto_prefetch.Model):
 
 
 class Meta(auto_prefetch.Model):
-    """Meta of a product."""
+    """Meta."""
 
     highlight_member_offer = models.BooleanField(help_text="Highlight member offer")
     excluded_shipping_methods = models.ManyToManyField(ExcludeShippingMethod, help_text="Excluded shipping methods")
@@ -727,7 +943,7 @@ class Meta(auto_prefetch.Model):
 
 
 class FyndwareClass(auto_prefetch.Model):
-    """Fyndware class of a product."""
+    """Fyndware class."""
 
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Fyndware class ID")
     condition = models.TextField(help_text="Condition")
@@ -800,7 +1016,7 @@ class Product(auto_prefetch.Model):
     images = models.ManyToManyField(Image, help_text="Images")
     stock = auto_prefetch.ForeignKey(Stock, on_delete=models.CASCADE, help_text="Stock")
     section = auto_prefetch.ForeignKey(Section, on_delete=models.CASCADE, help_text="Section")
-    # fyndware_of = ????
+    # fyndware_of = ???? # TODO(TheLovinator): What is this?  # noqa: TD003
     data = auto_prefetch.ForeignKey(Data, on_delete=models.CASCADE, help_text="Data")
     manufacturer = auto_prefetch.ForeignKey(Manufacturer, on_delete=models.CASCADE, help_text="Manufacturer")
     part_numbers = models.ManyToManyField(PartNumber, help_text="Part numbers")
