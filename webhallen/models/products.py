@@ -812,6 +812,12 @@ class PortableStorageSolution(auto_prefetch.Model):
     type = models.ManyToManyField(Component, help_text="Type")
 
 
+class OpticalStorageSecondary(auto_prefetch.Model):
+    """Optical storage secondary."""
+
+    type = models.ManyToManyField(Component, help_text="Type")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -855,6 +861,7 @@ class Data(auto_prefetch.Model):
     audio_output = models.ManyToManyField(AudioOutput, help_text="Audio output")
     heatsink_and_fan = models.ManyToManyField(HeatsinkAndFan, help_text="Heatsink and fan")
     storage = models.ManyToManyField(Storage, help_text="Storage")
+    optical_storage_secondary = models.ManyToManyField(OpticalStorageSecondary, help_text="Optical storage secondary")
     portable_storage_solution = models.ManyToManyField(PortableStorageSolution, help_text="Portable storage solution")
 
 
