@@ -777,6 +777,16 @@ class AudioOutput(auto_prefetch.Model):
     output_per_channel = models.ManyToManyField(Component, help_text="Output per channel")
 
 
+class HeatsinkAndFan(auto_prefetch.Model):
+    """Heatsink and fan."""
+
+    fan_diameter = models.ManyToManyField(Component, help_text="Fan diameter")
+    power_connector = models.ManyToManyField(Component, help_text="Power connector")
+    compatible_with = models.ManyToManyField(Component, help_text="Compatible with")
+    cooler_material = models.ManyToManyField(Component, help_text="Cooler material")
+    radiator_size = models.ManyToManyField(Component, help_text="Radiator size")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -818,6 +828,7 @@ class Data(auto_prefetch.Model):
     heating_and_cooling = models.ManyToManyField(HeatingAndCooling, help_text="Heating and cooling")
     ram = models.ManyToManyField(RAM, help_text="RAM")
     audio_output = models.ManyToManyField(AudioOutput, help_text="Audio output")
+    heatsink_and_fan = models.ManyToManyField(HeatsinkAndFan, help_text="Heatsink and fan")
 
 
 class Manufacturer(auto_prefetch.Model):

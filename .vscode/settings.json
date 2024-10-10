@@ -5,6 +5,7 @@
         "asgiref",
         "chartboost",
         "collectstatic",
+        "Heatsink",
         "htmx",
         "keypresses",
         "makemigrations",
