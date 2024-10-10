@@ -829,6 +829,12 @@ class OpticalStorage(auto_prefetch.Model):
     device_type = models.ManyToManyField(Component, help_text="Device type")
 
 
+class MemoryModule(auto_prefetch.Model):
+    """Memory module."""
+
+    quantity_in_kit = models.ManyToManyField(Component, help_text="Quantity in kit")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -875,6 +881,7 @@ class Data(auto_prefetch.Model):
     optical_storage_secondary = models.ManyToManyField(OpticalStorageSecondary, help_text="Optical storage secondary")
     portable_storage_solution = models.ManyToManyField(PortableStorageSolution, help_text="Portable storage solution")
     optical_storage = models.ManyToManyField(OpticalStorage, help_text="Optical storage")
+    memory_module = models.ManyToManyField(MemoryModule, help_text="Memory module")
 
 
 class Manufacturer(auto_prefetch.Model):
