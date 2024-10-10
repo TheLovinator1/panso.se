@@ -845,6 +845,25 @@ class Antenna(auto_prefetch.Model):
     type = models.ManyToManyField(Component, help_text="Type")
 
 
+class System(auto_prefetch.Model):
+    """System."""
+
+    device_type = models.ManyToManyField(Component, help_text="Device type")
+    docking_interface = models.ManyToManyField(Component, help_text="Docking interface")
+    video_interface = models.ManyToManyField(Component, help_text="Video interface")
+    generation = models.ManyToManyField(Component, help_text="Generation")
+    hard_drive_capacity = models.ManyToManyField(Component, help_text="Hard drive capacity")
+    fingerprint_reader = models.ManyToManyField(Component, help_text="Fingerprint reader")
+    platform = models.ManyToManyField(Component, help_text="Platform")
+    embedded_security = models.ManyToManyField(Component, help_text="Embedded security")
+    notebook_type = models.ManyToManyField(Component, help_text="Notebook type")
+    handheld_type = models.ManyToManyField(Component, help_text="Handheld type")
+    introduced = models.ManyToManyField(Component, help_text="Introduced")
+    type = models.ManyToManyField(Component, help_text="Type")
+    dockable = models.ManyToManyField(Component, help_text="Dockable")
+    platform_technology = models.ManyToManyField(Component, help_text="Platform technology")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -893,6 +912,7 @@ class Data(auto_prefetch.Model):
     optical_storage = models.ManyToManyField(OpticalStorage, help_text="Optical storage")
     memory_module = models.ManyToManyField(MemoryModule, help_text="Memory module")
     antenna = models.ManyToManyField(Antenna, help_text="Antenna")
+    system = models.ManyToManyField(System, help_text="System")
 
 
 class Manufacturer(auto_prefetch.Model):
