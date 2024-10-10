@@ -835,6 +835,16 @@ class MemoryModule(auto_prefetch.Model):
     quantity_in_kit = models.ManyToManyField(Component, help_text="Quantity in kit")
 
 
+class Antenna(auto_prefetch.Model):
+    """Antenna."""
+
+    antenna_placement_mounting = models.ManyToManyField(Component, help_text="Antenna placement mounting")
+    compatibility = models.ManyToManyField(Component, help_text="Compatibility")
+    form_factor = models.ManyToManyField(Component, help_text="Form factor")
+    frequency_range = models.ManyToManyField(Component, help_text="Frequency range")
+    type = models.ManyToManyField(Component, help_text="Type")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -882,6 +892,7 @@ class Data(auto_prefetch.Model):
     portable_storage_solution = models.ManyToManyField(PortableStorageSolution, help_text="Portable storage solution")
     optical_storage = models.ManyToManyField(OpticalStorage, help_text="Optical storage")
     memory_module = models.ManyToManyField(MemoryModule, help_text="Memory module")
+    antenna = models.ManyToManyField(Antenna, help_text="Antenna")
 
 
 class Manufacturer(auto_prefetch.Model):
