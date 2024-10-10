@@ -787,6 +787,25 @@ class HeatsinkAndFan(auto_prefetch.Model):
     radiator_size = models.ManyToManyField(Component, help_text="Radiator size")
 
 
+class Storage(auto_prefetch.Model):
+    """Storage."""
+
+    model = models.ManyToManyField(Component, help_text="Model")
+    type = models.ManyToManyField(Component, help_text="Type")
+    interface = models.ManyToManyField(Component, help_text="Interface")
+    device_type = models.ManyToManyField(Component, help_text="Device type")
+    product_type = models.ManyToManyField(Component, help_text="Product type")
+    iscsi_support = models.ManyToManyField(Component, help_text="iSCSI support")
+    network_storage_type = models.ManyToManyField(Component, help_text="Network storage type")
+    total_storage_capacity = models.ManyToManyField(Component, help_text="Total storage capacity")
+    total_array_capacity = models.ManyToManyField(Component, help_text="Total array capacity")
+    external_interface_for_disk_array = models.ManyToManyField(Component, help_text="External interface for disk array")
+    external_interface_class_for_disk_array = models.ManyToManyField(
+        Component,
+        help_text="External interface class for disk array",
+    )
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -829,6 +848,7 @@ class Data(auto_prefetch.Model):
     ram = models.ManyToManyField(RAM, help_text="RAM")
     audio_output = models.ManyToManyField(AudioOutput, help_text="Audio output")
     heatsink_and_fan = models.ManyToManyField(HeatsinkAndFan, help_text="Heatsink and fan")
+    storage = models.ManyToManyField(Storage, help_text="Storage")
 
 
 class Manufacturer(auto_prefetch.Model):
