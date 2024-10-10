@@ -6,9 +6,11 @@
         "chartboost",
         "collectstatic",
         "htmx",
+        "keypresses",
         "makemigrations",
         "noinput",
         "pipx",
+        "reparability",
         "socialaccount",
         "startapp",
         "virtualenvs"
