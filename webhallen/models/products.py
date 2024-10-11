@@ -879,6 +879,16 @@ class ControllerCard(auto_prefetch.Model):
     raid_level = models.ManyToManyField(Component, help_text="RAID level")
 
 
+class PersonalHygiene(auto_prefetch.Model):
+    """Personal hygiene."""
+
+    category = models.ManyToManyField(Component, help_text="Category")
+    product_type = models.ManyToManyField(Component, help_text="Product type")
+    usage = models.ManyToManyField(Component, help_text="Usage")
+    number_of_speed_settings = models.ManyToManyField(Component, help_text="Number of speed settings")
+    vibrations_per_minute = models.ManyToManyField(Component, help_text="Vibrations per minute")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -929,6 +939,7 @@ class Data(auto_prefetch.Model):
     antenna = models.ManyToManyField(Antenna, help_text="Antenna")
     system = models.ManyToManyField(System, help_text="System")
     controller_card = models.ManyToManyField(ControllerCard, help_text="Controller card")
+    personal_hygiene = models.ManyToManyField(PersonalHygiene, help_text="Personal hygiene")
 
 
 class Manufacturer(auto_prefetch.Model):
