@@ -1086,6 +1086,16 @@ class MobileBroadband(auto_prefetch.Model):
     generation = models.ManyToManyField(Component, help_text="Generation")
 
 
+class AudioInput(auto_prefetch.Model):
+    """Audio input."""
+
+    microphone_type = models.ManyToManyField(Component, help_text="Microphone type")
+    sensitivity = models.ManyToManyField(Component, help_text="Sensitivity")
+    type = models.ManyToManyField(Component, help_text="Type")
+    operational_mode_for_microphone = models.ManyToManyField(Component, help_text="Operational mode for microphone")
+    connection_technology = models.ManyToManyField(Component, help_text="Connection technology")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -1152,6 +1162,7 @@ class Data(auto_prefetch.Model):
     external_hard_drive = models.ManyToManyField(ExternalHardDrive, help_text="External hard drive")
     modem = models.ManyToManyField(Modem, help_text="Modem")
     mobile_broadband = models.ManyToManyField(MobileBroadband, help_text="Mobile broadband")
+    audio_input = models.ManyToManyField(AudioInput, help_text="Audio input")
 
 
 class Manufacturer(auto_prefetch.Model):
