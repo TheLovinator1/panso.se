@@ -953,6 +953,30 @@ class Camera(auto_prefetch.Model):
     shooting_methods = models.ManyToManyField(Component, help_text="Shooting methods")
 
 
+class LightSource(auto_prefetch.Model):
+    """Light source."""
+
+    type_of_light_source = models.ManyToManyField(Component, help_text="Type of light source")
+    luminous_flux = models.ManyToManyField(Component, help_text="Luminous flux")
+    lifespan = models.ManyToManyField(Component, help_text="Lifespan")
+    color_temperature = models.ManyToManyField(Component, help_text="Color temperature")
+    illumination_color = models.ManyToManyField(Component, help_text="Illumination color")
+    wattage = models.ManyToManyField(Component, help_text="Wattage")
+    energy_efficiency_class = models.ManyToManyField(Component, help_text="Energy efficiency class")
+    watt_equivalence = models.ManyToManyField(Component, help_text="Watt equivalence")
+    beam_angle = models.ManyToManyField(Component, help_text="Beam angle")
+    socket_type = models.ManyToManyField(Component, help_text="Socket type")
+    color_rendering_index = models.ManyToManyField(Component, help_text="Color rendering index")
+    mercury_content = models.ManyToManyField(Component, help_text="Mercury content")
+    dimmable = models.ManyToManyField(Component, help_text="Dimmable")
+    shape = models.ManyToManyField(Component, help_text="Shape")
+    power_factor = models.ManyToManyField(Component, help_text="Power factor")
+    lamp_current = models.ManyToManyField(Component, help_text="Lamp current")
+    start_time = models.ManyToManyField(Component, help_text="Start time")
+    warm_up_time = models.ManyToManyField(Component, help_text="Warm-up time")
+    luminous_efficiency = models.ManyToManyField(Component, help_text="Luminous efficiency")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -1009,6 +1033,7 @@ class Data(auto_prefetch.Model):
     video_output = models.ManyToManyField(VideoOutput, help_text="Video output")
     small_devices = models.ManyToManyField(SmallDevices, help_text="Small devices")
     camera = models.ManyToManyField(Camera, help_text="Camera")
+    light_source = models.ManyToManyField(LightSource, help_text="Light sources")
 
 
 class Manufacturer(auto_prefetch.Model):
