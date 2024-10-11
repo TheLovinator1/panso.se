@@ -1079,6 +1079,13 @@ class Modem(auto_prefetch.Model):
     broadband_access_for_mobile_phone = models.ManyToManyField(Component, help_text="Broadband access for mobile phone")
 
 
+class MobileBroadband(auto_prefetch.Model):
+    """Mobile broadband."""
+
+    cellular_protocol = models.ManyToManyField(Component, help_text="Cellular protocol")
+    generation = models.ManyToManyField(Component, help_text="Generation")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -1144,6 +1151,7 @@ class Data(auto_prefetch.Model):
     hard_drive = models.ManyToManyField(HDD, help_text="Harddisk")
     external_hard_drive = models.ManyToManyField(ExternalHardDrive, help_text="External hard drive")
     modem = models.ManyToManyField(Modem, help_text="Modem")
+    mobile_broadband = models.ManyToManyField(MobileBroadband, help_text="Mobile broadband")
 
 
 class Manufacturer(auto_prefetch.Model):
