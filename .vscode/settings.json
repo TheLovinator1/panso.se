@@ -5,6 +5,8 @@
         "asgiref",
         "chartboost",
         "collectstatic",
+        "Dockable",
+        "hdcp",
         "Heatsink",
         "htmx",
         "iscsi",

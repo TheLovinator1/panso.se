@@ -903,6 +903,27 @@ class AccessoriesForDevices(auto_prefetch.Model):
     capacity = models.ManyToManyField(Component, help_text="Capacity")
 
 
+class VideoOutput(auto_prefetch.Model):
+    """Video output."""
+
+    maximum_external_resolution = models.ManyToManyField(Component, help_text="Maximum external resolution")
+    type = models.ManyToManyField(Component, help_text="Type")
+    supported_video_signals = models.ManyToManyField(Component, help_text="Supported video signals")
+    type_of_interface = models.ManyToManyField(Component, help_text="Type of interface")
+    tv_connection = models.ManyToManyField(Component, help_text="TV connection")
+    hdr_capacity = models.ManyToManyField(Component, help_text="HDR capacity")
+    clock_speed = models.ManyToManyField(Component, help_text="Clock speed")
+    high_clock_speed = models.ManyToManyField(Component, help_text="High clock speed")
+    low = models.ManyToManyField(Component, help_text="Low")
+    chip_manufacturer = models.ManyToManyField(Component, help_text="Chip manufacturer")
+    graphics_card = models.ManyToManyField(Component, help_text="Graphics card")
+    max_number_of_supported_displays = models.ManyToManyField(Component, help_text="Max number of supported displays")
+    dedicated_graphics_card = models.ManyToManyField(Component, help_text="Dedicated graphics card")
+    graphics_processor_series = models.ManyToManyField(Component, help_text="Graphics processor series")
+    vr_ready = models.ManyToManyField(Component, help_text="VR ready")
+    hdcp_compatible = models.ManyToManyField(Component, help_text="HDCP compatible")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -956,6 +977,7 @@ class Data(auto_prefetch.Model):
     personal_hygiene = models.ManyToManyField(PersonalHygiene, help_text="Personal hygiene")
     warranty = models.ManyToManyField(Warranty, help_text="Warranty")
     accessories_for_devices = models.ManyToManyField(AccessoriesForDevices, help_text="Accessories for devices")
+    video_output = models.ManyToManyField(VideoOutput, help_text="Video output")
 
 
 class Manufacturer(auto_prefetch.Model):
