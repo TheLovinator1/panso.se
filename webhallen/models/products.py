@@ -864,6 +864,21 @@ class System(auto_prefetch.Model):
     platform_technology = models.ManyToManyField(Component, help_text="Platform technology")
 
 
+class ControllerCard(auto_prefetch.Model):
+    """Controller card."""
+
+    type = models.ManyToManyField(Component, help_text="Type")
+    form_factor = models.ManyToManyField(Component, help_text="Form factor")
+    supported_devices = models.ManyToManyField(Component, help_text="Supported devices")
+    max_number_of_devices = models.ManyToManyField(Component, help_text="Max number of devices")
+    power_source = models.ManyToManyField(Component, help_text="Power source")
+    host_bus = models.ManyToManyField(Component, help_text="Host bus")
+    interface = models.ManyToManyField(Component, help_text="Interface")
+    number_of_channels = models.ManyToManyField(Component, help_text="Number of channels")
+    interface_type = models.ManyToManyField(Component, help_text="Interface type")
+    raid_level = models.ManyToManyField(Component, help_text="RAID level")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -913,6 +928,7 @@ class Data(auto_prefetch.Model):
     memory_module = models.ManyToManyField(MemoryModule, help_text="Memory module")
     antenna = models.ManyToManyField(Antenna, help_text="Antenna")
     system = models.ManyToManyField(System, help_text="System")
+    controller_card = models.ManyToManyField(ControllerCard, help_text="Controller card")
 
 
 class Manufacturer(auto_prefetch.Model):
