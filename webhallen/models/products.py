@@ -996,6 +996,24 @@ class CEAccessories(auto_prefetch.Model):
     suitable_for_installation = models.ManyToManyField(Component, help_text="Suitable for installation")
 
 
+class Game(auto_prefetch.Model):
+    """Game."""
+
+    release_month = models.ManyToManyField(Component, help_text="Release month")
+    genre = models.ManyToManyField(Component, help_text="Genre")
+    esrb_rating = models.ManyToManyField(Component, help_text="ESRB rating")
+    pegi_content_description = models.ManyToManyField(Component, help_text="PEGI content description")
+    usk_age_rating = models.ManyToManyField(Component, help_text="USK age rating")
+    pegi_classification = models.ManyToManyField(Component, help_text="PEGI classification")
+    australian_state_evaluation = models.ManyToManyField(Component, help_text="Australian state evaluation")
+    platform = models.ManyToManyField(Component, help_text="Platform")
+    release_year = models.ManyToManyField(Component, help_text="Release year")
+    release_day = models.ManyToManyField(Component, help_text="Release day")
+    multiplayer = models.ManyToManyField(Component, help_text="Multiplayer")
+    max_number_of_players = models.ManyToManyField(Component, help_text="Max number of players")
+    online_play = models.ManyToManyField(Component, help_text="Online play")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -1055,6 +1073,7 @@ class Data(auto_prefetch.Model):
     light_source = models.ManyToManyField(LightSource, help_text="Light sources")
     software = models.ManyToManyField(Software, help_text="Software")
     ce_accessories = models.ManyToManyField(CEAccessories, help_text="CE accessories")
+    game = models.ManyToManyField(Game, help_text="Game")
 
 
 class Manufacturer(auto_prefetch.Model):
