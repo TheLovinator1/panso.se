@@ -1096,6 +1096,15 @@ class AudioInput(auto_prefetch.Model):
     connection_technology = models.ManyToManyField(Component, help_text="Connection technology")
 
 
+class MemoryAdapter(auto_prefetch.Model):
+    """Memory adapter."""
+
+    model = models.ManyToManyField(Component, help_text="Model")
+    interface = models.ManyToManyField(Component, help_text="Interface")
+    device_type = models.ManyToManyField(Component, help_text="Device type")
+    support_for_memory_cards = models.ManyToManyField(Component, help_text="Support for memory cards")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -1163,6 +1172,7 @@ class Data(auto_prefetch.Model):
     modem = models.ManyToManyField(Modem, help_text="Modem")
     mobile_broadband = models.ManyToManyField(MobileBroadband, help_text="Mobile broadband")
     audio_input = models.ManyToManyField(AudioInput, help_text="Audio input")
+    memory_adapter = models.ManyToManyField(MemoryAdapter, help_text="Memory adapter")
 
 
 class Manufacturer(auto_prefetch.Model):
