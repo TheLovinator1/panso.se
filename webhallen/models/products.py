@@ -1022,6 +1022,15 @@ class ToastersAndGrills(auto_prefetch.Model):
     number_of_outlets = models.ManyToManyField(Component, help_text="Number of outlets")
 
 
+class Scale(auto_prefetch.Model):
+    """Scale."""
+
+    kitchen_scale_type = models.ManyToManyField(Component, help_text="Kitchen scale type")
+    max_weight = models.ManyToManyField(Component, help_text="Max weight")
+    bathroom_scale_type = models.ManyToManyField(Component, help_text="Bathroom scale type")
+    measurement_functions = models.ManyToManyField(Component, help_text="Measurement functions")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -1083,6 +1092,7 @@ class Data(auto_prefetch.Model):
     ce_accessories = models.ManyToManyField(CEAccessories, help_text="CE accessories")
     game = models.ManyToManyField(Game, help_text="Game")
     toasters_and_grills = models.ManyToManyField(ToastersAndGrills, help_text="Toasters and grills")
+    scale = models.ManyToManyField(Scale, help_text="Scale")
 
 
 class Manufacturer(auto_prefetch.Model):
