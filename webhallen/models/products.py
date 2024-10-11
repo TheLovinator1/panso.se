@@ -977,6 +977,17 @@ class LightSource(auto_prefetch.Model):
     luminous_efficiency = models.ManyToManyField(Component, help_text="Luminous efficiency")
 
 
+class Software(auto_prefetch.Model):
+    """Software."""
+
+    number_of_licenses = models.ManyToManyField(Component, help_text="Number of licenses")
+    license_validity_period = models.ManyToManyField(Component, help_text="License validity period")
+    type_of_license = models.ManyToManyField(Component, help_text="Type of license")
+    license_category = models.ManyToManyField(Component, help_text="License category")
+    version = models.ManyToManyField(Component, help_text="Version")
+    type = models.ManyToManyField(Component, help_text="Type")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -1034,6 +1045,7 @@ class Data(auto_prefetch.Model):
     small_devices = models.ManyToManyField(SmallDevices, help_text="Small devices")
     camera = models.ManyToManyField(Camera, help_text="Camera")
     light_source = models.ManyToManyField(LightSource, help_text="Light sources")
+    software = models.ManyToManyField(Software, help_text="Software")
 
 
 class Manufacturer(auto_prefetch.Model):
