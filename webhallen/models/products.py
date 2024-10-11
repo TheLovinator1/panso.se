@@ -1031,6 +1031,35 @@ class Scale(auto_prefetch.Model):
     measurement_functions = models.ManyToManyField(Component, help_text="Measurement functions")
 
 
+class Harddisk(auto_prefetch.Model):
+    """Hard disk drive (HDD)."""
+
+    hard_disk_type = models.ManyToManyField(Component, help_text="Hard disk type")
+    interface = models.ManyToManyField(Component, help_text="Interface")
+    external_device_type = models.ManyToManyField(Component, help_text="External device type")
+    hard_disk_space = models.ManyToManyField(Component, help_text="Hard disk space")
+    spindle_speed = models.ManyToManyField(Component, help_text="Spindle speed")
+    unrecoverable_error = models.ManyToManyField(Component, help_text="Unrecoverable error")
+    data_transfer_rate = models.ManyToManyField(Component, help_text="Data transfer rate")
+    internal_data_frequency = models.ManyToManyField(Component, help_text="Internal data frequency")
+    average_seek_time = models.ManyToManyField(Component, help_text="Average seek time")
+    form_factor = models.ManyToManyField(Component, help_text="Form factor")
+    form_factor_short = models.ManyToManyField(Component, help_text="Form factor short")
+    form_factor_metric = models.ManyToManyField(Component, help_text="Form factor metric")
+    form_factor_short_metric = models.ManyToManyField(Component, help_text="Form factor short metric")
+    buffer_size = models.ManyToManyField(Component, help_text="Buffer size")
+    internal_data_write_speed = models.ManyToManyField(Component, help_text="Internal data write speed")
+    nand_flash_memory_type = models.ManyToManyField(Component, help_text="NAND flash memory type")
+    _24_7_operation = models.ManyToManyField(Component, help_text="24/7 operation")
+    _4_kb_random_read = models.ManyToManyField(Component, help_text="The 4 KB random read")
+    type = models.ManyToManyField(Component, help_text="Type")
+    ssd_form_factor = models.ManyToManyField(Component, help_text="SSD form factor")
+    hard_disk_features = models.ManyToManyField(Component, help_text="Hard disk features")
+    type_of_interface = models.ManyToManyField(Component, help_text="Type of interface")
+    interface_class = models.ManyToManyField(Component, help_text="Interface class")
+    ssd_capacity = models.ManyToManyField(Component, help_text="SSD capacity")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -1093,6 +1122,7 @@ class Data(auto_prefetch.Model):
     game = models.ManyToManyField(Game, help_text="Game")
     toasters_and_grills = models.ManyToManyField(ToastersAndGrills, help_text="Toasters and grills")
     scale = models.ManyToManyField(Scale, help_text="Scale")
+    harddisk = models.ManyToManyField(Harddisk, help_text="Harddisk")
 
 
 class Manufacturer(auto_prefetch.Model):
