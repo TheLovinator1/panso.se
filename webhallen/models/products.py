@@ -944,6 +944,15 @@ class SmallDevices(auto_prefetch.Model):
     number_of_people = models.ManyToManyField(Component, help_text="Number of people")
 
 
+class Camera(auto_prefetch.Model):
+    """Camera."""
+
+    image_sensor_type = models.ManyToManyField(Component, help_text="Image sensor type")
+    optical_sensor_resolution = models.ManyToManyField(Component, help_text="Optical sensor resolution")
+    type = models.ManyToManyField(Component, help_text="Type")
+    shooting_methods = models.ManyToManyField(Component, help_text="Shooting methods")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -999,6 +1008,7 @@ class Data(auto_prefetch.Model):
     accessories_for_devices = models.ManyToManyField(AccessoriesForDevices, help_text="Accessories for devices")
     video_output = models.ManyToManyField(VideoOutput, help_text="Video output")
     small_devices = models.ManyToManyField(SmallDevices, help_text="Small devices")
+    camera = models.ManyToManyField(Camera, help_text="Camera")
 
 
 class Manufacturer(auto_prefetch.Model):
