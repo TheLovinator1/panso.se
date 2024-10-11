@@ -1105,6 +1105,71 @@ class MemoryAdapter(auto_prefetch.Model):
     support_for_memory_cards = models.ManyToManyField(Component, help_text="Support for memory cards")
 
 
+class InternetOfThings(auto_prefetch.Model):
+    """Internet of things."""
+
+    communication_technology = models.ManyToManyField(Component, help_text="Communication technology")
+    platform = models.ManyToManyField(Component, help_text="Platform")
+    compatible_with_internet_of_things = models.ManyToManyField(
+        Component,
+        help_text="Compatible with Internet of Things",
+    )
+    intelligent_assistant = models.ManyToManyField(Component, help_text="Intelligent assistant")
+    voice_controlled = models.ManyToManyField(Component, help_text="Voice controlled")
+
+
+class Cleaning(auto_prefetch.Model):
+    """Cleaning."""
+
+    bag_capacity = models.ManyToManyField(Component, help_text="Bag capacity")
+    product_type = models.ManyToManyField(Component, help_text="Product type")
+    container_type = models.ManyToManyField(Component, help_text="Container type")
+    cleaning_agent_type = models.ManyToManyField(Component, help_text="Cleaning agent type")
+    cleaning_method = models.ManyToManyField(Component, help_text="Cleaning method")
+    tank_capacity = models.ManyToManyField(Component, help_text="Tank capacity")
+    dust_emission_class = models.ManyToManyField(Component, help_text="Dust emission class")
+    material_cleaning_performance_class = models.ManyToManyField(
+        Component,
+        help_text="Material cleaning performance class",
+    )
+    cleaning_performance_class_for_hard_floor = models.ManyToManyField(
+        Component,
+        help_text="Cleaning performance class for hard floor",
+    )
+    filter_type = models.ManyToManyField(Component, help_text="Filter type")
+    area_of_use = models.ManyToManyField(Component, help_text="Area of use")
+    maximum_motor_power = models.ManyToManyField(Component, help_text="Maximum motor power")
+    max_suction_power_air_watts = models.ManyToManyField(Component, help_text="Max suction power (air watts)")
+
+
+class FlashMemory(auto_prefetch.Model):
+    """Flash memory."""
+
+    read_speed = models.ManyToManyField(Component, help_text="Read speed")
+    form_factor = models.ManyToManyField(Component, help_text="Form factor")
+    product_type = models.ManyToManyField(Component, help_text="Product type")
+    storage_capacity = models.ManyToManyField(Component, help_text="Storage capacity")
+    storage_speed = models.ManyToManyField(Component, help_text="Storage speed")
+    installed_size = models.ManyToManyField(Component, help_text="Installed size")
+    interface_type = models.ManyToManyField(Component, help_text="Interface type")
+    internal_memory_capacity = models.ManyToManyField(Component, help_text="Internal memory capacity")
+    included_memory_adapter = models.ManyToManyField(Component, help_text="Included memory adapter")
+    speed_class = models.ManyToManyField(Component, help_text="Speed class")
+    supported_memory_cards = models.ManyToManyField(Component, help_text="Supported memory cards")
+    technology = models.ManyToManyField(Component, help_text="Technology")
+    user_memory = models.ManyToManyField(Component, help_text="User memory")
+    max_size_supported = models.ManyToManyField(Component, help_text="Max size supported")
+    supported_flash_memory_cards = models.ManyToManyField(Component, help_text="Supported flash memory cards")
+
+
+class RadioSystem(auto_prefetch.Model):
+    """Radio system."""
+
+    receiver_band = models.ManyToManyField(Component, help_text="Receiver band")
+    receiver_type = models.ManyToManyField(Component, help_text="Receiver type")
+    number_of_presets = models.ManyToManyField(Component, help_text="Number of presets")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -1173,6 +1238,10 @@ class Data(auto_prefetch.Model):
     mobile_broadband = models.ManyToManyField(MobileBroadband, help_text="Mobile broadband")
     audio_input = models.ManyToManyField(AudioInput, help_text="Audio input")
     memory_adapter = models.ManyToManyField(MemoryAdapter, help_text="Memory adapter")
+    internet_of_things = models.ManyToManyField(InternetOfThings, help_text="Internet of things")
+    cleaning = models.ManyToManyField(Cleaning, help_text="Cleaning")
+    flash_memory = models.ManyToManyField(FlashMemory, help_text="Flash memory")
+    radio_system = models.ManyToManyField(RadioSystem, help_text="Radio system")
 
 
 class Manufacturer(auto_prefetch.Model):
