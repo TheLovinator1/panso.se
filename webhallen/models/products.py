@@ -1014,6 +1014,14 @@ class Game(auto_prefetch.Model):
     online_play = models.ManyToManyField(Component, help_text="Online play")
 
 
+class ToastersAndGrills(auto_prefetch.Model):
+    """Toasters and grills."""
+
+    product_type = models.ManyToManyField(Component, help_text="Product type")
+    number_of_slices = models.ManyToManyField(Component, help_text="Number of slices")
+    number_of_outlets = models.ManyToManyField(Component, help_text="Number of outlets")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -1074,6 +1082,7 @@ class Data(auto_prefetch.Model):
     software = models.ManyToManyField(Software, help_text="Software")
     ce_accessories = models.ManyToManyField(CEAccessories, help_text="CE accessories")
     game = models.ManyToManyField(Game, help_text="Game")
+    toasters_and_grills = models.ManyToManyField(ToastersAndGrills, help_text="Toasters and grills")
 
 
 class Manufacturer(auto_prefetch.Model):
