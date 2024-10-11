@@ -895,6 +895,14 @@ class Warranty(auto_prefetch.Model):
     warranty = models.ManyToManyField(Component, help_text="Warranty")
 
 
+class AccessoriesForDevices(auto_prefetch.Model):
+    """Accessories for devices."""
+
+    type = models.ManyToManyField(Component, help_text="Type")
+    intended_for = models.ManyToManyField(Component, help_text="Intended for")
+    capacity = models.ManyToManyField(Component, help_text="Capacity")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -947,6 +955,7 @@ class Data(auto_prefetch.Model):
     controller_card = models.ManyToManyField(ControllerCard, help_text="Controller card")
     personal_hygiene = models.ManyToManyField(PersonalHygiene, help_text="Personal hygiene")
     warranty = models.ManyToManyField(Warranty, help_text="Warranty")
+    accessories_for_devices = models.ManyToManyField(AccessoriesForDevices, help_text="Accessories for devices")
 
 
 class Manufacturer(auto_prefetch.Model):
