@@ -988,6 +988,14 @@ class Software(auto_prefetch.Model):
     type = models.ManyToManyField(Component, help_text="Type")
 
 
+class CEAccessories(auto_prefetch.Model):
+    """CE marking."""
+
+    product_type = models.ManyToManyField(Component, help_text="Product type")
+    intended_for = models.ManyToManyField(Component, help_text="Intended for")
+    suitable_for_installation = models.ManyToManyField(Component, help_text="Suitable for installation")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -1046,6 +1054,7 @@ class Data(auto_prefetch.Model):
     camera = models.ManyToManyField(Camera, help_text="Camera")
     light_source = models.ManyToManyField(LightSource, help_text="Light sources")
     software = models.ManyToManyField(Software, help_text="Software")
+    ce_accessories = models.ManyToManyField(CEAccessories, help_text="CE accessories")
 
 
 class Manufacturer(auto_prefetch.Model):
