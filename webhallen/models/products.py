@@ -924,6 +924,26 @@ class VideoOutput(auto_prefetch.Model):
     hdcp_compatible = models.ManyToManyField(Component, help_text="HDCP compatible")
 
 
+class SmallDevices(auto_prefetch.Model):
+    """Small devices."""
+
+    product_type = models.ManyToManyField(Component, help_text="Product type")
+    capacity = models.ManyToManyField(Component, help_text="Capacity")
+    variable_temperature = models.ManyToManyField(Component, help_text="Variable temperature")
+    functions_and_settings = models.ManyToManyField(Component, help_text="Functions and settings")
+    max_speed = models.ManyToManyField(Component, help_text="Max speed")
+    bowl_material = models.ManyToManyField(Component, help_text="Bowl material")
+    included_blades_and_additives = models.ManyToManyField(Component, help_text="Included blades and additives")
+    automatic_shutdown = models.ManyToManyField(Component, help_text="Automatic shutdown")
+    water_level_indicator = models.ManyToManyField(Component, help_text="Water level indicator")
+    temperature_settings = models.ManyToManyField(Component, help_text="Temperature settings")
+    mass_container_capacity = models.ManyToManyField(Component, help_text="Mass container capacity")
+    multi_plate = models.ManyToManyField(Component, help_text="Multi-plate")
+    food_capacity = models.ManyToManyField(Component, help_text="Food capacity")
+    number_of_programs = models.ManyToManyField(Component, help_text="Number of programs")
+    number_of_people = models.ManyToManyField(Component, help_text="Number of people")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -978,6 +998,7 @@ class Data(auto_prefetch.Model):
     warranty = models.ManyToManyField(Warranty, help_text="Warranty")
     accessories_for_devices = models.ManyToManyField(AccessoriesForDevices, help_text="Accessories for devices")
     video_output = models.ManyToManyField(VideoOutput, help_text="Video output")
+    small_devices = models.ManyToManyField(SmallDevices, help_text="Small devices")
 
 
 class Manufacturer(auto_prefetch.Model):
