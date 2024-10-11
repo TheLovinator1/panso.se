@@ -889,6 +889,12 @@ class PersonalHygiene(auto_prefetch.Model):
     vibrations_per_minute = models.ManyToManyField(Component, help_text="Vibrations per minute")
 
 
+class Warranty(auto_prefetch.Model):
+    """Warranty."""
+
+    warranty = models.ManyToManyField(Component, help_text="Warranty")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -940,6 +946,7 @@ class Data(auto_prefetch.Model):
     system = models.ManyToManyField(System, help_text="System")
     controller_card = models.ManyToManyField(ControllerCard, help_text="Controller card")
     personal_hygiene = models.ManyToManyField(PersonalHygiene, help_text="Personal hygiene")
+    warranty = models.ManyToManyField(Warranty, help_text="Warranty")
 
 
 class Manufacturer(auto_prefetch.Model):
