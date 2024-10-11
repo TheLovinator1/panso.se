@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import logging
+from datetime import datetime
+from typing import Any
 
 import auto_prefetch
 from django.contrib.postgres.fields import ArrayField
@@ -11,6 +13,81 @@ logger: logging.Logger = logging.getLogger(__name__)
 # TODO(TheLovinator): All docstrings are placeholders and need to be updated  # noqa: TD003
 
 
+def get_value(data: dict, key: str) -> datetime | str | None:
+    """Get a value from a dictionary.
+
+    We have this function so we can handle values that we need to convert to a different type. For example, we might
+    need to convert a string to a datetime object.
+
+    Args:
+        data (dict): The dictionary to get the value from.
+        key (str): The key to get the value for.
+
+    Returns:
+        datetime | str | None: The value from the dictionary
+    """
+    data_key: Any | None = data.get(key)
+    if not data_key:
+        return None
+
+    # Dates are in the format "2024-08-12T05:59:59.999Z"
+    dates: list[str] = ["endAt", "endsAt,", "startAt", "startsAt", "createdAt", "earnableUntil"]
+    if key in dates:
+        return datetime.fromisoformat(data_key.replace("Z", "+00:00"))
+
+    return data_key
+
+
+def update_field(instance: models.Model, django_field_name: str, new_value: str | datetime | None) -> int:
+    """Update a field on an instance if the new value is different from the current value.
+
+    Args:
+        instance (models.Model): The Django model instance.
+        django_field_name (str): The name of the field to update.
+        new_value (str | datetime | None): The new value to update the field with.
+
+    Returns:
+        int: If the field was updated, returns 1. Otherwise, returns 0.
+    """
+    # Get the current value of the field.
+    try:
+        current_value = getattr(instance, django_field_name)
+    except AttributeError:
+        logger.exception("Field %s does not exist on %s", django_field_name, instance)
+        return 0
+
+    # Only update the field if the new value is different from the current value.
+    if new_value and new_value != current_value:
+        setattr(instance, django_field_name, new_value)
+        return 1
+
+    # 0 fields updated.
+    return 0
+
+
+def update_fields(instance: models.Model, data: dict, field_mapping: dict[str, str]) -> int:
+    """Update multiple fields on an instance using a mapping from external field names to model field names.
+
+    Args:
+        instance (models.Model): The Django model instance.
+        data (dict): The new data to update the fields with.
+        field_mapping (dict[str, str]): A dictionary mapping external field names to model field names. Left side is
+            the json key and the right side is the model field name.
+
+    Returns:
+        int: The number of fields updated. Used for only saving the instance if there were changes.
+    """
+    dirty = 0
+    for json_field, django_field_name in field_mapping.items():
+        data_key: datetime | str | None = get_value(data, json_field)
+        dirty += update_field(instance=instance, django_field_name=django_field_name, new_value=data_key)
+
+    if dirty > 0:
+        instance.save()
+
+    return dirty
+
+
 class CanonicalVariant(auto_prefetch.Model):
     """Canonical variant."""
 
@@ -19,6 +96,16 @@ class CanonicalVariant(auto_prefetch.Model):
 
     def __str__(self) -> str:
         return f"Canonical variant - {self.name}"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "id": "id",
+            "name": "name",
+        }
+        updated: int = update_fields(instance=self, data=data, field_mapping=field_mapping)
+        if updated > 0:
+            logger.info("Updated %s fields for %s", updated, self)
 
 
 class AverageRating(auto_prefetch.Model):
@@ -1409,15 +1496,59 @@ class FyndwareClass(auto_prefetch.Model):
 class Product(auto_prefetch.Model):
     """A product from Webhallen."""
 
-    # 369004
+    # Django fields
     webhallen_id = models.PositiveBigIntegerField(primary_key=True, help_text="Webhallen product ID")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the product was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the product was last updated")
 
-    variants = models.ManyToManyField(Variants, help_text="Variants")
-
-    # ASUS Dual GeForce RTX 4060 EVO 8GB OC
+    # Webhallen fields
+    # fyndware_of = ???? # TODO(TheLovinator): What is this?  # noqa: TD003
+    # ifs_id = ???? # TODO(TheLovinator): What is this?  # noqa: TD003
+    canonical_link = models.URLField(help_text="Canonical link")
+    category_tree = models.TextField(help_text="Category tree")
+    description = models.TextField(help_text="Product description")
+    description_provider = models.PositiveBigIntegerField(help_text="Description provider")
+    discontinued = models.BooleanField(help_text="Is discontinued")
+    is_collectable = models.BooleanField(help_text="Is collectable")
+    is_digital = models.BooleanField(help_text="Is digital")
+    is_fyndware = models.BooleanField(help_text="Is Fyndware")
+    is_shippable = models.BooleanField(help_text="Is shippable")
+    long_delivery_notice = models.TextField(help_text="Long delivery notice")
+    main_title = models.TextField(help_text="Main title")
+    meta_description = models.TextField(help_text="Meta description")
+    meta_title = models.TextField(help_text="Meta title")
+    minimum_rank_level = models.PositiveBigIntegerField(help_text="Minimum rank level")
     name = models.TextField(help_text="Product name")
+    package_size_id = models.PositiveBigIntegerField(help_text="Package size ID")
+    phone_subscription = models.BooleanField(help_text="Is a phone subscription")
+    sub_title = models.TextField(help_text="Sub title")
+    thumbnail = models.URLField(help_text="Thumbnail URL")
+    ticket = models.TextField(help_text="Ticket")
 
-    # Current price? TODO: Check if this is the current price
+    # ForeignKey fields
+    average_rating = auto_prefetch.ForeignKey(AverageRating, on_delete=models.CASCADE, help_text="Average rating")
+    data = auto_prefetch.ForeignKey(Data, on_delete=models.CASCADE, help_text="Data")
+    energy_marking = auto_prefetch.ForeignKey(EnergyMarking, on_delete=models.CASCADE, help_text="Energy marking")
+    fyndware_class = auto_prefetch.ForeignKey(FyndwareClass, on_delete=models.CASCADE, help_text="Fyndware class")
+    level_one_price = auto_prefetch.ForeignKey(
+        Price,
+        on_delete=models.CASCADE,
+        help_text="The level one price of the product",
+        related_name="level_one_price",
+    )
+    lowest_price = auto_prefetch.ForeignKey(
+        Price,
+        on_delete=models.CASCADE,
+        help_text="The lowest price of the product",
+        related_name="lowest_price",
+    )
+    main_category_path = auto_prefetch.ForeignKey(
+        MainCategoryPath,
+        on_delete=models.CASCADE,
+        help_text="Main category path",
+    )
+    manufacturer = auto_prefetch.ForeignKey(Manufacturer, on_delete=models.CASCADE, help_text="Manufacturer")
+    meta = auto_prefetch.ForeignKey(Meta, on_delete=models.CASCADE, help_text="Meta")
     price = auto_prefetch.ForeignKey(
         Price,
         on_delete=models.CASCADE,
@@ -1430,63 +1561,51 @@ class Product(auto_prefetch.Model):
         help_text="The regular price of the product",
         related_name="regular_price",
     )
-    lowest_price = auto_prefetch.ForeignKey(
-        Price,
-        on_delete=models.CASCADE,
-        help_text="The lowest price of the product",
-        related_name="lowest_price",
-    )
-    level_one_price = auto_prefetch.ForeignKey(
-        Price,
-        on_delete=models.CASCADE,
-        help_text="The level one price of the product",
-        related_name="level_one_price",
-    )
-    description = models.TextField(help_text="Product description")
-    meta_title = models.TextField(help_text="Meta title")
-    meta_description = models.TextField(help_text="Meta description")
-    canonical_link = models.URLField(help_text="Canonical link")
     release = auto_prefetch.ForeignKey(Release, on_delete=models.CASCADE, help_text="Release")
-    is_digital = models.BooleanField(help_text="Is digital")
-    discontinued = models.BooleanField(help_text="Is discontinued")
-    category_tree = models.TextField(help_text="Category tree")
-    main_category_path = auto_prefetch.ForeignKey(
-        MainCategoryPath,
-        on_delete=models.CASCADE,
-        help_text="Main category path",
-    )
-    # ifs_id = ???? # TODO(TheLovinator): What is this?  # noqa: TD003
-    thumbnail = models.URLField(help_text="Thumbnail URL")
-    package_size_id = models.PositiveBigIntegerField(help_text="Package size ID")
-    long_delivery_notice = models.TextField(help_text="Long delivery notice")
-    phone_subscription = models.BooleanField(help_text="Is a phone subscription")
-    is_fyndware = models.BooleanField(help_text="Is Fyndware")
-    main_title = models.TextField(help_text="Main title")
-    sub_title = models.TextField(help_text="Sub title")
-    is_shippable = models.BooleanField(help_text="Is shippable")
-    is_collectable = models.BooleanField(help_text="Is collectable")
-    description_provider = models.PositiveBigIntegerField(help_text="Description provider")
-    minimum_rank_level = models.PositiveBigIntegerField(help_text="Minimum rank level")
-    images = models.ManyToManyField(Image, help_text="Images")
-    stock = auto_prefetch.ForeignKey(Stock, on_delete=models.CASCADE, help_text="Stock")
     section = auto_prefetch.ForeignKey(Section, on_delete=models.CASCADE, help_text="Section")
-    # fyndware_of = ???? # TODO(TheLovinator): What is this?  # noqa: TD003
-    data = auto_prefetch.ForeignKey(Data, on_delete=models.CASCADE, help_text="Data")
-    manufacturer = auto_prefetch.ForeignKey(Manufacturer, on_delete=models.CASCADE, help_text="Manufacturer")
-    part_numbers = models.ManyToManyField(PartNumber, help_text="Part numbers")
-    eans = models.ManyToManyField(EAN, help_text="EANs")
     shipping_class = auto_prefetch.ForeignKey(ShippingClass, on_delete=models.CASCADE, help_text="Shipping class")
-    average_rating = auto_prefetch.ForeignKey(AverageRating, on_delete=models.CASCADE, help_text="Average rating")
-    energy_marking = auto_prefetch.ForeignKey(EnergyMarking, on_delete=models.CASCADE, help_text="Energy marking")
-    status_codes = models.ManyToManyField(StatusCode, help_text="Status codes")
+    stock = auto_prefetch.ForeignKey(Stock, on_delete=models.CASCADE, help_text="Stock")
+
+    # ManyToMany fields
     categories = models.ManyToManyField(Categories, help_text="Categories")
-    review_highlight = models.ManyToManyField(ReviewHighlight, help_text="Review highlights")
-    meta = auto_prefetch.ForeignKey(Meta, on_delete=models.CASCADE, help_text="Meta")
+    eans = models.ManyToManyField(EAN, help_text="EANs")
+    images = models.ManyToManyField(Image, help_text="Images")
     insurance = models.ManyToManyField(Insurance, help_text="Insurance")
+    part_numbers = models.ManyToManyField(PartNumber, help_text="Part numbers")
     possible_delivery_methods = models.ManyToManyField(PossibleDeliveryMethod, help_text="Possible delivery methods")
     resurs_part_payment_price = models.ManyToManyField(ResursPartPaymentPrice, help_text="Resurs part payment price")
-    ticket = models.TextField(help_text="Ticket")
-    fyndware_class = auto_prefetch.ForeignKey(FyndwareClass, on_delete=models.CASCADE, help_text="Fyndware class")
+    review_highlight = models.ManyToManyField(ReviewHighlight, help_text="Review highlights")
+    status_codes = models.ManyToManyField(StatusCode, help_text="Status codes")
+    variants = models.ManyToManyField(Variants, help_text="Variants")
 
     def __str__(self) -> str:
         return f"{self.name} ({self.webhallen_id})"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "id": "id",
+            "canonicalLink": "canonical_link",
+            "categoryTree": "category_tree",
+            "description": "description",
+            "descriptionProvider": "description_provider",
+            "discontinued": "discontinued",
+            "isCollectable": "is_collectable",
+            "isDigital": "is_digital",
+            "isFyndware": "is_fyndware",
+            "isShippable": "is_shippable",
+            "longDeliveryNotice": "long_delivery_notice",
+            "mainTitle": "main_title",
+            "metaDescription": "meta_description",
+            "metaTitle": "meta_title",
+            "minimumRankLevel": "minimum_rank_level",
+            "name": "name",
+            "packageSizeId": "package_size_id",
+            "phoneSubscription": "phone_subscription",
+            "subTitle": "sub_title",
+            "thumbnail": "thumbnail",
+            "ticket": "ticket",
+        }
+        updated: int = update_fields(instance=self, data=data, field_mapping=field_mapping)
+        if updated > 0:
+            logger.info("Updated %s fields for %s", updated, self)
