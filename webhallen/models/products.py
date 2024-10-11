@@ -1031,7 +1031,7 @@ class Scale(auto_prefetch.Model):
     measurement_functions = models.ManyToManyField(Component, help_text="Measurement functions")
 
 
-class Harddisk(auto_prefetch.Model):
+class HDD(auto_prefetch.Model):
     """Hard disk drive (HDD)."""
 
     hard_disk_type = models.ManyToManyField(Component, help_text="Hard disk type")
@@ -1058,6 +1058,14 @@ class Harddisk(auto_prefetch.Model):
     type_of_interface = models.ManyToManyField(Component, help_text="Type of interface")
     interface_class = models.ManyToManyField(Component, help_text="Interface class")
     ssd_capacity = models.ManyToManyField(Component, help_text="SSD capacity")
+
+
+class ExternalHardDrive(auto_prefetch.Model):
+    """External hard drive."""
+
+    power_source = models.ManyToManyField(Component, help_text="Power source")
+    max_data_transfer_rate = models.ManyToManyField(Component, help_text="Max data transfer rate")
+    usb_c_port = models.ManyToManyField(Component, help_text="USB-C port")
 
 
 class Data(auto_prefetch.Model):
@@ -1122,7 +1130,8 @@ class Data(auto_prefetch.Model):
     game = models.ManyToManyField(Game, help_text="Game")
     toasters_and_grills = models.ManyToManyField(ToastersAndGrills, help_text="Toasters and grills")
     scale = models.ManyToManyField(Scale, help_text="Scale")
-    harddisk = models.ManyToManyField(Harddisk, help_text="Harddisk")
+    hard_drive = models.ManyToManyField(HDD, help_text="Harddisk")
+    external_hard_drive = models.ManyToManyField(ExternalHardDrive, help_text="External hard drive")
 
 
 class Manufacturer(auto_prefetch.Model):
