@@ -1068,6 +1068,17 @@ class ExternalHardDrive(auto_prefetch.Model):
     usb_c_port = models.ManyToManyField(Component, help_text="USB-C port")
 
 
+class Modem(auto_prefetch.Model):
+    """Modem."""
+
+    connection_technology = models.ManyToManyField(Component, help_text="Connection technology")
+    form_factor = models.ManyToManyField(Component, help_text="Form factor")
+    type = models.ManyToManyField(Component, help_text="Type")
+    max_transfer_rate = models.ManyToManyField(Component, help_text="Max transfer rate")
+    band = models.ManyToManyField(Component, help_text="Band")
+    broadband_access_for_mobile_phone = models.ManyToManyField(Component, help_text="Broadband access for mobile phone")
+
+
 class Data(auto_prefetch.Model):
     """Data."""
 
@@ -1132,6 +1143,7 @@ class Data(auto_prefetch.Model):
     scale = models.ManyToManyField(Scale, help_text="Scale")
     hard_drive = models.ManyToManyField(HDD, help_text="Harddisk")
     external_hard_drive = models.ManyToManyField(ExternalHardDrive, help_text="External hard drive")
+    modem = models.ManyToManyField(Modem, help_text="Modem")
 
 
 class Manufacturer(auto_prefetch.Model):
