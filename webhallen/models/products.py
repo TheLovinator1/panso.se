@@ -1,97 +1,27 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
-from typing import Any
 
 import auto_prefetch
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
+from utils.field_updater import update_fields
+
 logger: logging.Logger = logging.getLogger(__name__)
 
+
 # TODO(TheLovinator): All docstrings are placeholders and need to be updated  # noqa: TD003
-
-
-def get_value(data: dict, key: str) -> datetime | str | None:
-    """Get a value from a dictionary.
-
-    We have this function so we can handle values that we need to convert to a different type. For example, we might
-    need to convert a string to a datetime object.
-
-    Args:
-        data (dict): The dictionary to get the value from.
-        key (str): The key to get the value for.
-
-    Returns:
-        datetime | str | None: The value from the dictionary
-    """
-    data_key: Any | None = data.get(key)
-    if not data_key:
-        return None
-
-    # Dates are in the format "2024-08-12T05:59:59.999Z"
-    dates: list[str] = ["endAt", "endsAt,", "startAt", "startsAt", "createdAt", "earnableUntil"]
-    if key in dates:
-        return datetime.fromisoformat(data_key.replace("Z", "+00:00"))
-
-    return data_key
-
-
-def update_field(instance: models.Model, django_field_name: str, new_value: str | datetime | None) -> int:
-    """Update a field on an instance if the new value is different from the current value.
-
-    Args:
-        instance (models.Model): The Django model instance.
-        django_field_name (str): The name of the field to update.
-        new_value (str | datetime | None): The new value to update the field with.
-
-    Returns:
-        int: If the field was updated, returns 1. Otherwise, returns 0.
-    """
-    # Get the current value of the field.
-    try:
-        current_value = getattr(instance, django_field_name)
-    except AttributeError:
-        logger.exception("Field %s does not exist on %s", django_field_name, instance)
-        return 0
-
-    # Only update the field if the new value is different from the current value.
-    if new_value and new_value != current_value:
-        setattr(instance, django_field_name, new_value)
-        return 1
-
-    # 0 fields updated.
-    return 0
-
-
-def update_fields(instance: models.Model, data: dict, field_mapping: dict[str, str]) -> int:
-    """Update multiple fields on an instance using a mapping from external field names to model field names.
-
-    Args:
-        instance (models.Model): The Django model instance.
-        data (dict): The new data to update the fields with.
-        field_mapping (dict[str, str]): A dictionary mapping external field names to model field names. Left side is
-            the json key and the right side is the model field name.
-
-    Returns:
-        int: The number of fields updated. Used for only saving the instance if there were changes.
-    """
-    dirty = 0
-    for json_field, django_field_name in field_mapping.items():
-        data_key: datetime | str | None = get_value(data, json_field)
-        dirty += update_field(instance=instance, django_field_name=django_field_name, new_value=data_key)
-
-    if dirty > 0:
-        instance.save()
-
-    return dirty
 
 
 class CanonicalVariant(auto_prefetch.Model):
     """Canonical variant."""
 
+    # Django fields
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Canonical variant ID")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the canonical variant was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the canonical variant was last updated")
+
     name = models.TextField(help_text="Variant name")
 
     def __str__(self) -> str:
@@ -100,51 +30,132 @@ class CanonicalVariant(auto_prefetch.Model):
     def import_json(self, data: dict) -> None:
         """Import JSON data."""
         field_mapping: dict[str, str] = {
-            "id": "id",
             "name": "name",
         }
-        updated: int = update_fields(instance=self, data=data, field_mapping=field_mapping)
-        if updated > 0:
-            logger.info("Updated %s fields for %s", updated, self)
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
 
 
 class AverageRating(auto_prefetch.Model):
     """Average rating."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the average rating was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the average rating was last updated")
+
+    # Webhallen fields
     rating = models.FloatField(help_text="Rating")
     rating_type = models.TextField(help_text="Rating type")
 
     def __str__(self) -> str:
         return f"Average rating - {self.rating} ({self.rating_type})"
 
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "rating": "rating",
+            "ratingType": "rating_type",
+        }
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
+
 
 class Categories(auto_prefetch.Model):
     """Categories."""
 
+    # Django fields
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Category ID")
-    fyndware_description = models.TextField(help_text="Fyndware description")
-    meta_title = models.TextField(help_text="Meta title")
-    seo_name = models.TextField(help_text="SEO name")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the category was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the category was last updated")
+
+    # Webhallen fields
     active = models.BooleanField(help_text="Is active")
-    order = models.PositiveBigIntegerField(help_text="Order")
+    fyndware_description = models.TextField(help_text="Fyndware description")
     icon = models.TextField(help_text="Icon")
+    meta_title = models.TextField(help_text="Meta title")
     name = models.TextField(help_text="Name")
+    order = models.PositiveBigIntegerField(help_text="Order")
+    seo_name = models.TextField(help_text="SEO name")
+
+    def __str__(self) -> str:
+        return f"Category - {self.name}"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "active": "active",
+            "fyndwareDescription": "fyndware_description",
+            "icon": "icon",
+            "metaTitle": "meta_title",
+            "name": "name",
+            "order": "order",
+            "seoName": "seo_name",
+        }
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
 
 
 class VariantProperties(auto_prefetch.Model):
-    """Properties of a variant."""
+    """Properties of a variant.
 
-    color = models.TextField(help_text="Color")  # Färg
-    storage = models.TextField(help_text="Storage")  # lagring
-    connections = models.TextField(help_text="Connections")  # anslutning
+    Example:
+    {
+        "product": {
+            "variants": {
+                "list": {
+                    "variantProperties": {
+                        "Färg": "Svart",
+                        "Lagring": "64 GB",
+                        "Anslutning": "Wi-Fi"
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the variant properties were created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the variant properties were last updated")
+
+    # Webhallen fields
+    color = models.TextField(help_text="Variant color")
+    connections = models.TextField(help_text="Variant connections")
+    storage = models.TextField(help_text="Variant storage")
+
+    def __str__(self) -> str:
+        return f"Variant properties - {self.color}, {self.storage}, {self.connections}"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "Färg": "color",
+            "Anslutning": "connections",
+            "Lagring": "storage",
+        }
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
 
 
 class VariantGroups(auto_prefetch.Model):
     """Groups of variants."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the variant groups were created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the variant groups were last updated")
+
+    # Webhallen fields
     name = models.TextField(help_text="Name")
     type = models.TextField(help_text="Type")
     values = ArrayField(models.TextField(), help_text="Values")
+
+    def __str__(self) -> str:
+        return f"Variant group - {self.name}"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "name": "name",
+            "type": "type",
+            "values": "values",
+        }
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
 
 
 class ListClass(auto_prefetch.Model):
@@ -152,18 +163,128 @@ class ListClass(auto_prefetch.Model):
 
     # TODO(TheLovinator): Should this be a Product?  # noqa: TD003
 
+    # Django fields
     id = models.PositiveBigIntegerField(primary_key=True, help_text="List ID")
-    variant_properties = models.ManyToManyField(VariantProperties, help_text="Variant properties")
-    name = models.TextField(help_text="Name")
-    price = models.ForeignKey("Price", on_delete=models.CASCADE, help_text="Price")
-    stock = models.ForeignKey("Stock", on_delete=models.CASCADE, help_text="Stock")
-    release = models.ForeignKey("Release", on_delete=models.CASCADE, help_text="Release")
-    is_fyndware = models.BooleanField(help_text="Is Fyndware")
-    variant_name = models.TextField(help_text="Variant name")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the list was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the list was last updated")
+
+    # Webhallen fields
     discontinued = models.BooleanField(help_text="Is discontinued")
-    regular_price = models.ForeignKey("Price", on_delete=models.CASCADE, help_text="Regular price")
+    is_fyndware = models.BooleanField(help_text="Is Fyndware")
+    name = models.TextField(help_text="Name")
+    variant_name = models.TextField(help_text="Variant name")
+
+    # Relationships
     energy_marking = models.ForeignKey("EnergyMarking", on_delete=models.CASCADE, help_text="Energy marking")
     lowest_price = models.ForeignKey("Price", on_delete=models.CASCADE, help_text="Lowest price")
+    price = models.ForeignKey("Price", on_delete=models.CASCADE, help_text="Price")
+    regular_price = models.ForeignKey("Price", on_delete=models.CASCADE, help_text="Regular price")
+    release = models.ForeignKey("Release", on_delete=models.CASCADE, help_text="Release")
+    stock = models.ForeignKey("Stock", on_delete=models.CASCADE, help_text="Stock")
+    variant_properties = models.ForeignKey(
+        "VariantProperties",
+        on_delete=models.CASCADE,
+        help_text="Variant properties",
+    )
+
+    def __str__(self) -> str:
+        return f"List class - {self.name}"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "discontinued": "discontinued",
+            "isFyndware": "is_fyndware",
+            "name": "name",
+            "variantName": "variant_name",
+            # "energyMarking": "energy_marking",
+            # "lowestPrice": "lowest_price",
+            # "price": "price",
+            # "regularPrice": "regular_price",
+            # "release": "release",
+            # "stock": "stock",
+            # "variantProperties": "variant_properties",
+        }
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
+
+        # Handle relationships separately as they are nested.
+        energy_marking_data = data.get("energyMarking", {})
+        energy_marking, _ = EnergyMarking.objects.get_or_create(
+            id=energy_marking_data.get("id"),
+            defaults=energy_marking_data,
+        )
+        self.energy_marking = energy_marking
+
+        self.import_lowest_price(data)
+        self.import_price_data(data)
+        self.import_regular_price(data)
+        self.import_release_data(data)
+        self.import_stock_data(data)
+        self.import_variant_properties(data)
+
+    def import_variant_properties(self, data: dict) -> None:
+        """Import variant properties data."""
+        variant_properties_data = data.get("variantProperties", {})
+        variant_properties, created = VariantProperties.objects.get_or_create(
+            color=variant_properties_data.get("Färg"),
+            connections=variant_properties_data.get("Anslutning"),
+            storage=variant_properties_data.get("Lagring"),
+        )
+        if created:
+            logger.info("Created new variant properties: %s", variant_properties)
+
+        variant_properties.import_json(variant_properties_data)
+        self.variant_properties = variant_properties
+
+    def import_stock_data(self, data: dict) -> None:
+        """Import stock data."""
+        stock_data: dict = data.get("stock", {})
+        stock, created = Stock.objects.get_or_create(id=stock_data.get("id"))
+        if created:
+            logger.info("Created new stock: %s", stock)
+
+        stock.import_json(stock_data)
+        self.stock = stock
+
+    def import_release_data(self, data: dict) -> None:
+        """Import release data."""
+        release_data: dict = data.get("release", {})
+        release, created = Release.objects.get_or_create(id=release_data.get("id"))
+        if created:
+            logger.info("Created new release: %s", release)
+
+        release.import_json(release_data)
+        self.release = release
+
+    def import_regular_price(self, data: dict) -> None:
+        """Import regular price data."""
+        regular_price_data: dict = data.get("regularPrice", {})
+        regular_price, created = Price.objects.get_or_create(id=regular_price_data.get("id"))
+        if created:
+            logger.info("Created new regular price: %s", regular_price)
+
+        regular_price.import_json(regular_price_data)
+        self.regular_price = regular_price
+
+    def import_price_data(self, data: dict) -> None:
+        """Import price data."""
+        price_data: dict = data.get("price", {})
+        price, created = Price.objects.get_or_create(id=price_data.get("id"))
+        if created:
+            logger.info("Created new price: %s", price)
+
+        price.import_json(price_data)
+        self.price = price
+
+    def import_lowest_price(self, data: dict) -> None:
+        """Import lowest price data."""
+        lowest_price_data: dict = data.get("lowestPrice", {})
+        lowest_price, created = Price.objects.get_or_create(id=lowest_price_data.get("id"))
+        if created:
+            logger.info("Created new lowest price: %s", lowest_price)
+
+        lowest_price.import_json(lowest_price_data)
+        self.lowest_price = lowest_price
 
 
 class Variants(auto_prefetch.Model):
@@ -176,28 +297,126 @@ class Variants(auto_prefetch.Model):
 
 
 class Order(auto_prefetch.Model):
-    """Order details for each stock item."""
+    """Order details for each stock item.
+
+    Example:
+    {
+        "product": {
+            "stock": {
+                "orders": {
+                    "CL": {
+                        "status": -1,
+                        "ordered": 51,
+                        "delivery_time": [
+                            "2024-10-13"
+                        ],
+                        "confirmed": true
+                    },
+                    "27": {
+                        "amount": -10,
+                        "days_since": "0"
+                    },
+                    "16": {
+                        "amount": -10,
+                        "days_since": "0"
+                    },
+                    "5": {
+                        "amount": -10,
+                        "days_since": "0"
+                    },
+                    "2": {
+                        "amount": -10,
+                        "days_since": "0"
+                    }
+                }
+            }
+        }
+    }
+    """
 
     store = models.TextField(help_text="Store ID")  # CL, 27, 16, 5 or 2.
     amount = models.IntegerField(help_text="Amount of stock change (negative for reduction)")
-    days_since = models.PositiveIntegerField(help_text="Days since the order was placed")
+    days_since = models.PositiveBigIntegerField(help_text="Days since the order was placed")
     status = models.IntegerField(null=True, blank=True, help_text="Order status (only for CL orders)")
     ordered = models.PositiveIntegerField(null=True, blank=True, help_text="Ordered quantity (only for CL orders)")
     confirmed = models.BooleanField(default=False, help_text="Order confirmation status (only for CL orders)")
     delivery_time = models.DateField(null=True, blank=True, help_text="Expected delivery date (only for CL orders)")
 
-    class Meta(auto_prefetch.Model.Meta):
-        verbose_name: str = "Order"
-        verbose_name_plural: str = "Orders"
-
     def __str__(self) -> str:
         return f"Order - {self.store}, Amount: {self.amount}"
 
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "store": "store",
+            "amount": "amount",
+            "days_since": "days_since",
+            "status": "status",
+            "ordered": "ordered",
+            "confirmed": "confirmed",
+            "delivery_time": "delivery_time",
+        }
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
+
 
 class Stock(auto_prefetch.Model):
-    """How many products are in stock at each Webhallen store."""
+    """How many products are in stock at each Webhallen store.
+
+    Example:
+    {
+        "product": {
+            "stock": {
+                "web": 0,
+                "supplier": 0,
+                "displayCap": "50",
+                "1": 0,
+                "2": 0,
+                "5": 0,
+                "9": 0,
+                "11": 0,
+                "14": 0,
+                "15": 0,
+                "16": 0,
+                "19": 0,
+                "20": 0,
+                "27": 0,
+                "32": 0,
+                "isSentFromStore": 0,
+                "orders": {
+                    "27": {
+                        "amount": -10,
+                        "days_since": "0"
+                    },
+                    "CL": {
+                        "ordered": 51,
+                        "status": 2,
+                        "delivery_time": [
+                            5
+                        ],
+                        "confirmed": true
+                    },
+                    "2": {
+                        "amount": -10,
+                        "days_since": "0"
+                    },
+                    "16": {
+                        "amount": -10,
+                        "days_since": "0"
+                    }
+                }
+            }
+        }
+    }
+    """
+
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the stock was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the stock was last updated")
 
     # TODO(TheLovinator): Get store names from Webhallen API  # noqa: TD003
+    display_cap = models.PositiveBigIntegerField(help_text="Display cap")
+    download = models.PositiveBigIntegerField(help_text="Download amount")
+    is_sent_from_store = models.BooleanField(help_text="Is sent from store")
     store_1 = models.PositiveBigIntegerField(help_text="Stock in store 1")
     store_2 = models.PositiveBigIntegerField(help_text="Stock in store 2")
     store_5 = models.PositiveBigIntegerField(help_text="Stock in store 5")
@@ -210,12 +429,10 @@ class Stock(auto_prefetch.Model):
     store_20 = models.PositiveBigIntegerField(help_text="Stock in store 20")
     store_27 = models.PositiveBigIntegerField(help_text="Stock in store 27")
     store_32 = models.PositiveBigIntegerField(help_text="Stock in store 32")
-    web = models.PositiveBigIntegerField(help_text="Stock in web store")
     supplier = models.PositiveBigIntegerField(help_text="Stock from supplier")
-    display_cap = models.PositiveBigIntegerField(help_text="Display cap")
-    is_sent_from_store = models.BooleanField(help_text="Is sent from store")
-    download = models.PositiveBigIntegerField(help_text="Download amount")
+    web = models.PositiveBigIntegerField(help_text="Stock in web store")
 
+    # Relationships
     orders = models.ManyToManyField(Order, help_text="Orders for this stock", related_name="stock")
 
     class Meta(auto_prefetch.Model.Meta):
@@ -224,6 +441,36 @@ class Stock(auto_prefetch.Model):
 
     def __str__(self) -> str:
         return f"Stock - {self.web} in web store"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "1": "store_1",
+            "2": "store_2",
+            "5": "store_5",
+            "9": "store_9",
+            "11": "store_11",
+            "14": "store_14",
+            "15": "store_15",
+            "16": "store_16",
+            "19": "store_19",
+            "20": "store_20",
+            "27": "store_27",
+            "32": "store_32",
+            "web": "web",
+            "supplier": "supplier",
+            "displayCap": "display_cap",
+            "isSentFromStore": "is_sent_from_store",
+            "download": "download",
+            # "orders": "orders",
+        }
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
+
+        # Handle orders separately as they are nested.
+        orders = data.get("orders", {})
+        for store, order_data in orders.items():
+            order, _ = Order.objects.get_or_create(store=store, defaults=order_data)
+            self.orders.add(order)
 
 
 class Price(auto_prefetch.Model):
@@ -247,6 +494,24 @@ class Price(auto_prefetch.Model):
     def __str__(self) -> str:
         return f"{self.price} {self.currency}"
 
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "price": "price",
+            "currency": "currency",
+            "vat": "vat",
+            "type": "type",
+            "endAt": "end_at",
+            "startAt": "start_at",
+            "amountLeft": "amount_left",
+            "nearlyOver": "nearly_over",
+            "flashSale": "flash_sale",
+            "maxQtyPerCustomer": "max_qty_per_customer",
+            "maxAmountForPrice": "max_amount_for_price",
+            "soldAmount": "sold_amount",
+        }
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
+
 
 class Image(auto_prefetch.Model):
     """An image from Webhallen.
@@ -266,6 +531,17 @@ class Release(auto_prefetch.Model):
 
     timestamp = models.DateTimeField(help_text="Timestamp")
     format = models.TextField(help_text="Format")
+
+    def __str__(self) -> str:
+        return f"Release - {self.timestamp}"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "timestamp": "timestamp",
+            "format": "format",
+        }
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
 
 
 class Section(auto_prefetch.Model):
@@ -1377,15 +1653,58 @@ class ShippingClass(auto_prefetch.Model):
 
 
 class EnergyMarking(auto_prefetch.Model):
-    """Energy marking."""
+    """Energy marking.
 
+    Example:
+    {
+        "product": {
+            "energyMarking": {
+                "rating": "G",
+                "scale": "A+",
+                "labelContent": null,
+                "productSheetContent": "-",
+                "labelImageUrl": "https://www.webhallen.com/images/669512-asus-rog-swift-pg27aqdm-265-oled-bildskarm-fo?raw",
+                "manufacturer": "Philips Lighting",
+                "itemCode": "915005630901"
+            }
+        }
+    }
+    """
+
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="Created at")
+    updated_at = models.DateTimeField(auto_now=True, help_text="Updated at")
+
+    # Webhallen fields
+    item_code = models.TextField(help_text="Item code")
     label_content = models.TextField(help_text="Label content")  # TODO(Thelovinator): Is this used?  # noqa: TD003
+    label_image_url = models.URLField(help_text="Label image URL")  # TODO(Thelovinator): Download image  # noqa: TD003
+    manufacturer = models.TextField(help_text="Manufacturer")
+    product_sheet_content = models.TextField(help_text="Product sheet content")
     rating = models.TextField(help_text="Rating")
     scale = models.TextField(help_text="Scale")
-    product_sheet_content = models.TextField(help_text="Product sheet content")
-    label_image_url = models.URLField(help_text="Label image URL")
-    manufacturer = models.TextField(help_text="Manufacturer")
-    item_code = models.TextField(help_text="Item code")
+
+    def __str__(self) -> str:
+        return f"Energy marking - {self.item_code}"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "itemCode": "item_code",
+            "labelContent": "label_content",
+            "labelImageUrl": "label_image_url",
+            "manufacturer": "manufacturer",
+            "productSheetContent": "product_sheet_content",
+            "rating": "rating",
+            "scale": "scale",
+        }
+
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
+
+        # Warn if labelContent is not None
+        if self.label_content is not None:
+            # TODO(Thelovinator): Send Discord message  # noqa: TD003
+            logger.warning("Label content is not None - %s", self.label_content)
 
 
 class StatusCode(auto_prefetch.Model):
@@ -1467,30 +1786,94 @@ class Insurance(auto_prefetch.Model):
     provider = models.PositiveBigIntegerField(help_text="Insurance provider")
     length = models.PositiveBigIntegerField(help_text="Insurance length")
 
+    def __str__(self) -> str:
+        return f"Insurance - {self.name}"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "name": "name",
+            "price": "price",
+            "provider": "provider",
+            "length": "length",
+        }
+
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
+
 
 class ExcludeShippingMethod(auto_prefetch.Model):
     """Excluded shipping method."""
 
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Exclude shipping method ID")
 
+    def __str__(self) -> str:
+        return f"Exclude shipping method - {self.id}"
+
 
 class Meta(auto_prefetch.Model):
-    """Meta."""
+    """Meta.
+
+    Example:
+        "product": {
+            "meta": {
+            "highlight_member_offer": true,
+            "excluded_shipping_methods": [
+                "28"
+            ],
+            "is_hygiene_article": true,
+            "requires_prepayment": "TRUE"
+            },
+        }
+
+    """
 
     highlight_member_offer = models.BooleanField(help_text="Highlight member offer")
     excluded_shipping_methods = models.ManyToManyField(ExcludeShippingMethod, help_text="Excluded shipping methods")
     is_hygiene_article = models.BooleanField(help_text="Is hygiene article")
     requires_prepayment = models.TextField(help_text="Requires prepayment")
 
+    def __str__(self) -> str:
+        return f"Meta - {self.pk}"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "highlight_member_offer": "highlight_member_offer",
+            "excluded_shipping_methods": "excluded_shipping_methods",
+            "is_hygiene_article": "is_hygiene_article",
+            "requires_prepayment": "requires_prepayment",
+        }
+
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
+
 
 class FyndwareClass(auto_prefetch.Model):
     """Fyndware class."""
 
-    id = models.PositiveBigIntegerField(primary_key=True, help_text="Fyndware class ID")
+    # Django fields
+    webhallen_id = models.PositiveBigIntegerField(primary_key=True, help_text="Fyndware class ID")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the Fyndware class was created.")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the Fyndware class was last updated.")
+
+    # Webhallen fields
     condition = models.TextField(help_text="Condition")
     description = models.TextField(help_text="Description")
     name = models.TextField(help_text="Name")
     short_name = models.TextField(help_text="Short name")  # TODO(TheLovinator): Is this correct?  # noqa: TD003
+
+    def __str__(self) -> str:
+        return f"{self.name} ({self.webhallen_id})"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "condition": "condition",
+            "description": "description",
+            "name": "name",
+            "shortName": "short_name",
+        }
+
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
 
 
 class Product(auto_prefetch.Model):
@@ -1584,7 +1967,6 @@ class Product(auto_prefetch.Model):
     def import_json(self, data: dict) -> None:
         """Import JSON data."""
         field_mapping: dict[str, str] = {
-            "id": "id",
             "canonicalLink": "canonical_link",
             "categoryTree": "category_tree",
             "description": "description",
@@ -1606,6 +1988,4 @@ class Product(auto_prefetch.Model):
             "thumbnail": "thumbnail",
             "ticket": "ticket",
         }
-        updated: int = update_fields(instance=self, data=data, field_mapping=field_mapping)
-        if updated > 0:
-            logger.info("Updated %s fields for %s", updated, self)
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
