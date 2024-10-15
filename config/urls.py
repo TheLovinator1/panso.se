@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 
 from debug_toolbar.toolbar import debug_toolbar_urls
+from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
 
@@ -16,3 +17,8 @@ urlpatterns: list = [
 # Don't include debug_toolbar when running tests
 if "test" not in sys.argv:
     urlpatterns = [*urlpatterns, *debug_toolbar_urls()]
+
+if settings.DEBUG:
+    urlpatterns += [
+        path("_pictures/", include("pictures.urls")),
+    ]

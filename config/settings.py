@@ -62,6 +62,7 @@ INSTALLED_APPS: list[str] = [
     "django_filters",
     "django_htmx",
     "ninja",
+    "pictures",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
