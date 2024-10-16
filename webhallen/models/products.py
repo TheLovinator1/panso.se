@@ -1,12 +1,19 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 import auto_prefetch
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
+from django.core.files.base import ContentFile
 from django.db import models
+from pictures.models import PictureField
 
 from utils.field_updater import update_fields
+
+if TYPE_CHECKING:
+    import httpx
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -22,6 +29,7 @@ class CanonicalVariant(auto_prefetch.Model):
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the canonical variant was created")
     updated_at = models.DateTimeField(auto_now=True, help_text="When the canonical variant was last updated")
 
+    # Webhallen fields
     name = models.TextField(help_text="Variant name")
 
     def __str__(self) -> str:
@@ -29,9 +37,7 @@ class CanonicalVariant(auto_prefetch.Model):
 
     def import_json(self, data: dict) -> None:
         """Import JSON data."""
-        field_mapping: dict[str, str] = {
-            "name": "name",
-        }
+        field_mapping: dict[str, str] = {"name": "name"}
         update_fields(instance=self, data=data, field_mapping=field_mapping)
 
 
@@ -175,16 +181,47 @@ class ListClass(auto_prefetch.Model):
     variant_name = models.TextField(help_text="Variant name")
 
     # Relationships
-    energy_marking = models.ForeignKey("EnergyMarking", on_delete=models.CASCADE, help_text="Energy marking")
-    lowest_price = models.ForeignKey("Price", on_delete=models.CASCADE, help_text="Lowest price")
-    price = models.ForeignKey("Price", on_delete=models.CASCADE, help_text="Price")
-    regular_price = models.ForeignKey("Price", on_delete=models.CASCADE, help_text="Regular price")
-    release = models.ForeignKey("Release", on_delete=models.CASCADE, help_text="Release")
-    stock = models.ForeignKey("Stock", on_delete=models.CASCADE, help_text="Stock")
+    energy_marking = models.ForeignKey(
+        "EnergyMarking",
+        on_delete=models.CASCADE,
+        help_text="Energy marking",
+        related_name="list_classes",
+    )
+    lowest_price = models.ForeignKey(
+        "Price",
+        on_delete=models.CASCADE,
+        help_text="Lowest price",
+        related_name="list_classes_lowest_price",
+    )
+    price = models.ForeignKey(
+        "Price",
+        on_delete=models.CASCADE,
+        help_text="Price",
+        related_name="list_classes_price",
+    )
+    regular_price = models.ForeignKey(
+        "Price",
+        on_delete=models.CASCADE,
+        help_text="Regular price",
+        related_name="list_classes_regular_price",
+    )
+    release = models.ForeignKey(
+        "Release",
+        on_delete=models.CASCADE,
+        help_text="Release",
+        related_name="list_classes_release",
+    )
+    stock = models.ForeignKey(
+        "Stock",
+        on_delete=models.CASCADE,
+        help_text="Stock",
+        related_name="list_classes_stock",
+    )
     variant_properties = models.ForeignKey(
         "VariantProperties",
         on_delete=models.CASCADE,
         help_text="Variant properties",
+        related_name="list_classes_variant_properties",
     )
 
     def __str__(self) -> str:
@@ -288,12 +325,181 @@ class ListClass(auto_prefetch.Model):
 
 
 class Variants(auto_prefetch.Model):
-    """Variants."""
+    """Variants.
 
+    Example:
+        {
+        "variants": {
+            "canonicalVariant": {
+                "id": 181686,
+                "name": "Settlers från Catan 5-6 spelare Expansion (Sv)"
+            },
+            "list": {
+                "id": 6332,
+                "variantProperties": {
+                    "Färg": "Svart",
+                    "Lagring": "64 GB",
+                    "Anslutning": "Wi-Fi"
+                },
+                "name": "Settlers från Catan - Sjöfarare Expansion (Sv)",
+                "price": {
+                    "price": "365.00",
+                    "currency": "SEK",
+                    "vat": 73,
+                    "type": "campaign",
+                    "endAt": "2025-01-04T20:06:52",
+                    "startAt": "2023-05-26T09:28:45",
+                    "soldAmount": null,
+                    "maxAmountForPrice": null,
+                    "amountLeft": 4906,
+                    "nearlyOver": false,
+                    "flashSale": false,
+                    "maxQtyPerCustomer": 2
+                },
+                "stock": {
+                    "web": 0,
+                    "supplier": 0,
+                    "displayCap": "50",
+                    "1": 0,
+                    "2": 0,
+                    "5": 0,
+                    "9": 0,
+                    "11": 0,
+                    "14": 0,
+                    "15": 0,
+                    "16": 0,
+                    "19": 0,
+                    "20": 0,
+                    "27": 0,
+                    "32": 0,
+                    "isSentFromStore": 0,
+                    "orders": {
+                        "27": {
+                            "amount": -10,
+                            "days_since": "0"
+                        },
+                        "CL": {
+                            "ordered": 51,
+                            "status": 2,
+                            "delivery_time": [
+                                5
+                            ],
+                            "confirmed": true
+                        },
+                        "2": {
+                            "amount": -10,
+                            "days_since": "0"
+                        },
+                        "16": {
+                            "amount": -10,
+                            "days_since": "0"
+                        }
+                    }
+                },
+                "release": {
+                    "timestamp": 997588800,
+                    "format": "Y-m-d"
+                },
+                "isFyndware": false,
+                "variantName": "Sjöfarare Expansion (Sv)",
+                "discontinued": true,
+                "regularPrice": {
+                    "price": "365.00",
+                    "currency": "SEK",
+                    "vat": 73,
+                    "type": null,
+                    "endAt": "2025-01-04T19:23:15",
+                    "startAt": "2023-05-26T09:28:45",
+                    "soldAmount": null,
+                    "maxAmountForPrice": null,
+                    "amountLeft": null,
+                    "nearlyOver": false,
+                    "flashSale": false,
+                    "maxQtyPerCustomer": null
+                },
+                "energyMarking": {
+                    "rating": "G",
+                    "scale": "A+",
+                    "labelContent": null,
+                    "productSheetContent": "-",
+                    "labelImageUrl": "https://www.webhallen.com/images/669512-asus-rog-swift-pg27aqdm-265-oled-bildskarm-fo?raw",
+                    "manufacturer": "Philips Lighting",
+                    "itemCode": "915005630901"
+                },
+                "lowestPrice": {
+                    "price": "199.00",
+                    "currency": "SEK",
+                    "vat": 39.8,
+                    "type": "campaign",
+                    "endAt": "2023-10-08T23:59:00",
+                    "startAt": "2023-09-18T08:00:00",
+                    "soldAmount": null,
+                    "maxAmountForPrice": null,
+                    "amountLeft": 0,
+                    "nearlyOver": true,
+                    "flashSale": false,
+                    "maxQtyPerCustomer": 2
+                }
+            },
+            "group": "1447",
+            "variantGroups": {
+                "name": "Färg",
+                "type": "color",
+                "values": [
+                    "64gb",
+                    "256gb"
+                ]
+            }
+        }
+    }
+    """
+
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the variant was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the variant was last updated")
+
+    # Webhallen fields
     canonical_variant = models.ForeignKey(CanonicalVariant, on_delete=models.CASCADE, help_text="Canonical variant")
     list = models.ForeignKey(ListClass, on_delete=models.CASCADE, help_text="List")
     group = models.PositiveBigIntegerField(help_text="Group")
     variant_groups = models.ManyToManyField(VariantGroups, help_text="Variant groups")
+
+    def __str__(self) -> str:
+        return f"Variant - {self.canonical_variant}"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            # "canonicalVariant": "canonical_variant",
+            # "list": "list",
+            "group": "group",
+            # "variantGroups": "variant_groups",
+        }
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
+
+        # canonicalVariant
+        canonical_variant_data = data.get("canonicalVariant", {})
+        canonical_variant, created = CanonicalVariant.objects.get_or_create(id=canonical_variant_data.get("id"))
+        if created:
+            logger.info("Created new canonical variant: %s", canonical_variant)
+        canonical_variant.import_json(canonical_variant_data)
+        self.canonical_variant = canonical_variant
+
+        # variantGroups
+        variant_groups = data.get("variantGroups", {})
+        for variant_group_data in variant_groups:
+            variant_group, created = VariantGroups.objects.get_or_create(id=variant_group_data.get("id"))
+            if created:
+                logger.info("Created new variant group: %s", variant_group)
+            self.variant_groups.add(variant_group)
+
+        # ListClass
+        list_data = data.get("list", {})
+        list_class, created = ListClass.objects.get_or_create(id=list_data.get("id"))
+        if created:
+            logger.info("Created new list class: %s", list_class)
+        list_class.import_json(list_data)
+        self.list = list_class
 
 
 class Order(auto_prefetch.Model):
@@ -334,6 +540,13 @@ class Order(auto_prefetch.Model):
     }
     """
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the order was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the order was last updated")
+
+    # Webhallen fields
+    # TODO(TheLovinator): Get store names from Webhallen API  # noqa: TD003
+    # TODO(TheLovinator): Convert to choices  # noqa: TD003
     store = models.TextField(help_text="Store ID")  # CL, 27, 16, 5 or 2.
     amount = models.IntegerField(help_text="Amount of stock change (negative for reduction)")
     days_since = models.PositiveBigIntegerField(help_text="Days since the order was placed")
@@ -413,6 +626,7 @@ class Stock(auto_prefetch.Model):
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the stock was created")
     updated_at = models.DateTimeField(auto_now=True, help_text="When the stock was last updated")
 
+    # Webhallen fields
     # TODO(TheLovinator): Get store names from Webhallen API  # noqa: TD003
     display_cap = models.PositiveBigIntegerField(help_text="Display cap")
     download = models.PositiveBigIntegerField(help_text="Download amount")
@@ -476,6 +690,11 @@ class Stock(auto_prefetch.Model):
 class Price(auto_prefetch.Model):
     """The price at Webhallen."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the price was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the price was last updated")
+
+    # Webhallen fields
     price = models.TextField(blank=True, help_text="Price of the product")
     currency = models.TextField(blank=True, help_text="The currency.")
     vat = models.FloatField(null=True, help_text="VAT")
@@ -519,16 +738,52 @@ class Image(auto_prefetch.Model):
     Each product has zoom, large and thumb but it is the same URL but with different arguments.
     """
 
+    # Django fields
+    product_id = models.PositiveBigIntegerField(primary_key=True, help_text="Product ID")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the image was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the image was last updated")
+
+    # Webhallen fields
     url = models.URLField(blank=True, help_text="Image URL")
-    image = models.ImageField(upload_to="images/webhallen/product/", help_text="Product image")
+    image = PictureField(upload_to="images/webhallen/product/", help_text="Product image")
 
     def __str__(self) -> str:
         return f"Image - {self.image}"
+
+    def download_image(self) -> None:
+        """Download the image from the URL."""
+        if not self.image:
+            client: httpx.Client = settings.HISHEL_CLIENT
+            response: httpx.Response = client.get(url=self.url, timeout=30)
+            self.image.save(
+                f"product_{self.product_id}.jpg",
+                ContentFile(response.content),
+            )
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data.
+
+        Example:
+        "images": {
+            "zoom": "/images/product/6332?trim&w=1400",
+            "large": "/images/product/6332?trim",
+            "thumb": "/images/product/6332?trim&h=80"
+        },
+        """
+        image_url: str = data.get("large", "")
+        if image_url != self.url:
+            self.url = f"https://www.webhallen.com{image_url}"
+            self.save()
 
 
 class Release(auto_prefetch.Model):
     """Release details."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the release was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the release was last updated")
+
+    # Webhallen fields
     timestamp = models.DateTimeField(help_text="Timestamp")
     format = models.TextField(help_text="Format")
 
@@ -547,7 +802,12 @@ class Release(auto_prefetch.Model):
 class Section(auto_prefetch.Model):
     """A section."""
 
+    # Django fields
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Section ID")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the section was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the section was last updated")
+
+    # Webhallen fields
     meta_title = models.TextField(help_text="Meta title")
     active = models.BooleanField(help_text="Is active")
     icon = models.TextField(help_text="Icon")
@@ -557,7 +817,12 @@ class Section(auto_prefetch.Model):
 class MainCategoryPath(auto_prefetch.Model):
     """The main category path."""
 
+    # Django fields
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Main category path ID")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the main category path was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the main category path was last updated")
+
+    # Webhallen fields
     fyndware_description = models.TextField(help_text="Fyndware description")
     meta_title = models.TextField(help_text="Meta title")
     seo_name = models.TextField(help_text="SEO name")
@@ -573,6 +838,11 @@ class MainCategoryPath(auto_prefetch.Model):
 class Parts(auto_prefetch.Model):
     """Parts."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the part was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the part was last updated")
+
+    # Webhallen fields
     comb = models.TextField(help_text="Value and unit")
     nnv = models.TextField(help_text="Numeric value. Int or float if value is number")
     text_value = models.TextField(help_text="Text value. A string if value is number")
@@ -583,10 +853,17 @@ class Parts(auto_prefetch.Model):
 class Component(auto_prefetch.Model):
     """Information under the Data field."""
 
+    # Django fields
     attribute_id = models.PositiveBigIntegerField(primary_key=True, help_text="Attribute ID")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the component was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the component was last updated")
+
+    # Webhallen fields
     name = models.TextField(help_text="Name")
     value = models.TextField(help_text="Value")
-    parts = models.ManyToManyField(Parts, help_text="Parts")
+
+    # Relationships
+    parts = models.ManyToManyField(Parts, help_text="Parts", related_name="components")
 
 
 class Header(auto_prefetch.Model):
@@ -595,181 +872,679 @@ class Header(auto_prefetch.Model):
     Note: All the field names are translated from Swedish to English.
     """
 
-    packaged_quantity = models.ManyToManyField(Component, help_text="Packaged quantity")
-    brand = models.ManyToManyField(Component, help_text="Brand")
-    product_line = models.ManyToManyField(Component, help_text="Product line")
-    manufacturer = models.ManyToManyField(Component, help_text="Manufacturer")
-    model = models.ManyToManyField(Component, help_text="Model")
-    compatibility = models.ManyToManyField(Component, help_text="Compatibility")
-    country_specific_batches = models.ManyToManyField(Component, help_text="Country-specific batches")
-    localization = models.ManyToManyField(Component, help_text="Localization")
-    game_publisher = models.ManyToManyField(Component, help_text="Game publisher")
-    game_developer = models.ManyToManyField(Component, help_text="Game developer")
-    edition = models.ManyToManyField(Component, help_text="Edition")
-    batch = models.ManyToManyField(Component, help_text="Batch")
-    manufacturer_model_number = models.ManyToManyField(Component, help_text="Manufacturer's model number")
-    release_date = models.ManyToManyField(Component, help_text="Release date")
-    series = models.ManyToManyField(Component, help_text="Series")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the header was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the header was last updated")
+
+    # Webhallen fields
+    packaged_quantity = models.ManyToManyField(
+        Component,
+        help_text="Packaged quantity",
+        related_name="products_packaged_quantity",
+    )
+    brand = models.ManyToManyField(
+        Component,
+        help_text="Brand",
+        related_name="products_brand",
+    )
+    product_line = models.ManyToManyField(
+        Component,
+        help_text="Product line",
+        related_name="products_product_line",
+    )
+    manufacturer = models.ManyToManyField(
+        Component,
+        help_text="Manufacturer",
+        related_name="products_manufacturer",
+    )
+    model = models.ManyToManyField(
+        Component,
+        help_text="Model",
+        related_name="products_model",
+    )
+    compatibility = models.ManyToManyField(
+        Component,
+        help_text="Compatibility",
+        related_name="products_compatibility",
+    )
+    country_specific_batches = models.ManyToManyField(
+        Component,
+        help_text="Country-specific batches",
+        related_name="products_country_specific_batches",
+    )
+    localization = models.ManyToManyField(
+        Component,
+        help_text="Localization",
+        related_name="products_localization",
+    )
+    game_publisher = models.ManyToManyField(
+        Component,
+        help_text="Game publisher",
+        related_name="products_game_publisher",
+    )
+    game_developer = models.ManyToManyField(
+        Component,
+        help_text="Game developer",
+        related_name="products_game_developer",
+    )
+    edition = models.ManyToManyField(
+        Component,
+        help_text="Edition",
+        related_name="products_edition",
+    )
+    batch = models.ManyToManyField(
+        Component,
+        help_text="Batch",
+        related_name="products_batch",
+    )
+    manufacturer_model_number = models.ManyToManyField(
+        Component,
+        help_text="Manufacturer's model number",
+        related_name="products_manufacturer_model_number",
+    )
+    release_date = models.ManyToManyField(
+        Component,
+        help_text="Release date",
+        related_name="products_release_date",
+    )
+    series = models.ManyToManyField(
+        Component,
+        help_text="Series",
+        related_name="products_series",
+    )
 
 
 class DimensionsAndWeight(auto_prefetch.Model):
     """Dimensions and weight."""
 
-    weight = models.ManyToManyField(Component, help_text="Weight")
-    length = models.ManyToManyField(Component, help_text="Length")
-    width = models.ManyToManyField(Component, help_text="Width")
-    height = models.ManyToManyField(Component, help_text="Height")
-    length_in_meters = models.ManyToManyField(Component, help_text="Length in meters")
-    diameter = models.ManyToManyField(Component, help_text="Diameter")
-    comments = models.ManyToManyField(Component, help_text="Comments")
-    thickness = models.ManyToManyField(Component, help_text="Thickness")
-    volume = models.ManyToManyField(Component, help_text="Volume")
-    comment = models.ManyToManyField(Component, help_text="Comment")
-    min_height = models.ManyToManyField(Component, help_text="Minimum height")
-    backrest_height = models.ManyToManyField(Component, help_text="Backrest height")
-    backrest_width = models.ManyToManyField(Component, help_text="Backrest width")
-    max_length = models.ManyToManyField(Component, help_text="Maximum length")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the dimensions and weight were created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the dimensions and weight were last updated")
+
+    # Webhallen fields
+    weight = models.ManyToManyField(Component, help_text="Weight", related_name="dimensions_weight")
+    length = models.ManyToManyField(Component, help_text="Length", related_name="dimensions_length")
+    width = models.ManyToManyField(Component, help_text="Width", related_name="dimensions_width")
+    height = models.ManyToManyField(Component, help_text="Height", related_name="dimensions_height")
+    length_in_meters = models.ManyToManyField(
+        Component,
+        help_text="Length in meters",
+        related_name="dimensions_length_in_meters",
+    )
+    diameter = models.ManyToManyField(Component, help_text="Diameter", related_name="dimensions_diameter")
+    comments = models.ManyToManyField(Component, help_text="Comments", related_name="dimensions_comments")
+    thickness = models.ManyToManyField(Component, help_text="Thickness", related_name="dimensions_thickness")
+    volume = models.ManyToManyField(Component, help_text="Volume", related_name="dimensions_volume")
+    comment = models.ManyToManyField(Component, help_text="Comment", related_name="dimensions_comment")
+    min_height = models.ManyToManyField(Component, help_text="Minimum height", related_name="dimensions_min_height")
+    backrest_height = models.ManyToManyField(
+        Component,
+        help_text="Backrest height",
+        related_name="dimensions_backrest_height",
+    )
+    backrest_width = models.ManyToManyField(
+        Component,
+        help_text="Backrest width",
+        related_name="dimensions_backrest_width",
+    )
+    max_length = models.ManyToManyField(Component, help_text="Maximum length", related_name="dimensions_max_length")
 
 
 class General(auto_prefetch.Model):
     """General information."""
 
-    product_type = models.ManyToManyField(Component, help_text="Product type")
-    accessory_category = models.ManyToManyField(Component, help_text="Accessory category")
-    consumable_subcategory = models.ManyToManyField(Component, help_text="Consumable subcategory")
-    technology = models.ManyToManyField(Component, help_text="Technology")
-    printer_consumables_class = models.ManyToManyField(Component, help_text="Printer consumables class")
-    subcategory = models.ManyToManyField(Component, help_text="Subcategory")
-    category = models.ManyToManyField(Component, help_text="Category")
-    installation_type = models.ManyToManyField(Component, help_text="Installation type")
-    designed_for = models.ManyToManyField(Component, help_text="Designed for")
-    environment = models.ManyToManyField(Component, help_text="Environment")
-    number_of_set_parts = models.ManyToManyField(Component, help_text="Number of set parts")
-    suitable_for = models.ManyToManyField(Component, help_text="Suitable for")
-    features = models.ManyToManyField(Component, help_text="Features")
-    learning = models.ManyToManyField(Component, help_text="Learning")
-    min_age = models.ManyToManyField(Component, help_text="Minimum age")
-    max_age = models.ManyToManyField(Component, help_text="Maximum age")
-    one_board_computer_included = models.ManyToManyField(Component, help_text="One board computer included")
-    waterproof = models.ManyToManyField(Component, help_text="Waterproof")
-    dimmer = models.ManyToManyField(Component, help_text="Dimmer")
-    cable_length = models.ManyToManyField(Component, help_text="Cable length")
-    supported_wattage_for_light_bulb = models.ManyToManyField(Component, help_text="Supported wattage for light bulb")
-    number_of_installed_light_bulbs = models.ManyToManyField(Component, help_text="Number of installed light bulbs")
-    number_of_supported_light_bulbs = models.ManyToManyField(Component, help_text="Number of supported light bulbs")
-    battery_included = models.ManyToManyField(Component, help_text="Battery included")
-    switch_type = models.ManyToManyField(Component, help_text="Switch type")
-    switch_location = models.ManyToManyField(Component, help_text="Switch location")
-    clamp_mount = models.ManyToManyField(Component, help_text="Clamp mount")
-    tool_set_parts = models.ManyToManyField(Component, help_text="Tool set parts")
-    socket = models.ManyToManyField(Component, help_text="Socket")
-    socket_size = models.ManyToManyField(Component, help_text="Socket size")
-    tip = models.ManyToManyField(Component, help_text="Tip")
-    tip_size = models.ManyToManyField(Component, help_text="Tip size")
-    size = models.ManyToManyField(Component, help_text="Size")
-    shape = models.ManyToManyField(Component, help_text="Shape")
-    tracking_data = models.ManyToManyField(Component, help_text="Tracking data")
-    solution = models.ManyToManyField(Component, help_text="Solution")
-    character_theme = models.ManyToManyField(Component, help_text="Character theme")
-    AC_adapter_included = models.ManyToManyField(Component, help_text="AC adapter included")
-    style = models.ManyToManyField(Component, help_text="Style")
-    recommended_for = models.ManyToManyField(Component, help_text="Recommended for")
-    recommended_use = models.ManyToManyField(Component, help_text="Recommended use")
-    connection = models.ManyToManyField(Component, help_text="Connection")
-    type = models.ManyToManyField(Component, help_text="Type")
-    total_length = models.ManyToManyField(Component, help_text="Total length")
-    payment_technology = models.ManyToManyField(Component, help_text="Payment technology")
-    mechanism = models.ManyToManyField(Component, help_text="Mechanism")
-    tilt_lock = models.ManyToManyField(Component, help_text="Tilt lock")
-    headrest = models.ManyToManyField(Component, help_text="Headrest")
-    armrest = models.ManyToManyField(Component, help_text="Armrest")
-    tilt = models.ManyToManyField(Component, help_text="Tilt")
-    ergonomic = models.ManyToManyField(Component, help_text="Ergonomic")
-    tilt_tension_adjustment = models.ManyToManyField(Component, help_text="Tilt tension adjustment")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the general information was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the general information was last updated")
+    # Webhallen fields
+    product_type = models.ManyToManyField(
+        Component,
+        help_text="Product type",
+        related_name="products_product_type",
+    )
+    accessory_category = models.ManyToManyField(
+        Component,
+        help_text="Accessory category",
+        related_name="products_accessory_category",
+    )
+    consumable_subcategory = models.ManyToManyField(
+        Component,
+        help_text="Consumable subcategory",
+        related_name="products_consumable_subcategory",
+    )
+    technology = models.ManyToManyField(
+        Component,
+        help_text="Technology",
+        related_name="products_technology",
+    )
+    printer_consumables_class = models.ManyToManyField(
+        Component,
+        help_text="Printer consumables class",
+        related_name="products_printer_consumables_class",
+    )
+    subcategory = models.ManyToManyField(
+        Component,
+        help_text="Subcategory",
+        related_name="products_subcategory",
+    )
+    category = models.ManyToManyField(
+        Component,
+        help_text="Category",
+        related_name="products_category",
+    )
+    installation_type = models.ManyToManyField(
+        Component,
+        help_text="Installation type",
+        related_name="products_installation_type",
+    )
+    designed_for = models.ManyToManyField(
+        Component,
+        help_text="Designed for",
+        related_name="products_designed_for",
+    )
+    environment = models.ManyToManyField(
+        Component,
+        help_text="Environment",
+        related_name="products_environment",
+    )
+    number_of_set_parts = models.ManyToManyField(
+        Component,
+        help_text="Number of set parts",
+        related_name="products_number_of_set_parts",
+    )
+    suitable_for = models.ManyToManyField(
+        Component,
+        help_text="Suitable for",
+        related_name="products_suitable_for",
+    )
+    features = models.ManyToManyField(
+        Component,
+        help_text="Features",
+        related_name="products_features",
+    )
+    learning = models.ManyToManyField(
+        Component,
+        help_text="Learning",
+        related_name="products_learning",
+    )
+    min_age = models.ManyToManyField(
+        Component,
+        help_text="Minimum age",
+        related_name="products_min_age",
+    )
+    max_age = models.ManyToManyField(
+        Component,
+        help_text="Maximum age",
+        related_name="products_max_age",
+    )
+    one_board_computer_included = models.ManyToManyField(
+        Component,
+        help_text="One board computer included",
+        related_name="products_one_board_computer_included",
+    )
+    waterproof = models.ManyToManyField(
+        Component,
+        help_text="Waterproof",
+        related_name="products_waterproof",
+    )
+    dimmer = models.ManyToManyField(
+        Component,
+        help_text="Dimmer",
+        related_name="products_dimmer",
+    )
+    cable_length = models.ManyToManyField(
+        Component,
+        help_text="Cable length",
+        related_name="products_cable_length",
+    )
+    supported_wattage_for_light_bulb = models.ManyToManyField(
+        Component,
+        help_text="Supported wattage for light bulb",
+        related_name="products_supported_wattage_for_light_bulb",
+    )
+    number_of_installed_light_bulbs = models.ManyToManyField(
+        Component,
+        help_text="Number of installed light bulbs",
+        related_name="products_number_of_installed_light_bulbs",
+    )
+    number_of_supported_light_bulbs = models.ManyToManyField(
+        Component,
+        help_text="Number of supported light bulbs",
+        related_name="products_number_of_supported_light_bulbs",
+    )
+    battery_included = models.ManyToManyField(
+        Component,
+        help_text="Battery included",
+        related_name="products_battery_included",
+    )
+    switch_type = models.ManyToManyField(
+        Component,
+        help_text="Switch type",
+        related_name="products_switch_type",
+    )
+    switch_location = models.ManyToManyField(
+        Component,
+        help_text="Switch location",
+        related_name="products_switch_location",
+    )
+    clamp_mount = models.ManyToManyField(
+        Component,
+        help_text="Clamp mount",
+        related_name="products_clamp_mount",
+    )
+    tool_set_parts = models.ManyToManyField(
+        Component,
+        help_text="Tool set parts",
+        related_name="products_tool_set_parts",
+    )
+    socket = models.ManyToManyField(
+        Component,
+        help_text="Socket",
+        related_name="products_socket",
+    )
+    socket_size = models.ManyToManyField(
+        Component,
+        help_text="Socket size",
+        related_name="products_socket_size",
+    )
+    tip = models.ManyToManyField(
+        Component,
+        help_text="Tip",
+        related_name="products_tip",
+    )
+    tip_size = models.ManyToManyField(
+        Component,
+        help_text="Tip size",
+        related_name="products_tip_size",
+    )
+    size = models.ManyToManyField(
+        Component,
+        help_text="Size",
+        related_name="products_size",
+    )
+    shape = models.ManyToManyField(
+        Component,
+        help_text="Shape",
+        related_name="products_shape",
+    )
+    tracking_data = models.ManyToManyField(
+        Component,
+        help_text="Tracking data",
+        related_name="products_tracking_data",
+    )
+    solution = models.ManyToManyField(
+        Component,
+        help_text="Solution",
+        related_name="products_solution",
+    )
+    character_theme = models.ManyToManyField(
+        Component,
+        help_text="Character theme",
+        related_name="products_character_theme",
+    )
+    AC_adapter_included = models.ManyToManyField(
+        Component,
+        help_text="AC adapter included",
+        related_name="products_AC_adapter_included",
+    )
+    style = models.ManyToManyField(
+        Component,
+        help_text="Style",
+        related_name="products_style",
+    )
+    recommended_for = models.ManyToManyField(
+        Component,
+        help_text="Recommended for",
+        related_name="products_recommended_for",
+    )
+    recommended_use = models.ManyToManyField(
+        Component,
+        help_text="Recommended use",
+        related_name="products_recommended_use",
+    )
+    connection = models.ManyToManyField(
+        Component,
+        help_text="Connection",
+        related_name="products_connection",
+    )
+    type = models.ManyToManyField(
+        Component,
+        help_text="Type",
+        related_name="products_type",
+    )
+    total_length = models.ManyToManyField(
+        Component,
+        help_text="Total length",
+        related_name="products_total_length",
+    )
+    payment_technology = models.ManyToManyField(
+        Component,
+        help_text="Payment technology",
+        related_name="products_payment_technology",
+    )
+    mechanism = models.ManyToManyField(
+        Component,
+        help_text="Mechanism",
+        related_name="products_mechanism",
+    )
+    tilt_lock = models.ManyToManyField(
+        Component,
+        help_text="Tilt lock",
+        related_name="products_tilt_lock",
+    )
+    headrest = models.ManyToManyField(
+        Component,
+        help_text="Headrest",
+        related_name="products_headrest",
+    )
+    armrest = models.ManyToManyField(
+        Component,
+        help_text="Armrest",
+        related_name="products_armrest",
+    )
+    tilt = models.ManyToManyField(
+        Component,
+        help_text="Tilt",
+        related_name="products_tilt",
+    )
+    ergonomic = models.ManyToManyField(
+        Component,
+        help_text="Ergonomic",
+        related_name="products_ergonomic",
+    )
+    tilt_tension_adjustment = models.ManyToManyField(
+        Component,
+        help_text="Tilt tension adjustment",
+        related_name="products_tilt_tension_adjustment",
+    )
 
-    # TODO(TheLovinator): Rename in API to class when exporting  # noqa: TD003
-    _class = models.ManyToManyField(Component, help_text="Class")
-    kit_contents = models.ManyToManyField(Component, help_text="Kit contents")
-    media_subcategory = models.ManyToManyField(Component, help_text="Media subcategory")
-    indoor_outdoor = models.ManyToManyField(Component, help_text="Indoor/outdoor")
-    thermometer_scale = models.ManyToManyField(Component, help_text="Thermometer scale")
-    usage_modes = models.ManyToManyField(Component, help_text="Usage modes")
-    car_power_adapter_included = models.ManyToManyField(Component, help_text="Car power adapter included")
-    built_in_components = models.ManyToManyField(Component, help_text="Built-in components")
-    arm_construction = models.ManyToManyField(Component, help_text="Arm construction")
-    number_of_modules = models.ManyToManyField(Component, help_text="Number of modules")
-    number_of_component_sets = models.ManyToManyField(Component, help_text="Number of component sets")
-    number_of_sockets = models.ManyToManyField(Component, help_text="Number of sockets")
-    output_connection_type = models.ManyToManyField(Component, help_text="Output connection type")
-    output_bar_configuration = models.ManyToManyField(Component, help_text="Output bar configuration")
-    lock_type = models.ManyToManyField(Component, help_text="Lock type")
-    power = models.ManyToManyField(Component, help_text="Power")
-    cordless = models.ManyToManyField(Component, help_text="Cordless")
-    diameter = models.ManyToManyField(Component, help_text="Diameter")
+    # TODO (TheLovinator): Rename in API to class when exporting  # noqa: TD003
+    _class = models.ManyToManyField(
+        Component,
+        help_text="Class",
+        related_name="products_class",
+    )
+    kit_contents = models.ManyToManyField(
+        Component,
+        help_text="Kit contents",
+        related_name="products_kit_contents",
+    )
+    media_subcategory = models.ManyToManyField(
+        Component,
+        help_text="Media subcategory",
+        related_name="products_media_subcategory",
+    )
+    indoor_outdoor = models.ManyToManyField(
+        Component,
+        help_text="Indoor/outdoor",
+        related_name="products_indoor_outdoor",
+    )
+    thermometer_scale = models.ManyToManyField(
+        Component,
+        help_text="Thermometer scale",
+        related_name="products_thermometer_scale",
+    )
+    usage_modes = models.ManyToManyField(
+        Component,
+        help_text="Usage modes",
+        related_name="products_usage_modes",
+    )
+    car_power_adapter_included = models.ManyToManyField(
+        Component,
+        help_text="Car power adapter included",
+        related_name="products_car_power_adapter_included",
+    )
+    built_in_components = models.ManyToManyField(
+        Component,
+        help_text="Built-in components",
+        related_name="products_built_in_components",
+    )
+    arm_construction = models.ManyToManyField(
+        Component,
+        help_text="Arm construction",
+        related_name="products_arm_construction",
+    )
+    number_of_modules = models.ManyToManyField(
+        Component,
+        help_text="Number of modules",
+        related_name="products_number_of_modules",
+    )
+    number_of_component_sets = models.ManyToManyField(
+        Component,
+        help_text="Number of component sets",
+        related_name="products_number_of_component_sets",
+    )
+    number_of_sockets = models.ManyToManyField(
+        Component,
+        help_text="Number of sockets",
+        related_name="products_number_of_sockets",
+    )
+    output_connection_type = models.ManyToManyField(
+        Component,
+        help_text="Output connection type",
+        related_name="products_output_connection_type",
+    )
+    output_bar_configuration = models.ManyToManyField(
+        Component,
+        help_text="Output bar configuration",
+        related_name="products_output_bar_configuration",
+    )
+    lock_type = models.ManyToManyField(
+        Component,
+        help_text="Lock type",
+        related_name="products_lock_type",
+    )
+    power = models.ManyToManyField(
+        Component,
+        help_text="Power",
+        related_name="products_power",
+    )
+    cordless = models.ManyToManyField(
+        Component,
+        help_text="Cordless",
+        related_name="products_cordless",
+    )
+    diameter = models.ManyToManyField(
+        Component,
+        help_text="Diameter",
+        related_name="products_diameter",
+    )
 
 
 class Miscellaneous(auto_prefetch.Model):
     """Miscellaneous information."""
 
-    color = models.ManyToManyField(Component, help_text="Color")
-    color_category = models.ManyToManyField(Component, help_text="Color category")
-    flat_screen_mounting_interface = models.ManyToManyField(Component, help_text="Flat screen mounting interface")
-    rack_mounting_kit = models.ManyToManyField(Component, help_text="Rack mounting kit")
-    compatible_game_console = models.ManyToManyField(Component, help_text="Compatible game console")
-    sound_pressure_level = models.ManyToManyField(Component, help_text="Sound pressure level")
-    external_color = models.ManyToManyField(Component, help_text="External color")
-    encryption_algorithm = models.ManyToManyField(Component, help_text="Encryption algorithm")
-    hard_drive_form_factor_compatibility = models.ManyToManyField(Component, help_text="HDD form factor compatibility")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the miscellaneous information was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the miscellaneous information was last updated")
+    # Webhallen fields
+    color = models.ManyToManyField(Component, help_text="Color", related_name="miscellaneous_color")
+    color_category = models.ManyToManyField(
+        Component,
+        help_text="Color category",
+        related_name="miscellaneous_color_category",
+    )
+    flat_screen_mounting_interface = models.ManyToManyField(
+        Component,
+        help_text="Flat screen mounting interface",
+        related_name="miscellaneous_flat_screen_mounting_interface",
+    )
+    rack_mounting_kit = models.ManyToManyField(
+        Component,
+        help_text="Rack mounting kit",
+        related_name="miscellaneous_rack_mounting_kit",
+    )
+    compatible_game_console = models.ManyToManyField(
+        Component,
+        help_text="Compatible game console",
+        related_name="miscellaneous_compatible_game_console",
+    )
+    sound_pressure_level = models.ManyToManyField(
+        Component,
+        help_text="Sound pressure level",
+        related_name="miscellaneous_sound_pressure_level",
+    )
+    external_color = models.ManyToManyField(
+        Component,
+        help_text="External color",
+        related_name="miscellaneous_external_color",
+    )
+    encryption_algorithm = models.ManyToManyField(
+        Component,
+        help_text="Encryption algorithm",
+        related_name="miscellaneous_encryption_algorithm",
+    )
+    hard_drive_form_factor_compatibility = models.ManyToManyField(
+        Component,
+        help_text="HDD form factor compatibility",
+        related_name="miscellaneous_hard_drive_form_factor_compatibility",
+    )
     hard_drive_compatible_form_factor_metric = models.ManyToManyField(
         Component,
         help_text="HDD compatible form factor metric",
+        related_name="miscellaneous_hard_drive_compatible_form_factor_metric",
     )
-    material = models.ManyToManyField(Component, help_text="Material")
-    product_material = models.ManyToManyField(Component, help_text="Product material")
-    features = models.ManyToManyField(Component, help_text="Features")
-    gaming = models.ManyToManyField(Component, help_text="Gaming")
-    finish = models.ManyToManyField(Component, help_text="Finish")
-    works_with_chromebook = models.ManyToManyField(Component, help_text="Works with Chromebook")
-    recycled_product_content = models.ManyToManyField(Component, help_text="Recycled product content")
-    included_accessories = models.ManyToManyField(Component, help_text="Included accessories")
+    material = models.ManyToManyField(Component, help_text="Material", related_name="miscellaneous_material")
+    product_material = models.ManyToManyField(
+        Component,
+        help_text="Product material",
+        related_name="miscellaneous_product_material",
+    )
+    features = models.ManyToManyField(Component, help_text="Features", related_name="miscellaneous_features")
+    gaming = models.ManyToManyField(Component, help_text="Gaming", related_name="miscellaneous_gaming")
+    finish = models.ManyToManyField(Component, help_text="Finish", related_name="miscellaneous_finish")
+    works_with_chromebook = models.ManyToManyField(
+        Component,
+        help_text="Works with Chromebook",
+        related_name="miscellaneous_works_with_chromebook",
+    )
+    recycled_product_content = models.ManyToManyField(
+        Component,
+        help_text="Recycled product content",
+        related_name="miscellaneous_recycled_product_content",
+    )
+    included_accessories = models.ManyToManyField(
+        Component,
+        help_text="Included accessories",
+        related_name="miscellaneous_included_accessories",
+    )
     operating_time_without_power_connection = models.ManyToManyField(
         Component,
         help_text="Operating time without power connection",
+        related_name="miscellaneous_operating_time_without_power_connection",
     )
-    cordless_use = models.ManyToManyField(Component, help_text="Cordless use")
-    max_load = models.ManyToManyField(Component, help_text="Max load")
-    recycled_packaging_content = models.ManyToManyField(Component, help_text="Recycled packaging content")
-    protection = models.ManyToManyField(Component, help_text="Protection")
-    packaging_type = models.ManyToManyField(Component, help_text="Packaging type")
-    design_features = models.ManyToManyField(Component, help_text="Design features")
-    package_type = models.ManyToManyField(Component, help_text="Package type")
-    standards_followed = models.ManyToManyField(Component, help_text="Standards followed")
-    coffee_maker_accessories = models.ManyToManyField(Component, help_text="Coffee maker accessories")
-    max_depth_for_water_resistance = models.ManyToManyField(Component, help_text="Max depth for water resistance")
-    for_underwater_use = models.ManyToManyField(Component, help_text="For underwater use")
-    pricing_type = models.ManyToManyField(Component, help_text="Pricing type")
-    capacity = models.ManyToManyField(Component, help_text="Capacity")
-    product_type = models.ManyToManyField(Component, help_text="Product type")
-    processor_package = models.ManyToManyField(Component, help_text="Processor package")
-    waterproof = models.ManyToManyField(Component, help_text="Waterproof")
-    reparability_index = models.ManyToManyField(Component, help_text="Reparability index")
-    sound_level = models.ManyToManyField(Component, help_text="Sound level")
-    noise_class = models.ManyToManyField(Component, help_text="Noise class")
-    rugged_design = models.ManyToManyField(Component, help_text="Rugged design")
-    software_certification = models.ManyToManyField(Component, help_text="Software certification")
-    manufacturer_sales_program = models.ManyToManyField(Component, help_text="Manufacturer sales program")
-    recycled_product_content_comment = models.ManyToManyField(Component, help_text="Recycled product content comment")
+    cordless_use = models.ManyToManyField(
+        Component,
+        help_text="Cordless use",
+        related_name="miscellaneous_cordless_use",
+    )
+    max_load = models.ManyToManyField(Component, help_text="Max load", related_name="miscellaneous_max_load")
+    recycled_packaging_content = models.ManyToManyField(
+        Component,
+        help_text="Recycled packaging content",
+        related_name="miscellaneous_recycled_packaging_content",
+    )
+    protection = models.ManyToManyField(Component, help_text="Protection", related_name="miscellaneous_protection")
+    packaging_type = models.ManyToManyField(
+        Component,
+        help_text="Packaging type",
+        related_name="miscellaneous_packaging_type",
+    )
+    design_features = models.ManyToManyField(
+        Component,
+        help_text="Design features",
+        related_name="miscellaneous_design_features",
+    )
+    package_type = models.ManyToManyField(
+        Component,
+        help_text="Package type",
+        related_name="miscellaneous_package_type",
+    )
+    standards_followed = models.ManyToManyField(
+        Component,
+        help_text="Standards followed",
+        related_name="miscellaneous_standards_followed",
+    )
+    coffee_maker_accessories = models.ManyToManyField(
+        Component,
+        help_text="Coffee maker accessories",
+        related_name="miscellaneous_coffee_maker_accessories",
+    )
+    max_depth_for_water_resistance = models.ManyToManyField(
+        Component,
+        help_text="Max depth for water resistance",
+        related_name="miscellaneous_max_depth_for_water_resistance",
+    )
+    for_underwater_use = models.ManyToManyField(
+        Component,
+        help_text="For underwater use",
+        related_name="miscellaneous_for_underwater_use",
+    )
+    pricing_type = models.ManyToManyField(
+        Component,
+        help_text="Pricing type",
+        related_name="miscellaneous_pricing_type",
+    )
+    capacity = models.ManyToManyField(Component, help_text="Capacity", related_name="miscellaneous_capacity")
+    product_type = models.ManyToManyField(
+        Component,
+        help_text="Product type",
+        related_name="miscellaneous_product_type",
+    )
+    processor_package = models.ManyToManyField(
+        Component,
+        help_text="Processor package",
+        related_name="miscellaneous_processor_package",
+    )
+    waterproof = models.ManyToManyField(Component, help_text="Waterproof", related_name="miscellaneous_waterproof")
+    reparability_index = models.ManyToManyField(
+        Component,
+        help_text="Reparability index",
+        related_name="miscellaneous_reparability_index",
+    )
+    sound_level = models.ManyToManyField(Component, help_text="Sound level", related_name="miscellaneous_sound_level")
+    noise_class = models.ManyToManyField(Component, help_text="Noise class", related_name="miscellaneous_noise_class")
+    rugged_design = models.ManyToManyField(
+        Component,
+        help_text="Rugged design",
+        related_name="miscellaneous_rugged_design",
+    )
+    software_certification = models.ManyToManyField(
+        Component,
+        help_text="Software certification",
+        related_name="miscellaneous_software_certification",
+    )
+    manufacturer_sales_program = models.ManyToManyField(
+        Component,
+        help_text="Manufacturer sales program",
+        related_name="miscellaneous_manufacturer_sales_program",
+    )
+    recycled_product_content_comment = models.ManyToManyField(
+        Component,
+        help_text="Recycled product content comment",
+        related_name="miscellaneous_recycled_product_content_comment",
+    )
     recycled_packaging_content_comment = models.ManyToManyField(
         Component,
         help_text="Recycled packaging content comment",
+        related_name="miscellaneous_recycled_packaging_content_comment",
     )
-    product_condition = models.ManyToManyField(Component, help_text="Product condition")
-    ai_ready = models.ManyToManyField(Component, help_text="AI ready")
+    product_condition = models.ManyToManyField(
+        Component,
+        help_text="Product condition",
+        related_name="miscellaneous_product_condition",
+    )
+    ai_ready = models.ManyToManyField(Component, help_text="AI ready", related_name="miscellaneous_ai_ready")
 
 
 class Cable(auto_prefetch.Model):
     """Cable."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the cable was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the cable was last updated")
+
+    # Webhallen fields
     something = models.TextField(help_text="Something")  # TODO(TheLovinator): What is this?  # noqa: TD003
     cable = models.ManyToManyField(Component, help_text="Cable")
 
@@ -777,80 +1552,227 @@ class Cable(auto_prefetch.Model):
 class InputDevice(auto_prefetch.Model):
     """Input device."""
 
-    connection_technology = models.ManyToManyField(Component, help_text="Connection technology")
-    interface = models.ManyToManyField(Component, help_text="Interface")
-    product_type = models.ManyToManyField(Component, help_text="Product type")
-    backlit = models.ManyToManyField(Component, help_text="Backlit")
-    form_factor = models.ManyToManyField(Component, help_text="Form factor")
-    interface_type = models.ManyToManyField(Component, help_text="Interface type")
-    input_adapter_type = models.ManyToManyField(Component, help_text="Input adapter type")
-    keyboard_localization = models.ManyToManyField(Component, help_text="Keyboard localization")
-    motion_detection_technology = models.ManyToManyField(Component, help_text="Motion detection technology")
-    orientation = models.ManyToManyField(Component, help_text="Orientation")
-    number_of_buttons = models.ManyToManyField(Component, help_text="Number of buttons")
-    motion_resolution = models.ManyToManyField(Component, help_text="Motion resolution")
-    notebook_mouse = models.ManyToManyField(Component, help_text="Notebook mouse")
-    ergonomic_design = models.ManyToManyField(Component, help_text="Ergonomic design")
-    keyboard_layout = models.ManyToManyField(Component, help_text="Keyboard layout")
-    keyboard_technology = models.ManyToManyField(Component, help_text="Keyboard technology")
-    active_horizontal_area = models.ManyToManyField(Component, help_text="Active horizontal area")
-    active_vertical_area = models.ManyToManyField(Component, help_text="Active vertical area")
-    anti_ghosting = models.ManyToManyField(Component, help_text="Anti-ghosting")
-    number_of_simultaneous_keypresses = models.ManyToManyField(Component, help_text="Number of simultaneous keypresses")
-    type = models.ManyToManyField(Component, help_text="Type")
-    key_lock_type = models.ManyToManyField(Component, help_text="Key lock type")
-    backlight = models.ManyToManyField(Component, help_text="Backlight")
-    numeric_keypad = models.ManyToManyField(Component, help_text="Numeric keypad")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the input device was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the input device was last updated")
+    # Webhallen fields
+    connection_technology = models.ManyToManyField(
+        Component,
+        help_text="Connection technology",
+        related_name="input_device_connection_technology",
+    )
+    interface = models.ManyToManyField(Component, help_text="Interface", related_name="input_device_interface")
+    product_type = models.ManyToManyField(Component, help_text="Product type", related_name="input_device_product_type")
+    backlit = models.ManyToManyField(Component, help_text="Backlit", related_name="input_device_backlit")
+    form_factor = models.ManyToManyField(Component, help_text="Form factor", related_name="input_device_form_factor")
+    interface_type = models.ManyToManyField(
+        Component,
+        help_text="Interface type",
+        related_name="input_device_interface_type",
+    )
+    input_adapter_type = models.ManyToManyField(
+        Component,
+        help_text="Input adapter type",
+        related_name="input_device_input_adapter_type",
+    )
+    keyboard_localization = models.ManyToManyField(
+        Component,
+        help_text="Keyboard localization",
+        related_name="input_device_keyboard_localization",
+    )
+    motion_detection_technology = models.ManyToManyField(
+        Component,
+        help_text="Motion detection technology",
+        related_name="input_device_motion_detection_technology",
+    )
+    orientation = models.ManyToManyField(Component, help_text="Orientation", related_name="input_device_orientation")
+    number_of_buttons = models.ManyToManyField(
+        Component,
+        help_text="Number of buttons",
+        related_name="input_device_number_of_buttons",
+    )
+    motion_resolution = models.ManyToManyField(
+        Component,
+        help_text="Motion resolution",
+        related_name="input_device_motion_resolution",
+    )
+    notebook_mouse = models.ManyToManyField(
+        Component,
+        help_text="Notebook mouse",
+        related_name="input_device_notebook_mouse",
+    )
+    ergonomic_design = models.ManyToManyField(
+        Component,
+        help_text="Ergonomic design",
+        related_name="input_device_ergonomic_design",
+    )
+    keyboard_layout = models.ManyToManyField(
+        Component,
+        help_text="Keyboard layout",
+        related_name="input_device_keyboard_layout",
+    )
+    keyboard_technology = models.ManyToManyField(
+        Component,
+        help_text="Keyboard technology",
+        related_name="input_device_keyboard_technology",
+    )
+    active_horizontal_area = models.ManyToManyField(
+        Component,
+        help_text="Active horizontal area",
+        related_name="input_device_active_horizontal_area",
+    )
+    active_vertical_area = models.ManyToManyField(
+        Component,
+        help_text="Active vertical area",
+        related_name="input_device_active_vertical_area",
+    )
+    anti_ghosting = models.ManyToManyField(
+        Component,
+        help_text="Anti-ghosting",
+        related_name="input_device_anti_ghosting",
+    )
+    number_of_simultaneous_keypresses = models.ManyToManyField(
+        Component,
+        help_text="Number of simultaneous keypresses",
+        related_name="input_device_number_of_simultaneous_keypresses",
+    )
+    type = models.ManyToManyField(Component, help_text="Type", related_name="input_device_type")
+    key_lock_type = models.ManyToManyField(
+        Component,
+        help_text="Key lock type",
+        related_name="input_device_key_lock_type",
+    )
+    backlight = models.ManyToManyField(Component, help_text="Backlight", related_name="input_device_backlight")
+    numeric_keypad = models.ManyToManyField(
+        Component,
+        help_text="Numeric keypad",
+        related_name="input_device_numeric_keypad",
+    )
 
 
 class ServiceAndSupport(auto_prefetch.Model):
     """Service and support."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the service and support was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the service and support was last updated")
+
+    # Webhallen fields
     service_and_support = models.ManyToManyField(Component, help_text="Service and support")
 
 
 class GrossDimensionsAndWeight(auto_prefetch.Model):
     """Gross dimensions and weight."""
 
-    packing_weight = models.ManyToManyField(Component, help_text="Packing weight")
-    packing_height = models.ManyToManyField(Component, help_text="Packing height")
-    packing_depth = models.ManyToManyField(Component, help_text="Packing depth")
-    packing_width = models.ManyToManyField(Component, help_text="Packing width")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the gross dimensions and weight was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the gross dimensions and weight was last updated")
+    # Webhallen fields
+    packing_weight = models.ManyToManyField(
+        Component,
+        help_text="Packing weight",
+        related_name="gross_dimensions_packing_weight",
+    )
+    packing_height = models.ManyToManyField(
+        Component,
+        help_text="Packing height",
+        related_name="gross_dimensions_packing_height",
+    )
+    packing_depth = models.ManyToManyField(
+        Component,
+        help_text="Packing depth",
+        related_name="gross_dimensions_packing_depth",
+    )
+    packing_width = models.ManyToManyField(
+        Component,
+        help_text="Packing width",
+        related_name="gross_dimensions_packing_width",
+    )
 
 
 class Consumables(auto_prefetch.Model):
     """Consumables."""
 
-    color = models.ManyToManyField(Component, help_text="Color")
-    consumable_type = models.ManyToManyField(Component, help_text="Consumable type")
-    number_of_pages_during_lifetime = models.ManyToManyField(Component, help_text="Number of pages during life cycle")
-    coverage_for_lifetime = models.ManyToManyField(Component, help_text="Coverage for lifetime")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the consumables was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the consumables was last updated")
+
+    # Webhallen fields
+    color = models.ManyToManyField(Component, help_text="Color", related_name="consumables_color")
+    consumable_type = models.ManyToManyField(
+        Component,
+        help_text="Consumable type",
+        related_name="consumables_consumable_type",
+    )
+    number_of_pages_during_lifetime = models.ManyToManyField(
+        Component,
+        help_text="Number of pages during life cycle",
+        related_name="consumables_number_of_pages_during_lifetime",
+    )
+    coverage_for_lifetime = models.ManyToManyField(
+        Component,
+        help_text="Coverage for lifetime",
+        related_name="consumables_coverage_for_lifetime",
+    )
 
 
 class Battery(auto_prefetch.Model):
     """Battery."""
 
-    included_quantity = models.ManyToManyField(Component, help_text="Included quantity")
-    technology = models.ManyToManyField(Component, help_text="Technology")
-    form_factor = models.ManyToManyField(Component, help_text="Form factor")
-    capacity_ah = models.ManyToManyField(Component, help_text="Capacity (Ah)")
-    supplied_voltage = models.ManyToManyField(Component, help_text="Supplied voltage")
-    installed_count = models.ManyToManyField(Component, help_text="Installed count")
-    charging_time = models.ManyToManyField(Component, help_text="Charging time")
-    battery_time_up_to = models.ManyToManyField(Component, help_text="Battery time up to")
-    capacity = models.ManyToManyField(Component, help_text="Capacity")
-    talk_time = models.ManyToManyField(Component, help_text="Talk time")
-    standby_time = models.ManyToManyField(Component, help_text="Standby time")
-    run_time = models.ManyToManyField(Component, help_text="Run time")
-    wireless_charging = models.ManyToManyField(Component, help_text="Wireless charging")
-    fast_charging_technology = models.ManyToManyField(Component, help_text="Fast charging technology")
-    capacity_wh = models.ManyToManyField(Component, help_text="Capacity (Wh)")
-    battery_type = models.ManyToManyField(Component, help_text="Battery type")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the battery was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the battery was last updated")
+    # Webhallen fields
+    included_quantity = models.ManyToManyField(
+        Component,
+        help_text="Included quantity",
+        related_name="battery_included_quantity",
+    )
+    technology = models.ManyToManyField(Component, help_text="Technology", related_name="battery_technology")
+    form_factor = models.ManyToManyField(Component, help_text="Form factor", related_name="battery_form_factor")
+    capacity_ah = models.ManyToManyField(Component, help_text="Capacity (Ah)", related_name="battery_capacity_ah")
+    supplied_voltage = models.ManyToManyField(
+        Component,
+        help_text="Supplied voltage",
+        related_name="battery_supplied_voltage",
+    )
+    installed_count = models.ManyToManyField(
+        Component,
+        help_text="Installed count",
+        related_name="battery_installed_count",
+    )
+    charging_time = models.ManyToManyField(Component, help_text="Charging time", related_name="battery_charging_time")
+    battery_time_up_to = models.ManyToManyField(
+        Component,
+        help_text="Battery time up to",
+        related_name="battery_time_up_to",
+    )
+    capacity = models.ManyToManyField(Component, help_text="Capacity", related_name="battery_capacity")
+    talk_time = models.ManyToManyField(Component, help_text="Talk time", related_name="battery_talk_time")
+    standby_time = models.ManyToManyField(Component, help_text="Standby time", related_name="battery_standby_time")
+    run_time = models.ManyToManyField(Component, help_text="Run time", related_name="battery_run_time")
+    wireless_charging = models.ManyToManyField(
+        Component,
+        help_text="Wireless charging",
+        related_name="battery_wireless_charging",
+    )
+    fast_charging_technology = models.ManyToManyField(
+        Component,
+        help_text="Fast charging technology",
+        related_name="battery_fast_charging_technology",
+    )
+    capacity_wh = models.ManyToManyField(Component, help_text="Capacity (Wh)", related_name="battery_capacity_wh")
+    battery_type = models.ManyToManyField(Component, help_text="Battery type", related_name="battery_type")
 
 
 class AVComponent(auto_prefetch.Model):
     """AV component."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the AV component was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the AV component was last updated")
+
+    # Webhallen fields
     something = models.TextField(help_text="Something")  # TODO(TheLovinator): What is this?  # noqa: TD003
     av_component = models.ManyToManyField(Component, help_text="AV component")
 
@@ -858,758 +1780,2303 @@ class AVComponent(auto_prefetch.Model):
 class RemoteControl(auto_prefetch.Model):
     """Remote control."""
 
-    max_working_distance = models.ManyToManyField(Component, help_text="Max working distance")
-    remote_control_technology = models.ManyToManyField(Component, help_text="Remote control technology")
-    supported_devices = models.ManyToManyField(Component, help_text="Supported devices")
-    type = models.ManyToManyField(Component, help_text="Type")
-    number_of_devices_supported = models.ManyToManyField(Component, help_text="Number of devices supported")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the remote control was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the remote control was last updated")
+
+    # Webhallen fields
+    max_working_distance = models.ManyToManyField(
+        Component,
+        help_text="Max working distance",
+        related_name="remote_control_max_working_distance",
+    )
+    remote_control_technology = models.ManyToManyField(
+        Component,
+        help_text="Remote control technology",
+        related_name="remote_control_technology",
+    )
+    supported_devices = models.ManyToManyField(
+        Component,
+        help_text="Supported devices",
+        related_name="remote_control_supported_devices",
+    )
+    type = models.ManyToManyField(
+        Component,
+        help_text="Type",
+        related_name="remote_control_type",
+    )
+    number_of_devices_supported = models.ManyToManyField(
+        Component,
+        help_text="Number of devices supported",
+        related_name="remote_control_number_of_devices_supported",
+    )
 
 
 class VideoInput(auto_prefetch.Model):
     """Video input."""
 
-    support_for_audio_input = models.ManyToManyField(Component, help_text="Support for audio input")
-    format_for_digital_video = models.ManyToManyField(Component, help_text="Format for digital video")
-    format_for_analog_video = models.ManyToManyField(Component, help_text="Format for analog video")
-    analog_video_signal = models.ManyToManyField(Component, help_text="Analog video signal")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the video input was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the video input was last updated")
+
+    # Webhallen fields
+    support_for_audio_input = models.ManyToManyField(
+        Component,
+        help_text="Support for audio input",
+        related_name="video_input_support_for_audio_input",
+    )
+    format_for_digital_video = models.ManyToManyField(
+        Component,
+        help_text="Format for digital video",
+        related_name="video_input_format_for_digital_video",
+    )
+    format_for_analog_video = models.ManyToManyField(
+        Component,
+        help_text="Format for analog video",
+        related_name="video_input_format_for_analog_video",
+    )
+    analog_video_signal = models.ManyToManyField(
+        Component,
+        help_text="Analog video signal",
+        related_name="video_input_analog_video_signal",
+    )
     resolution_for_digital_video_capture = models.ManyToManyField(
         Component,
         help_text="Resolution for digital video capture",
+        related_name="video_input_resolution_for_digital_video_capture",
     )
-    type_of_interface = models.ManyToManyField(Component, help_text="Type of interface")
-    connection_technology = models.ManyToManyField(Component, help_text="Connection technology")
-    support_for_audio = models.ManyToManyField(Component, help_text="Support for audio")
-    camera_type = models.ManyToManyField(Component, help_text="Camera type")
-    computer_interface = models.ManyToManyField(Component, help_text="Computer interface")
-    maximum_digital_video_resolution = models.ManyToManyField(Component, help_text="Maximum digital video resolution")
-    frame_rate_max = models.ManyToManyField(Component, help_text="Frame rate max")
-    day_and_night_function = models.ManyToManyField(Component, help_text="Day and night function")
-    camera_mounting_type = models.ManyToManyField(Component, help_text="Camera mounting type")
-    mechanical_camera_design = models.ManyToManyField(Component, help_text="Mechanical camera design")
-    form_factor = models.ManyToManyField(Component, help_text="Form factor")
-    resolution_for_still_shot = models.ManyToManyField(Component, help_text="Resolution for still shot")
-    motion_detection = models.ManyToManyField(Component, help_text="Motion detection")
-    video_interface = models.ManyToManyField(Component, help_text="Video interface")
-    type = models.ManyToManyField(Component, help_text="Type")
-    image_capture_format = models.ManyToManyField(Component, help_text="Image capture format")
-    properties = models.ManyToManyField(Component, help_text="Properties")
-    digital_zoom = models.ManyToManyField(Component, help_text="Digital zoom")
-    face_recognition = models.ManyToManyField(Component, help_text="Face recognition")
-    support_for_high_resolution_video = models.ManyToManyField(Component, help_text="Support for high resolution video")
-    continuous_shooting_rate = models.ManyToManyField(Component, help_text="Continuous shooting rate")
-    image_stabilizer = models.ManyToManyField(Component, help_text="Image stabilizer")
-    max_video_resolution = models.ManyToManyField(Component, help_text="Max video resolution")
-    provided_interfaces = models.ManyToManyField(Component, help_text="Provided interfaces")
-    special_effects = models.ManyToManyField(Component, help_text="Special effects")
-    digital_camera_type = models.ManyToManyField(Component, help_text="Digital camera type")
-    iso_max = models.ManyToManyField(Component, help_text="ISO max")
-    combined_with = models.ManyToManyField(Component, help_text="Combined with")
-    light_sensitivity = models.ManyToManyField(Component, help_text="Light sensitivity")
+    type_of_interface = models.ManyToManyField(
+        Component,
+        help_text="Type of interface",
+        related_name="video_input_type_of_interface",
+    )
+    connection_technology = models.ManyToManyField(
+        Component,
+        help_text="Connection technology",
+        related_name="video_input_connection_technology",
+    )
+    support_for_audio = models.ManyToManyField(
+        Component,
+        help_text="Support for audio",
+        related_name="video_input_support_for_audio",
+    )
+    camera_type = models.ManyToManyField(Component, help_text="Camera type", related_name="video_input_camera_type")
+    computer_interface = models.ManyToManyField(
+        Component,
+        help_text="Computer interface",
+        related_name="video_input_computer_interface",
+    )
+    maximum_digital_video_resolution = models.ManyToManyField(
+        Component,
+        help_text="Maximum digital video resolution",
+        related_name="video_input_maximum_digital_video_resolution",
+    )
+    frame_rate_max = models.ManyToManyField(
+        Component,
+        help_text="Frame rate max",
+        related_name="video_input_frame_rate_max",
+    )
+    day_and_night_function = models.ManyToManyField(
+        Component,
+        help_text="Day and night function",
+        related_name="video_input_day_and_night_function",
+    )
+    camera_mounting_type = models.ManyToManyField(
+        Component,
+        help_text="Camera mounting type",
+        related_name="video_input_camera_mounting_type",
+    )
+    mechanical_camera_design = models.ManyToManyField(
+        Component,
+        help_text="Mechanical camera design",
+        related_name="video_input_mechanical_camera_design",
+    )
+    form_factor = models.ManyToManyField(Component, help_text="Form factor", related_name="video_input_form_factor")
+    resolution_for_still_shot = models.ManyToManyField(
+        Component,
+        help_text="Resolution for still shot",
+        related_name="video_input_resolution_for_still_shot",
+    )
+    motion_detection = models.ManyToManyField(
+        Component,
+        help_text="Motion detection",
+        related_name="video_input_motion_detection",
+    )
+    video_interface = models.ManyToManyField(
+        Component,
+        help_text="Video interface",
+        related_name="video_input_video_interface",
+    )
+    type = models.ManyToManyField(Component, help_text="Type", related_name="video_input_type")
+    image_capture_format = models.ManyToManyField(
+        Component,
+        help_text="Image capture format",
+        related_name="video_input_image_capture_format",
+    )
+    properties = models.ManyToManyField(Component, help_text="Properties", related_name="video_input_properties")
+    digital_zoom = models.ManyToManyField(Component, help_text="Digital zoom", related_name="video_input_digital_zoom")
+    face_recognition = models.ManyToManyField(
+        Component,
+        help_text="Face recognition",
+        related_name="video_input_face_recognition",
+    )
+    support_for_high_resolution_video = models.ManyToManyField(
+        Component,
+        help_text="Support for high resolution video",
+        related_name="video_input_support_for_high_resolution_video",
+    )
+    continuous_shooting_rate = models.ManyToManyField(
+        Component,
+        help_text="Continuous shooting rate",
+        related_name="video_input_continuous_shooting_rate",
+    )
+    image_stabilizer = models.ManyToManyField(
+        Component,
+        help_text="Image stabilizer",
+        related_name="video_input_image_stabilizer",
+    )
+    max_video_resolution = models.ManyToManyField(
+        Component,
+        help_text="Max video resolution",
+        related_name="video_input_max_video_resolution",
+    )
+    provided_interfaces = models.ManyToManyField(
+        Component,
+        help_text="Provided interfaces",
+        related_name="video_input_provided_interfaces",
+    )
+    special_effects = models.ManyToManyField(
+        Component,
+        help_text="Special effects",
+        related_name="video_input_special_effects",
+    )
+    digital_camera_type = models.ManyToManyField(
+        Component,
+        help_text="Digital camera type",
+        related_name="video_input_digital_camera_type",
+    )
+    iso_max = models.ManyToManyField(Component, help_text="ISO max", related_name="video_input_iso_max")
+    combined_with = models.ManyToManyField(
+        Component,
+        help_text="Combined with",
+        related_name="video_input_combined_with",
+    )
+    light_sensitivity = models.ManyToManyField(
+        Component,
+        help_text="Light sensitivity",
+        related_name="video_input_light_sensitivity",
+    )
 
 
 class SystemRequirements(auto_prefetch.Model):
     """System requirements."""
 
-    required_operating_system = models.ManyToManyField(Component, help_text="Required operating system")
-    os_family = models.ManyToManyField(Component, help_text="OS family")
-    supported_host_platform = models.ManyToManyField(Component, help_text="Supported host platform")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the system requirements was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the system requirements was last updated")
+
+    # Webhallen fields
+    required_operating_system = models.ManyToManyField(
+        Component,
+        help_text="Required operating system",
+        related_name="system_requirements_required_operating_system",
+    )
+    os_family = models.ManyToManyField(Component, help_text="OS family", related_name="system_requirements_os_family")
+    supported_host_platform = models.ManyToManyField(
+        Component,
+        help_text="Supported host platform",
+        related_name="system_requirements_supported_host_platform",
+    )
 
 
 class Network(auto_prefetch.Model):
     """Network."""
 
-    type = models.ManyToManyField(Component, help_text="Type")
-    number_of_ports = models.ManyToManyField(Component, help_text="Number of ports")
-    subcategory = models.ManyToManyField(Component, help_text="Subcategory")
-    form_factor = models.ManyToManyField(Component, help_text="Form factor")
-    subtype = models.ManyToManyField(Component, help_text="Subtype")
-    managed = models.ManyToManyField(Component, help_text="Managed")
-    jumbo_frame_support = models.ManyToManyField(Component, help_text="Jumbo frame support")
-    power_over_ethernet = models.ManyToManyField(Component, help_text="Power over Ethernet")
-    connection_technology = models.ManyToManyField(Component, help_text="Connection technology")
-    data_link_protocol = models.ManyToManyField(Component, help_text="Data link protocol")
-    type_of_cabling = models.ManyToManyField(Component, help_text="Type of cabling")
-    interface_type_bus = models.ManyToManyField(Component, help_text="Interface type bus")
-    data_transfer_speed = models.ManyToManyField(Component, help_text="Data transfer speed")
-    network_transport_protocol = models.ManyToManyField(Component, help_text="Network transport protocol")
-    wireless_protocol = models.ManyToManyField(Component, help_text="Wireless protocol")
-    ac_standard = models.ManyToManyField(Component, help_text="AC standard")
-    remote_administration_protocol = models.ManyToManyField(Component, help_text="Remote administration protocol")
-    number_of_wan_ports = models.ManyToManyField(Component, help_text="Number of WAN ports")
-    network_protocol = models.ManyToManyField(Component, help_text="Network protocol")
-    builtin_switch = models.ManyToManyField(Component, help_text="Built-in switch")
-    important_functions = models.ManyToManyField(Component, help_text="Important functions")
-    network_interface = models.ManyToManyField(Component, help_text="Network interface")
-    advanced_switching = models.ManyToManyField(Component, help_text="Advanced switching")
-    remote_management_interface = models.ManyToManyField(Component, help_text="Remote management interface")
-    max_area_indoor = models.ManyToManyField(Component, help_text="Max area indoor")
-    wireless_connection = models.ManyToManyField(Component, help_text="Wireless connection")
-    lan_presentation_and_wireless_d_o = models.ManyToManyField(Component, help_text="LAN presentation and wireless D/O")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the network was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the network was last updated")
+
+    # Webhallen fields
+    type = models.ManyToManyField(Component, help_text="Type", related_name="network_type")
+    number_of_ports = models.ManyToManyField(
+        Component,
+        help_text="Number of ports",
+        related_name="network_number_of_ports",
+    )
+    subcategory = models.ManyToManyField(Component, help_text="Subcategory", related_name="network_subcategory")
+    form_factor = models.ManyToManyField(Component, help_text="Form factor", related_name="network_form_factor")
+    subtype = models.ManyToManyField(Component, help_text="Subtype", related_name="network_subtype")
+    managed = models.ManyToManyField(Component, help_text="Managed", related_name="network_managed")
+    jumbo_frame_support = models.ManyToManyField(
+        Component,
+        help_text="Jumbo frame support",
+        related_name="network_jumbo_frame_support",
+    )
+    power_over_ethernet = models.ManyToManyField(
+        Component,
+        help_text="Power over Ethernet",
+        related_name="network_power_over_ethernet",
+    )
+    connection_technology = models.ManyToManyField(
+        Component,
+        help_text="Connection technology",
+        related_name="network_connection_technology",
+    )
+    data_link_protocol = models.ManyToManyField(
+        Component,
+        help_text="Data link protocol",
+        related_name="network_data_link_protocol",
+    )
+    type_of_cabling = models.ManyToManyField(
+        Component,
+        help_text="Type of cabling",
+        related_name="network_type_of_cabling",
+    )
+    interface_type_bus = models.ManyToManyField(
+        Component,
+        help_text="Interface type bus",
+        related_name="network_interface_type_bus",
+    )
+    data_transfer_speed = models.ManyToManyField(
+        Component,
+        help_text="Data transfer speed",
+        related_name="network_data_transfer_speed",
+    )
+    network_transport_protocol = models.ManyToManyField(
+        Component,
+        help_text="Network transport protocol",
+        related_name="network_transport_protocol",
+    )
+    wireless_protocol = models.ManyToManyField(
+        Component,
+        help_text="Wireless protocol",
+        related_name="network_wireless_protocol",
+    )
+    ac_standard = models.ManyToManyField(Component, help_text="AC standard", related_name="network_ac_standard")
+    remote_administration_protocol = models.ManyToManyField(
+        Component,
+        help_text="Remote administration protocol",
+        related_name="network_remote_administration_protocol",
+    )
+    number_of_wan_ports = models.ManyToManyField(
+        Component,
+        help_text="Number of WAN ports",
+        related_name="network_number_of_wan_ports",
+    )
+    network_protocol = models.ManyToManyField(
+        Component,
+        help_text="Network protocol",
+        related_name="network_network_protocol",
+    )
+    builtin_switch = models.ManyToManyField(
+        Component,
+        help_text="Built-in switch",
+        related_name="network_builtin_switch",
+    )
+    important_functions = models.ManyToManyField(
+        Component,
+        help_text="Important functions",
+        related_name="network_important_functions",
+    )
+    network_interface = models.ManyToManyField(
+        Component,
+        help_text="Network interface",
+        related_name="network_network_interface",
+    )
+    advanced_switching = models.ManyToManyField(
+        Component,
+        help_text="Advanced switching",
+        related_name="network_advanced_switching",
+    )
+    remote_management_interface = models.ManyToManyField(
+        Component,
+        help_text="Remote management interface",
+        related_name="network_remote_management_interface",
+    )
+    max_area_indoor = models.ManyToManyField(
+        Component,
+        help_text="Max area indoor",
+        related_name="network_max_area_indoor",
+    )
+    wireless_connection = models.ManyToManyField(
+        Component,
+        help_text="Wireless connection",
+        related_name="network_wireless_connection",
+    )
+    lan_presentation_and_wireless_d_o = models.ManyToManyField(
+        Component,
+        help_text="LAN presentation and wireless D/O",
+        related_name="network_lan_presentation_and_wireless_d_o",
+    )
     image_transfer_protocol_for_lan_and_wireless = models.ManyToManyField(
         Component,
         help_text="Image transfer protocol for LAN and wireless",
+        related_name="network_image_transfer_protocol_for_lan_and_wireless",
     )
-    support_for_wireless_lan = models.ManyToManyField(Component, help_text="Support for wireless LAN")
-    cloud_managed = models.ManyToManyField(Component, help_text="Cloud managed")
-    wire_protocol = models.ManyToManyField(Component, help_text="Wire protocol")
+    support_for_wireless_lan = models.ManyToManyField(
+        Component,
+        help_text="Support for wireless LAN",
+        related_name="network_support_for_wireless_lan",
+    )
+    cloud_managed = models.ManyToManyField(Component, help_text="Cloud managed", related_name="network_cloud_managed")
+    wire_protocol = models.ManyToManyField(Component, help_text="Wire protocol", related_name="network_wire_protocol")
 
 
 class SpeakerSystem(auto_prefetch.Model):
     """Speaker system."""
 
-    connection_technology = models.ManyToManyField(Component, help_text="Connection technology")
-    amplification_type = models.ManyToManyField(Component, help_text="Amplification type")
-    speaker_configuration = models.ManyToManyField(Component, help_text="Speaker configuration")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the speaker system was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the speaker system was last updated")
+    # Webhallen fields
+    connection_technology = models.ManyToManyField(
+        Component,
+        help_text="Connection technology",
+        related_name="speaker_system_connection_technology",
+    )
+    amplification_type = models.ManyToManyField(
+        Component,
+        help_text="Amplification type",
+        related_name="speaker_system_amplification_type",
+    )
+    speaker_configuration = models.ManyToManyField(
+        Component,
+        help_text="Speaker configuration",
+        related_name="speaker_system_speaker_configuration",
+    )
     continuous_current_for_sound_system_total = models.ManyToManyField(
         Component,
         help_text="Continuous current for sound system total",
+        related_name="speaker_system_continuous_current_for_sound_system_total",
     )
-    system_components = models.ManyToManyField(Component, help_text="System components")
+    system_components = models.ManyToManyField(
+        Component,
+        help_text="System components",
+        related_name="speaker_system_system_components",
+    )
     peak_current_for_sound_system_total = models.ManyToManyField(
         Component,
         help_text="Peak current for sound system total",
+        related_name="speaker_system_peak_current_for_sound_system_total",
     )
-    frequency_response = models.ManyToManyField(Component, help_text="Frequency response")
-    builtin_decoders = models.ManyToManyField(Component, help_text="Built-in decoders")
-    number_of_crossover_channels = models.ManyToManyField(Component, help_text="Number of crossover channels")
-    continuous_current = models.ManyToManyField(Component, help_text="Continuous current")
-    handsfree_function = models.ManyToManyField(Component, help_text="Hands-free function")
-    app_controlled = models.ManyToManyField(Component, help_text="App controlled")
-    recommended_location = models.ManyToManyField(Component, help_text="Recommended location")
-    multiple_rooms = models.ManyToManyField(Component, help_text="Multiple rooms")
-    series = models.ManyToManyField(Component, help_text="Series")
-    speaker_element_diameter_metric = models.ManyToManyField(Component, help_text="Speaker element diameter metric")
-    integrated_components = models.ManyToManyField(Component, help_text="Integrated components")
-    peak_current = models.ManyToManyField(Component, help_text="Peak current")
+    frequency_response = models.ManyToManyField(
+        Component,
+        help_text="Frequency response",
+        related_name="speaker_system_frequency_response",
+    )
+    builtin_decoders = models.ManyToManyField(
+        Component,
+        help_text="Built-in decoders",
+        related_name="speaker_system_builtin_decoders",
+    )
+    number_of_crossover_channels = models.ManyToManyField(
+        Component,
+        help_text="Number of crossover channels",
+        related_name="speaker_system_number_of_crossover_channels",
+    )
+    continuous_current = models.ManyToManyField(
+        Component,
+        help_text="Continuous current",
+        related_name="speaker_system_continuous_current",
+    )
+    handsfree_function = models.ManyToManyField(
+        Component,
+        help_text="Hands-free function",
+        related_name="speaker_system_handsfree_function",
+    )
+    app_controlled = models.ManyToManyField(
+        Component,
+        help_text="App controlled",
+        related_name="speaker_system_app_controlled",
+    )
+    recommended_location = models.ManyToManyField(
+        Component,
+        help_text="Recommended location",
+        related_name="speaker_system_recommended_location",
+    )
+    multiple_rooms = models.ManyToManyField(
+        Component,
+        help_text="Multiple rooms",
+        related_name="speaker_system_multiple_rooms",
+    )
+    series = models.ManyToManyField(Component, help_text="Series", related_name="speaker_system_series")
+    speaker_element_diameter_metric = models.ManyToManyField(
+        Component,
+        help_text="Speaker element diameter metric",
+        related_name="speaker_system_speaker_element_diameter_metric",
+    )
+    integrated_components = models.ManyToManyField(
+        Component,
+        help_text="Integrated components",
+        related_name="speaker_system_integrated_components",
+    )
+    peak_current = models.ManyToManyField(
+        Component,
+        help_text="Peak current",
+        related_name="speaker_system_peak_current",
+    )
 
 
 class SoundSystem(auto_prefetch.Model):
     """Sound system."""
 
-    designed_for = models.ManyToManyField(Component, help_text="Designed for")
-    type = models.ManyToManyField(Component, help_text="Type")
-    recommended_use = models.ManyToManyField(Component, help_text="Recommended use")
-    mode_for_audio_output = models.ManyToManyField(Component, help_text="Mode for audio output")
-    functions = models.ManyToManyField(Component, help_text="Functions")
-    max_actuation_distance = models.ManyToManyField(Component, help_text="Max actuation distance")
-    sub_category = models.ManyToManyField(Component, help_text="Subcategory")
-    surround_sound_effects = models.ManyToManyField(Component, help_text="Surround sound effects")
-    builtin_decoders = models.ManyToManyField(Component, help_text="Built-in decoders")
-    surround_system_class = models.ManyToManyField(Component, help_text="Surround system class")
-    speaker_system = models.ManyToManyField(Component, help_text="Speaker system")
-    surround_mode = models.ManyToManyField(Component, help_text="Surround mode")
-    digital_player_features = models.ManyToManyField(Component, help_text="Digital player features")
-    digital_audio_format = models.ManyToManyField(Component, help_text="Digital audio format")
-    combined_with = models.ManyToManyField(Component, help_text="Combined with")
-    type_of_digital_player = models.ManyToManyField(Component, help_text="Type of digital player")
-    audio_format = models.ManyToManyField(Component, help_text="Audio format")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the sound system was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the sound system was last updated")
+
+    # Webhallen fields
+    designed_for = models.ManyToManyField(Component, help_text="Designed for", related_name="sound_system_designed_for")
+    type = models.ManyToManyField(Component, help_text="Type", related_name="sound_system_type")
+    recommended_use = models.ManyToManyField(
+        Component,
+        help_text="Recommended use",
+        related_name="sound_system_recommended_use",
+    )
+    mode_for_audio_output = models.ManyToManyField(
+        Component,
+        help_text="Mode for audio output",
+        related_name="sound_system_mode_for_audio_output",
+    )
+    functions = models.ManyToManyField(Component, help_text="Functions", related_name="sound_system_functions")
+    max_actuation_distance = models.ManyToManyField(
+        Component,
+        help_text="Max actuation distance",
+        related_name="sound_system_max_actuation_distance",
+    )
+    sub_category = models.ManyToManyField(Component, help_text="Subcategory", related_name="sound_system_sub_category")
+    surround_sound_effects = models.ManyToManyField(
+        Component,
+        help_text="Surround sound effects",
+        related_name="sound_system_surround_sound_effects",
+    )
+    builtin_decoders = models.ManyToManyField(
+        Component,
+        help_text="Built-in decoders",
+        related_name="sound_system_builtin_decoders",
+    )
+    surround_system_class = models.ManyToManyField(
+        Component,
+        help_text="Surround system class",
+        related_name="sound_system_surround_system_class",
+    )
+    speaker_system = models.ManyToManyField(
+        Component,
+        help_text="Speaker system",
+        related_name="sound_system_speaker_system",
+    )
+    surround_mode = models.ManyToManyField(
+        Component,
+        help_text="Surround mode",
+        related_name="sound_system_surround_mode",
+    )
+    digital_player_features = models.ManyToManyField(
+        Component,
+        help_text="Digital player features",
+        related_name="sound_system_digital_player_features",
+    )
+    digital_audio_format = models.ManyToManyField(
+        Component,
+        help_text="Digital audio format",
+        related_name="sound_system_digital_audio_format",
+    )
+    combined_with = models.ManyToManyField(
+        Component,
+        help_text="Combined with",
+        related_name="sound_system_combined_with",
+    )
+    type_of_digital_player = models.ManyToManyField(
+        Component,
+        help_text="Type of digital player",
+        related_name="sound_system_type_of_digital_player",
+    )
+    audio_format = models.ManyToManyField(Component, help_text="Audio format", related_name="sound_system_audio_format")
 
 
 class PowerSupply(auto_prefetch.Model):
     """Power supply."""
 
-    power_source = models.ManyToManyField(Component, help_text="Power source")
-    power = models.ManyToManyField(Component, help_text="Power")
-    capacity_va = models.ManyToManyField(Component, help_text="Capacity (VA)")
-    number_of_outlets = models.ManyToManyField(Component, help_text="Number of outlets")
-    supplied_voltage = models.ManyToManyField(Component, help_text="Supplied voltage")
-    mains_voltage = models.ManyToManyField(Component, help_text="Mains voltage")
-    ups_technology = models.ManyToManyField(Component, help_text="UPS technology")
-    form_factor = models.ManyToManyField(Component, help_text="Form factor")
-    voltage_dissipation = models.ManyToManyField(Component, help_text="Voltage dissipation")
-    demanded_frequency = models.ManyToManyField(Component, help_text="Required frequency")
-    demanded_voltage = models.ManyToManyField(Component, help_text="Required voltage")
-    max_electric_current = models.ManyToManyField(Component, help_text="Max electric current")
-    type = models.ManyToManyField(Component, help_text="Type")
-    required_frequency = models.ManyToManyField(Component, help_text="Required frequency")
-    type_of_input_connector = models.ManyToManyField(Component, help_text="Type of input connector")
-    type_of_output_contact = models.ManyToManyField(Component, help_text="Type of output contact")
-    modular_cable_management = models.ManyToManyField(Component, help_text="Modular cable management")
-    power_supply_compatibility = models.ManyToManyField(Component, help_text="Power supply compatibility")
-    cooling_system = models.ManyToManyField(Component, help_text="Cooling system")
-    the_80_plus_certification = models.ManyToManyField(Component, help_text="The 80 PLUS certification")
-    alternative = models.ManyToManyField(Component, help_text="Alternative")
-    cord_length = models.ManyToManyField(Component, help_text="Cord length")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the power supply was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the power supply was last updated")
+    # Webhallen fields
+    power_source = models.ManyToManyField(Component, help_text="Power source", related_name="power_supply_power_source")
+    power = models.ManyToManyField(Component, help_text="Power", related_name="power_supply_power")
+    capacity_va = models.ManyToManyField(Component, help_text="Capacity (VA)", related_name="power_supply_capacity_va")
+    number_of_outlets = models.ManyToManyField(
+        Component,
+        help_text="Number of outlets",
+        related_name="power_supply_number_of_outlets",
+    )
+    supplied_voltage = models.ManyToManyField(
+        Component,
+        help_text="Supplied voltage",
+        related_name="power_supply_supplied_voltage",
+    )
+    mains_voltage = models.ManyToManyField(
+        Component,
+        help_text="Mains voltage",
+        related_name="power_supply_mains_voltage",
+    )
+    ups_technology = models.ManyToManyField(
+        Component,
+        help_text="UPS technology",
+        related_name="power_supply_ups_technology",
+    )
+    form_factor = models.ManyToManyField(Component, help_text="Form factor", related_name="power_supply_form_factor")
+    voltage_dissipation = models.ManyToManyField(
+        Component,
+        help_text="Voltage dissipation",
+        related_name="power_supply_voltage_dissipation",
+    )
+    demanded_frequency = models.ManyToManyField(
+        Component,
+        help_text="Required frequency",
+        related_name="power_supply_demanded_frequency",
+    )
+    demanded_voltage = models.ManyToManyField(
+        Component,
+        help_text="Required voltage",
+        related_name="power_supply_demanded_voltage",
+    )
+    max_electric_current = models.ManyToManyField(
+        Component,
+        help_text="Max electric current",
+        related_name="power_supply_max_electric_current",
+    )
+    type = models.ManyToManyField(Component, help_text="Type", related_name="power_supply_type")
+    required_frequency = models.ManyToManyField(
+        Component,
+        help_text="Required frequency",
+        related_name="power_supply_required_frequency",
+    )
+    type_of_input_connector = models.ManyToManyField(
+        Component,
+        help_text="Type of input connector",
+        related_name="power_supply_type_of_input_connector",
+    )
+    type_of_output_contact = models.ManyToManyField(
+        Component,
+        help_text="Type of output contact",
+        related_name="power_supply_type_of_output_contact",
+    )
+    modular_cable_management = models.ManyToManyField(
+        Component,
+        help_text="Modular cable management",
+        related_name="power_supply_modular_cable_management",
+    )
+    power_supply_compatibility = models.ManyToManyField(
+        Component,
+        help_text="Power supply compatibility",
+        related_name="power_supply_power_supply_compatibility",
+    )
+    cooling_system = models.ManyToManyField(
+        Component,
+        help_text="Cooling system",
+        related_name="power_supply_cooling_system",
+    )
+    the_80_plus_certification = models.ManyToManyField(
+        Component,
+        help_text="The 80 PLUS certification",
+        related_name="power_supply_the_80_plus_certification",
+    )
+    alternative = models.ManyToManyField(Component, help_text="Alternative", related_name="power_supply_alternative")
+    cord_length = models.ManyToManyField(Component, help_text="Cord length", related_name="power_supply_cord_length")
     energy_consumption_during_operation = models.ManyToManyField(
         Component,
         help_text="Energy consumption during operation",
+        related_name="power_supply_energy_consumption_during_operation",
     )
 
 
 class SettingsControlsAndIndicators(auto_prefetch.Model):
     """Settings, controls and indicators."""
 
-    number_of_fan_speed_settings = models.ManyToManyField(Component, help_text="Number of fan speed settings")
-    remote_control = models.ManyToManyField(Component, help_text="Remote control")
-    control_type = models.ManyToManyField(Component, help_text="Control type")
-    pulse_function = models.ManyToManyField(Component, help_text="Pulse function")
-    number_of_speed_settings = models.ManyToManyField(Component, help_text="Number of speed settings")
-    room_navigation = models.ManyToManyField(Component, help_text="Room navigation")
-    heating_time = models.ManyToManyField(Component, help_text="Heating time")
-    programmable_cleaning_intervals = models.ManyToManyField(Component, help_text="Programmable cleaning intervals")
-    controls_on_handle = models.ManyToManyField(Component, help_text="Controls on handle")
+    # Django fields
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text="When the settings, controls and indicators was created",
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text="When the settings, controls and indicators was last updated",
+    )
+
+    # Webhallen fields
+    number_of_fan_speed_settings = models.ManyToManyField(
+        Component,
+        help_text="Number of fan speed settings",
+        related_name="settings_controls_and_indicators_number_of_fan_speed_settings",
+    )
+    remote_control = models.ManyToManyField(
+        Component,
+        help_text="Remote control",
+        related_name="settings_controls_and_indicators_remote_control",
+    )
+    control_type = models.ManyToManyField(
+        Component,
+        help_text="Control type",
+        related_name="settings_controls_and_indicators_control_type",
+    )
+    pulse_function = models.ManyToManyField(
+        Component,
+        help_text="Pulse function",
+        related_name="settings_controls_and_indicators_pulse_function",
+    )
+    number_of_speed_settings = models.ManyToManyField(
+        Component,
+        help_text="Number of speed settings",
+        related_name="settings_controls_and_indicators_number_of_speed_settings",
+    )
+    room_navigation = models.ManyToManyField(
+        Component,
+        help_text="Room navigation",
+        related_name="settings_controls_and_indicators_room_navigation",
+    )
+    heating_time = models.ManyToManyField(
+        Component,
+        help_text="Heating time",
+        related_name="settings_controls_and_indicators_heating_time",
+    )
+    programmable_cleaning_intervals = models.ManyToManyField(
+        Component,
+        help_text="Programmable cleaning intervals",
+        related_name="settings_controls_and_indicators_programmable_cleaning_intervals",
+    )
+    controls_on_handle = models.ManyToManyField(
+        Component,
+        help_text="Controls on handle",
+        related_name="settings_controls_and_indicators_controls_on_handle",
+    )
 
 
 class Power(auto_prefetch.Model):
     """Power."""
 
-    power_consumption = models.ManyToManyField(Component, help_text="Power consumption")
-    power_source = models.ManyToManyField(Component, help_text="Power source")
-    voltage = models.ManyToManyField(Component, help_text="Voltage")
-    battery_charge = models.ManyToManyField(Component, help_text="Battery charge")
-    operation_time_without_mains = models.ManyToManyField(Component, help_text="Operation time without mains")
-    operation = models.ManyToManyField(Component, help_text="Operation")
-    energy_consumption_per_year = models.ManyToManyField(Component, help_text="Energy consumption per year")
-    power_consumption_operating_mode = models.ManyToManyField(Component, help_text="Power consumption operating mode")
-    energy_class = models.ManyToManyField(Component, help_text="Energy class")
-    on_off_switch = models.ManyToManyField(Component, help_text="On/off switch")
-    power_consumption_hdr_on_mode = models.ManyToManyField(Component, help_text="Power consumption HDR on mode")
-    energy_class_hdr = models.ManyToManyField(Component, help_text="Energy class HDR")
-    energy_efficiency_ratio = models.ManyToManyField(Component, help_text="EER (Energy Efficiency Ratio)")
-    ampere_capacity = models.ManyToManyField(Component, help_text="https://en.wikipedia.org/wiki/Ampacity")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the power was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the power was last updated")
+
+    # Webhallen fields
+    power_consumption = models.ManyToManyField(
+        Component,
+        help_text="Power consumption",
+        related_name="power_power_consumption",
+    )
+    power_source = models.ManyToManyField(Component, help_text="Power source", related_name="power_power_source")
+    voltage = models.ManyToManyField(Component, help_text="Voltage", related_name="power_voltage")
+    battery_charge = models.ManyToManyField(Component, help_text="Battery charge", related_name="power_battery_charge")
+    operation_time_without_mains = models.ManyToManyField(
+        Component,
+        help_text="Operation time without mains",
+        related_name="power_operation_time_without_mains",
+    )
+    operation = models.ManyToManyField(Component, help_text="Operation", related_name="power_operation")
+    energy_consumption_per_year = models.ManyToManyField(
+        Component,
+        help_text="Energy consumption per year",
+        related_name="power_energy_consumption_per_year",
+    )
+    power_consumption_operating_mode = models.ManyToManyField(
+        Component,
+        help_text="Power consumption operating mode",
+        related_name="power_power_consumption_operating_mode",
+    )
+    energy_class = models.ManyToManyField(Component, help_text="Energy class", related_name="power_energy_class")
+    on_off_switch = models.ManyToManyField(Component, help_text="On/off switch", related_name="power_on_off_switch")
+    power_consumption_hdr_on_mode = models.ManyToManyField(
+        Component,
+        help_text="Power consumption HDR on mode",
+        related_name="power_power_consumption_hdr_on_mode",
+    )
+    energy_class_hdr = models.ManyToManyField(
+        Component,
+        help_text="Energy class HDR",
+        related_name="power_energy_class_hdr",
+    )
+    energy_efficiency_ratio = models.ManyToManyField(
+        Component,
+        help_text="EER (Energy Efficiency Ratio)",
+        related_name="power_energy_efficiency_ratio",
+    )
+    ampere_capacity = models.ManyToManyField(
+        Component,
+        help_text="https://en.wikipedia.org/wiki/Ampacity",
+        related_name="power_ampere_capacity",
+    )
 
 
 class HeatingAndCooling(auto_prefetch.Model):
     """Heating and cooling."""
 
-    product_type = models.ManyToManyField(Component, help_text="Product type")
-    model = models.ManyToManyField(Component, help_text="Model")
-    functions = models.ManyToManyField(Component, help_text="Functions")
-    air_flow = models.ManyToManyField(Component, help_text="Air flow")
-    container_capacity = models.ManyToManyField(Component, help_text="Container capacity")
-    environment = models.ManyToManyField(Component, help_text="Environment")
-    air_flow_control = models.ManyToManyField(Component, help_text="Air flow control")
-    heating_capacity = models.ManyToManyField(Component, help_text="Heating capacity")
-    max_dehumidification_capacity = models.ManyToManyField(Component, help_text="Max dehumidification capacity")
-    cooling_capacity = models.ManyToManyField(Component, help_text="Cooling capacity")
-    cooling_capacity_btu_per_hour = models.ManyToManyField(Component, help_text="Cooling capacity (BTU per hour)")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the heating and cooling was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the heating and cooling was last updated")
+
+    # Webhallen fields
+    product_type = models.ManyToManyField(
+        Component,
+        help_text="Product type",
+        related_name="heating_and_cooling_product_type",
+    )
+    model = models.ManyToManyField(Component, help_text="Model", related_name="heating_and_cooling_model")
+    functions = models.ManyToManyField(Component, help_text="Functions", related_name="heating_and_cooling_functions")
+    air_flow = models.ManyToManyField(Component, help_text="Air flow", related_name="heating_and_cooling_air_flow")
+    container_capacity = models.ManyToManyField(
+        Component,
+        help_text="Container capacity",
+        related_name="heating_and_cooling_container_capacity",
+    )
+    environment = models.ManyToManyField(
+        Component,
+        help_text="Environment",
+        related_name="heating_and_cooling_environment",
+    )
+    air_flow_control = models.ManyToManyField(
+        Component,
+        help_text="Air flow control",
+        related_name="heating_and_cooling_air_flow_control",
+    )
+    heating_capacity = models.ManyToManyField(
+        Component,
+        help_text="Heating capacity",
+        related_name="heating_and_cooling_heating_capacity",
+    )
+    max_dehumidification_capacity = models.ManyToManyField(
+        Component,
+        help_text="Max dehumidification capacity",
+        related_name="heating_and_cooling_max_dehumidification_capacity",
+    )
+    cooling_capacity = models.ManyToManyField(
+        Component,
+        help_text="Cooling capacity",
+        related_name="heating_and_cooling_cooling_capacity",
+    )
+    cooling_capacity_btu_per_hour = models.ManyToManyField(
+        Component,
+        help_text="Cooling capacity (BTU per hour)",
+        related_name="heating_and_cooling_cooling_capacity_btu_per_hour",
+    )
 
 
 class RAM(auto_prefetch.Model):
     """Random access memory (RAM)."""
 
-    data_integrity_check = models.ManyToManyField(Component, help_text="Data integrity check")
-    upgrade_type = models.ManyToManyField(Component, help_text="Upgrade type")
-    type = models.ManyToManyField(Component, help_text="Type")
-    memory_speed = models.ManyToManyField(Component, help_text="Memory speed")
-    registered_or_buffered = models.ManyToManyField(Component, help_text="Registered or buffered")
-    ram_technology = models.ManyToManyField(Component, help_text="RAM technology")
-    cas_latency = models.ManyToManyField(Component, help_text="CAS latency")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the RAM was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the RAM was last updated")
+
+    # Webhallen fields
+    data_integrity_check = models.ManyToManyField(
+        Component,
+        help_text="Data integrity check",
+        related_name="ram_data_integrity_check",
+    )
+    upgrade_type = models.ManyToManyField(
+        Component,
+        help_text="Upgrade type",
+        related_name="ram_upgrade_type",
+    )
+    type = models.ManyToManyField(
+        Component,
+        help_text="Type",
+        related_name="ram_type",
+    )
+    memory_speed = models.ManyToManyField(
+        Component,
+        help_text="Memory speed",
+        related_name="ram_memory_speed",
+    )
+    registered_or_buffered = models.ManyToManyField(
+        Component,
+        help_text="Registered or buffered",
+        related_name="ram_registered_or_buffered",
+    )
+    ram_technology = models.ManyToManyField(
+        Component,
+        help_text="RAM technology",
+        related_name="ram_ram_technology",
+    )
+    cas_latency = models.ManyToManyField(
+        Component,
+        help_text="CAS latency",
+        related_name="ram_cas_latency",
+    )
     adaptation_to_memory_specifications = models.ManyToManyField(
         Component,
         help_text="Adaptation to memory specifications",
+        related_name="ram_adaptation_to_memory_specifications",
     )
-    form_factor = models.ManyToManyField(Component, help_text="Form factor")
-    storage_capacity = models.ManyToManyField(Component, help_text="Storage capacity")
-    product_type = models.ManyToManyField(Component, help_text="Product type")
-    memory_size = models.ManyToManyField(Component, help_text="Frame size")
-    empty_slots = models.ManyToManyField(Component, help_text="Empty slots")
-    max_size_supported = models.ManyToManyField(Component, help_text="Max size supported")
-    internal_memory_ram = models.ManyToManyField(Component, help_text="Internal memory (RAM)")
-    number_of_slots = models.ManyToManyField(Component, help_text="Number of slots")
-    properties = models.ManyToManyField(Component, help_text="Properties")
-    low_profile = models.ManyToManyField(Component, help_text="Low profile")
+    form_factor = models.ManyToManyField(
+        Component,
+        help_text="Form factor",
+        related_name="ram_form_factor",
+    )
+    storage_capacity = models.ManyToManyField(
+        Component,
+        help_text="Storage capacity",
+        related_name="ram_storage_capacity",
+    )
+    product_type = models.ManyToManyField(
+        Component,
+        help_text="Product type",
+        related_name="ram_product_type",
+    )
+    memory_size = models.ManyToManyField(
+        Component,
+        help_text="Frame size",
+        related_name="ram_memory_size",
+    )
+    empty_slots = models.ManyToManyField(
+        Component,
+        help_text="Empty slots",
+        related_name="ram_empty_slots",
+    )
+    max_size_supported = models.ManyToManyField(
+        Component,
+        help_text="Max size supported",
+        related_name="ram_max_size_supported",
+    )
+    internal_memory_ram = models.ManyToManyField(
+        Component,
+        help_text="Internal memory (RAM)",
+        related_name="ram_internal_memory_ram",
+    )
+    number_of_slots = models.ManyToManyField(
+        Component,
+        help_text="Number of slots",
+        related_name="ram_number_of_slots",
+    )
+    properties = models.ManyToManyField(
+        Component,
+        help_text="Properties",
+        related_name="ram_properties",
+    )
+    low_profile = models.ManyToManyField(
+        Component,
+        help_text="Low profile",
+        related_name="ram_low_profile",
+    )
 
 
 class AudioOutput(auto_prefetch.Model):
     """Audio output."""
 
-    form_factor = models.ManyToManyField(Component, help_text="Form factor")
-    type = models.ManyToManyField(Component, help_text="Type")
-    interface_type = models.ManyToManyField(Component, help_text="Interface type")
-    audio_output_mode = models.ManyToManyField(Component, help_text="Audio output mode")
-    connection_technology = models.ManyToManyField(Component, help_text="Connection technology")
-    controls = models.ManyToManyField(Component, help_text="Controls")
-    headphone_ear_parts_type = models.ManyToManyField(Component, help_text="Headphone ear parts type")
-    headphone_cup_type = models.ManyToManyField(Component, help_text="Headphone cup type")
-    available_microphone = models.ManyToManyField(Component, help_text="Available microphone")
-    interface_connector = models.ManyToManyField(Component, help_text="Interface connector")
-    frequency_response = models.ManyToManyField(Component, help_text="Frequency response")
-    impedance = models.ManyToManyField(Component, help_text="Impedance")
-    product_type = models.ManyToManyField(Component, help_text="Product type")
-    wireless_technology = models.ManyToManyField(Component, help_text="Wireless technology")
-    anc = models.ManyToManyField(Component, help_text="ANC")
-    dac_resolution = models.ManyToManyField(Component, help_text="DAC resolution")
-    max_sampling_rate = models.ManyToManyField(Component, help_text="Max sampling rate")
-    signal_processor = models.ManyToManyField(Component, help_text="Signal processor")
-    headphone_mount = models.ManyToManyField(Component, help_text="Headphone mount")
-    foldable = models.ManyToManyField(Component, help_text="Foldable")
-    sound_isolating = models.ManyToManyField(Component, help_text="Sound isolating")
-    nfc_near_field_communication = models.ManyToManyField(Component, help_text="NFC (Near Field Communication)")
-    style = models.ManyToManyField(Component, help_text="Style")
-    output_per_channel = models.ManyToManyField(Component, help_text="Output per channel")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the audio output was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the audio output was last updated")
+
+    # Webhallen fields
+    form_factor = models.ManyToManyField(Component, help_text="Form factor", related_name="audio_output_form_factor")
+    type = models.ManyToManyField(Component, help_text="Type", related_name="audio_output_type")
+    interface_type = models.ManyToManyField(
+        Component,
+        help_text="Interface type",
+        related_name="audio_output_interface_type",
+    )
+    audio_output_mode = models.ManyToManyField(
+        Component,
+        help_text="Audio output mode",
+        related_name="audio_output_audio_output_mode",
+    )
+    connection_technology = models.ManyToManyField(
+        Component,
+        help_text="Connection technology",
+        related_name="audio_output_connection_technology",
+    )
+    controls = models.ManyToManyField(Component, help_text="Controls", related_name="audio_output_controls")
+    headphone_ear_parts_type = models.ManyToManyField(
+        Component,
+        help_text="Headphone ear parts type",
+        related_name="audio_output_headphone_ear_parts_type",
+    )
+    headphone_cup_type = models.ManyToManyField(
+        Component,
+        help_text="Headphone cup type",
+        related_name="audio_output_headphone_cup_type",
+    )
+    available_microphone = models.ManyToManyField(
+        Component,
+        help_text="Available microphone",
+        related_name="audio_output_available_microphone",
+    )
+    interface_connector = models.ManyToManyField(
+        Component,
+        help_text="Interface connector",
+        related_name="audio_output_interface_connector",
+    )
+    frequency_response = models.ManyToManyField(
+        Component,
+        help_text="Frequency response",
+        related_name="audio_output_frequency_response",
+    )
+    impedance = models.ManyToManyField(Component, help_text="Impedance", related_name="audio_output_impedance")
+    product_type = models.ManyToManyField(Component, help_text="Product type", related_name="audio_output_product_type")
+    wireless_technology = models.ManyToManyField(
+        Component,
+        help_text="Wireless technology",
+        related_name="audio_output_wireless_technology",
+    )
+    anc = models.ManyToManyField(Component, help_text="ANC", related_name="audio_output_anc")
+    dac_resolution = models.ManyToManyField(
+        Component,
+        help_text="DAC resolution",
+        related_name="audio_output_dac_resolution",
+    )
+    max_sampling_rate = models.ManyToManyField(
+        Component,
+        help_text="Max sampling rate",
+        related_name="audio_output_max_sampling_rate",
+    )
+    signal_processor = models.ManyToManyField(
+        Component,
+        help_text="Signal processor",
+        related_name="audio_output_signal_processor",
+    )
+    headphone_mount = models.ManyToManyField(
+        Component,
+        help_text="Headphone mount",
+        related_name="audio_output_headphone_mount",
+    )
+    foldable = models.ManyToManyField(Component, help_text="Foldable", related_name="audio_output_foldable")
+    sound_isolating = models.ManyToManyField(
+        Component,
+        help_text="Sound isolating",
+        related_name="audio_output_sound_isolating",
+    )
+    nfc_near_field_communication = models.ManyToManyField(
+        Component,
+        help_text="NFC (Near Field Communication)",
+        related_name="audio_output_nfc_near_field_communication",
+    )
+    style = models.ManyToManyField(Component, help_text="Style", related_name="audio_output_style")
+    output_per_channel = models.ManyToManyField(
+        Component,
+        help_text="Output per channel",
+        related_name="audio_output_output_per_channel",
+    )
 
 
 class HeatsinkAndFan(auto_prefetch.Model):
     """Heatsink and fan."""
 
-    fan_diameter = models.ManyToManyField(Component, help_text="Fan diameter")
-    power_connector = models.ManyToManyField(Component, help_text="Power connector")
-    compatible_with = models.ManyToManyField(Component, help_text="Compatible with")
-    cooler_material = models.ManyToManyField(Component, help_text="Cooler material")
-    radiator_size = models.ManyToManyField(Component, help_text="Radiator size")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the heatsink and fan was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the heatsink and fan was last updated")
+
+    # Webhallen fields
+    fan_diameter = models.ManyToManyField(
+        Component,
+        help_text="Fan diameter",
+        related_name="heatsink_and_fan_fan_diameter",
+    )
+    power_connector = models.ManyToManyField(
+        Component,
+        help_text="Power connector",
+        related_name="heatsink_and_fan_power_connector",
+    )
+    compatible_with = models.ManyToManyField(
+        Component,
+        help_text="Compatible with",
+        related_name="heatsink_and_fan_compatible_with",
+    )
+    cooler_material = models.ManyToManyField(
+        Component,
+        help_text="Cooler material",
+        related_name="heatsink_and_fan_cooler_material",
+    )
+    radiator_size = models.ManyToManyField(
+        Component,
+        help_text="Radiator size",
+        related_name="heatsink_and_fan_radiator_size",
+    )
 
 
 class Storage(auto_prefetch.Model):
     """Storage."""
 
-    model = models.ManyToManyField(Component, help_text="Model")
-    type = models.ManyToManyField(Component, help_text="Type")
-    interface = models.ManyToManyField(Component, help_text="Interface")
-    device_type = models.ManyToManyField(Component, help_text="Device type")
-    product_type = models.ManyToManyField(Component, help_text="Product type")
-    iscsi_support = models.ManyToManyField(Component, help_text="iSCSI support")
-    network_storage_type = models.ManyToManyField(Component, help_text="Network storage type")
-    total_storage_capacity = models.ManyToManyField(Component, help_text="Total storage capacity")
-    total_array_capacity = models.ManyToManyField(Component, help_text="Total array capacity")
-    external_interface_for_disk_array = models.ManyToManyField(Component, help_text="External interface for disk array")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the storage was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the storage was last updated")
+
+    # Webhallen fields
+    model = models.ManyToManyField(Component, help_text="Model", related_name="storage_model")
+    type = models.ManyToManyField(Component, help_text="Type", related_name="storage_type")
+    interface = models.ManyToManyField(Component, help_text="Interface", related_name="storage_interface")
+    device_type = models.ManyToManyField(Component, help_text="Device type", related_name="storage_device_type")
+    product_type = models.ManyToManyField(Component, help_text="Product type", related_name="storage_product_type")
+    iscsi_support = models.ManyToManyField(Component, help_text="iSCSI support", related_name="storage_iscsi_support")
+    network_storage_type = models.ManyToManyField(
+        Component,
+        help_text="Network storage type",
+        related_name="storage_network_storage_type",
+    )
+    total_storage_capacity = models.ManyToManyField(
+        Component,
+        help_text="Total storage capacity",
+        related_name="storage_total_storage_capacity",
+    )
+    total_array_capacity = models.ManyToManyField(
+        Component,
+        help_text="Total array capacity",
+        related_name="storage_total_array_capacity",
+    )
+    external_interface_for_disk_array = models.ManyToManyField(
+        Component,
+        help_text="External interface for disk array",
+        related_name="storage_external_interface_for_disk_array",
+    )
     external_interface_class_for_disk_array = models.ManyToManyField(
         Component,
         help_text="External interface class for disk array",
+        related_name="storage_external_interface_class_for_disk_array",
     )
 
 
 class PortableStorageSolution(auto_prefetch.Model):
     """Portable storage solution."""
 
-    type = models.ManyToManyField(Component, help_text="Type")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the portable storage solution was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the portable storage solution was last updated")
+
+    # Webhallen fields
+    type = models.ManyToManyField(Component, help_text="Type", related_name="portable_storage_solution_type")
 
 
 class OpticalStorageSecondary(auto_prefetch.Model):
     """Optical storage secondary."""
 
-    type = models.ManyToManyField(Component, help_text="Type")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the optical storage secondary was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the optical storage secondary was last updated")
+
+    # Webhallen fields
+    type = models.ManyToManyField(Component, help_text="Type", related_name="optical_storage_secondary_type")
 
 
 class OpticalStorage(auto_prefetch.Model):
     """Optical storage."""
 
-    write_speed = models.ManyToManyField(Component, help_text="Write speed")
-    read_speed = models.ManyToManyField(Component, help_text="Read speed")
-    rewrite_speed = models.ManyToManyField(Component, help_text="Rewrite speed")
-    type = models.ManyToManyField(Component, help_text="Type")
-    buffer_size = models.ManyToManyField(Component, help_text="Buffer size")
-    device_type = models.ManyToManyField(Component, help_text="Device type")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the optical storage was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the optical storage was last updated")
+
+    # Webhallen fields
+    write_speed = models.ManyToManyField(Component, help_text="Write speed", related_name="optical_storage_write_speed")
+    read_speed = models.ManyToManyField(Component, help_text="Read speed", related_name="optical_storage_read_speed")
+    rewrite_speed = models.ManyToManyField(
+        Component,
+        help_text="Rewrite speed",
+        related_name="optical_storage_rewrite_speed",
+    )
+    type = models.ManyToManyField(Component, help_text="Type", related_name="optical_storage_type")
+    buffer_size = models.ManyToManyField(Component, help_text="Buffer size", related_name="optical_storage_buffer_size")
+    device_type = models.ManyToManyField(Component, help_text="Device type", related_name="optical_storage_device_type")
 
 
 class MemoryModule(auto_prefetch.Model):
     """Memory module."""
 
-    quantity_in_kit = models.ManyToManyField(Component, help_text="Quantity in kit")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the memory module was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the memory module was last updated")
+
+    # Webhallen fields
+    quantity_in_kit = models.ManyToManyField(
+        Component,
+        help_text="Quantity in kit",
+        related_name="memory_module_quantity_in_kit",
+    )
 
 
 class Antenna(auto_prefetch.Model):
     """Antenna."""
 
-    antenna_placement_mounting = models.ManyToManyField(Component, help_text="Antenna placement mounting")
-    compatibility = models.ManyToManyField(Component, help_text="Compatibility")
-    form_factor = models.ManyToManyField(Component, help_text="Form factor")
-    frequency_range = models.ManyToManyField(Component, help_text="Frequency range")
-    type = models.ManyToManyField(Component, help_text="Type")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the antenna was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the antenna was last updated")
+
+    # Webhallen fields
+    antenna_placement_mounting = models.ManyToManyField(
+        Component,
+        help_text="Antenna placement mounting",
+        related_name="antenna_antenna_placement_mounting",
+    )
+    compatibility = models.ManyToManyField(
+        Component,
+        help_text="Compatibility",
+        related_name="antenna_compatibility",
+    )
+    form_factor = models.ManyToManyField(
+        Component,
+        help_text="Form factor",
+        related_name="antenna_form_factor",
+    )
+    frequency_range = models.ManyToManyField(
+        Component,
+        help_text="Frequency range",
+        related_name="antenna_frequency_range",
+    )
+    type = models.ManyToManyField(
+        Component,
+        help_text="Type",
+        related_name="antenna_type",
+    )
 
 
 class System(auto_prefetch.Model):
     """System."""
 
-    device_type = models.ManyToManyField(Component, help_text="Device type")
-    docking_interface = models.ManyToManyField(Component, help_text="Docking interface")
-    video_interface = models.ManyToManyField(Component, help_text="Video interface")
-    generation = models.ManyToManyField(Component, help_text="Generation")
-    hard_drive_capacity = models.ManyToManyField(Component, help_text="Hard drive capacity")
-    fingerprint_reader = models.ManyToManyField(Component, help_text="Fingerprint reader")
-    platform = models.ManyToManyField(Component, help_text="Platform")
-    embedded_security = models.ManyToManyField(Component, help_text="Embedded security")
-    notebook_type = models.ManyToManyField(Component, help_text="Notebook type")
-    handheld_type = models.ManyToManyField(Component, help_text="Handheld type")
-    introduced = models.ManyToManyField(Component, help_text="Introduced")
-    type = models.ManyToManyField(Component, help_text="Type")
-    dockable = models.ManyToManyField(Component, help_text="Dockable")
-    platform_technology = models.ManyToManyField(Component, help_text="Platform technology")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the system was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the system was last updated")
+
+    # Webhallen fields
+    device_type = models.ManyToManyField(Component, help_text="Device type", related_name="system_device_type")
+    docking_interface = models.ManyToManyField(
+        Component,
+        help_text="Docking interface",
+        related_name="system_docking_interface",
+    )
+    video_interface = models.ManyToManyField(
+        Component,
+        help_text="Video interface",
+        related_name="system_video_interface",
+    )
+    generation = models.ManyToManyField(Component, help_text="Generation", related_name="system_generation")
+    hard_drive_capacity = models.ManyToManyField(
+        Component,
+        help_text="Hard drive capacity",
+        related_name="system_hard_drive_capacity",
+    )
+    fingerprint_reader = models.ManyToManyField(
+        Component,
+        help_text="Fingerprint reader",
+        related_name="system_fingerprint_reader",
+    )
+    platform = models.ManyToManyField(Component, help_text="Platform", related_name="system_platform")
+    embedded_security = models.ManyToManyField(
+        Component,
+        help_text="Embedded security",
+        related_name="system_embedded_security",
+    )
+    notebook_type = models.ManyToManyField(Component, help_text="Notebook type", related_name="system_notebook_type")
+    handheld_type = models.ManyToManyField(Component, help_text="Handheld type", related_name="system_handheld_type")
+    introduced = models.ManyToManyField(Component, help_text="Introduced", related_name="system_introduced")
+    type = models.ManyToManyField(Component, help_text="Type", related_name="system_type")
+    dockable = models.ManyToManyField(Component, help_text="Dockable", related_name="system_dockable")
+    platform_technology = models.ManyToManyField(
+        Component,
+        help_text="Platform technology",
+        related_name="system_platform_technology",
+    )
 
 
 class ControllerCard(auto_prefetch.Model):
     """Controller card."""
 
-    type = models.ManyToManyField(Component, help_text="Type")
-    form_factor = models.ManyToManyField(Component, help_text="Form factor")
-    supported_devices = models.ManyToManyField(Component, help_text="Supported devices")
-    max_number_of_devices = models.ManyToManyField(Component, help_text="Max number of devices")
-    power_source = models.ManyToManyField(Component, help_text="Power source")
-    host_bus = models.ManyToManyField(Component, help_text="Host bus")
-    interface = models.ManyToManyField(Component, help_text="Interface")
-    number_of_channels = models.ManyToManyField(Component, help_text="Number of channels")
-    interface_type = models.ManyToManyField(Component, help_text="Interface type")
-    raid_level = models.ManyToManyField(Component, help_text="RAID level")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the controller card was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the controller card was last updated")
+
+    # Webhallen fields
+    type = models.ManyToManyField(Component, help_text="Type", related_name="controller_card_type")
+    form_factor = models.ManyToManyField(Component, help_text="Form factor", related_name="controller_card_form_factor")
+    supported_devices = models.ManyToManyField(
+        Component,
+        help_text="Supported devices",
+        related_name="controller_card_supported_devices",
+    )
+    max_number_of_devices = models.ManyToManyField(
+        Component,
+        help_text="Max number of devices",
+        related_name="controller_card_max_number_of_devices",
+    )
+    power_source = models.ManyToManyField(
+        Component,
+        help_text="Power source",
+        related_name="controller_card_power_source",
+    )
+    host_bus = models.ManyToManyField(Component, help_text="Host bus", related_name="controller_card_host_bus")
+    interface = models.ManyToManyField(Component, help_text="Interface", related_name="controller_card_interface")
+    number_of_channels = models.ManyToManyField(
+        Component,
+        help_text="Number of channels",
+        related_name="controller_card_number_of_channels",
+    )
+    interface_type = models.ManyToManyField(
+        Component,
+        help_text="Interface type",
+        related_name="controller_card_interface_type",
+    )
+    raid_level = models.ManyToManyField(Component, help_text="RAID level", related_name="controller_card_raid_level")
 
 
 class PersonalHygiene(auto_prefetch.Model):
     """Personal hygiene."""
 
-    category = models.ManyToManyField(Component, help_text="Category")
-    product_type = models.ManyToManyField(Component, help_text="Product type")
-    usage = models.ManyToManyField(Component, help_text="Usage")
-    number_of_speed_settings = models.ManyToManyField(Component, help_text="Number of speed settings")
-    vibrations_per_minute = models.ManyToManyField(Component, help_text="Vibrations per minute")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the personal hygiene was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the personal hygiene was last updated")
+
+    # Webhallen fields
+    category = models.ManyToManyField(Component, help_text="Category", related_name="personal_hygiene_category")
+    product_type = models.ManyToManyField(
+        Component,
+        help_text="Product type",
+        related_name="personal_hygiene_product_type",
+    )
+    usage = models.ManyToManyField(Component, help_text="Usage", related_name="personal_hygiene_usage")
+    number_of_speed_settings = models.ManyToManyField(
+        Component,
+        help_text="Number of speed settings",
+        related_name="personal_hygiene_number_of_speed_settings",
+    )
+    vibrations_per_minute = models.ManyToManyField(
+        Component,
+        help_text="Vibrations per minute",
+        related_name="personal_hygiene_vibrations_per_minute",
+    )
 
 
 class Warranty(auto_prefetch.Model):
     """Warranty."""
 
-    warranty = models.ManyToManyField(Component, help_text="Warranty")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the warranty was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the warranty was last updated")
+
+    # Webhallen fields
+    warranty = models.ManyToManyField(Component, help_text="Warranty", related_name="warranty_warranty")
 
 
 class AccessoriesForDevices(auto_prefetch.Model):
     """Accessories for devices."""
 
-    type = models.ManyToManyField(Component, help_text="Type")
-    intended_for = models.ManyToManyField(Component, help_text="Intended for")
-    capacity = models.ManyToManyField(Component, help_text="Capacity")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the accessories for devices was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the accessories for devices was last updated")
+
+    # Webhallen fields
+    type = models.ManyToManyField(Component, help_text="Type", related_name="accessories_for_devices_type")
+    intended_for = models.ManyToManyField(
+        Component,
+        help_text="Intended for",
+        related_name="accessories_for_devices_intended_for",
+    )
+    capacity = models.ManyToManyField(Component, help_text="Capacity", related_name="accessories_for_devices_capacity")
 
 
 class VideoOutput(auto_prefetch.Model):
     """Video output."""
 
-    maximum_external_resolution = models.ManyToManyField(Component, help_text="Maximum external resolution")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the video output was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the video output was last updated")
+
+    # Webhallen fields
+    maximum_external_resolution = models.ManyToManyField(
+        Component,
+        help_text="Maximum external resolution",
+        related_name="video_output_maximum_external_resolution",
+    )
     type = models.ManyToManyField(Component, help_text="Type")
-    supported_video_signals = models.ManyToManyField(Component, help_text="Supported video signals")
-    type_of_interface = models.ManyToManyField(Component, help_text="Type of interface")
-    tv_connection = models.ManyToManyField(Component, help_text="TV connection")
-    hdr_capacity = models.ManyToManyField(Component, help_text="HDR capacity")
-    clock_speed = models.ManyToManyField(Component, help_text="Clock speed")
-    high_clock_speed = models.ManyToManyField(Component, help_text="High clock speed")
-    low = models.ManyToManyField(Component, help_text="Low")
-    chip_manufacturer = models.ManyToManyField(Component, help_text="Chip manufacturer")
-    graphics_card = models.ManyToManyField(Component, help_text="Graphics card")
-    max_number_of_supported_displays = models.ManyToManyField(Component, help_text="Max number of supported displays")
-    dedicated_graphics_card = models.ManyToManyField(Component, help_text="Dedicated graphics card")
-    graphics_processor_series = models.ManyToManyField(Component, help_text="Graphics processor series")
-    vr_ready = models.ManyToManyField(Component, help_text="VR ready")
-    hdcp_compatible = models.ManyToManyField(Component, help_text="HDCP compatible")
+    supported_video_signals = models.ManyToManyField(
+        Component,
+        help_text="Supported video signals",
+        related_name="video_output_supported_video_signals",
+    )
+    type_of_interface = models.ManyToManyField(
+        Component,
+        help_text="Type of interface",
+        related_name="video_output_type_of_interface",
+    )
+    tv_connection = models.ManyToManyField(
+        Component,
+        help_text="TV connection",
+        related_name="video_output_tv_connection",
+    )
+    hdr_capacity = models.ManyToManyField(
+        Component,
+        help_text="HDR capacity",
+        related_name="video_output_hdr_capacity",
+    )
+    clock_speed = models.ManyToManyField(
+        Component,
+        help_text="Clock speed",
+        related_name="video_output_clock_speed",
+    )
+    high_clock_speed = models.ManyToManyField(
+        Component,
+        help_text="High clock speed",
+        related_name="video_output_high_clock_speed",
+    )
+    low = models.ManyToManyField(Component, help_text="Low", related_name="video_output_low")
+    chip_manufacturer = models.ManyToManyField(
+        Component,
+        help_text="Chip manufacturer",
+        related_name="video_output_chip_manufacturer",
+    )
+    graphics_card = models.ManyToManyField(
+        Component,
+        help_text="Graphics card",
+        related_name="video_output_graphics_card",
+    )
+    max_number_of_supported_displays = models.ManyToManyField(
+        Component,
+        help_text="Max number of supported displays",
+        related_name="video_output_max_number_of_supported_displays",
+    )
+    dedicated_graphics_card = models.ManyToManyField(
+        Component,
+        help_text="Dedicated graphics card",
+        related_name="video_output_dedicated_graphics_card",
+    )
+    graphics_processor_series = models.ManyToManyField(
+        Component,
+        help_text="Graphics processor series",
+        related_name="video_output_graphics_processor_series",
+    )
+    vr_ready = models.ManyToManyField(Component, help_text="VR ready", related_name="video_output_vr_ready")
+    hdcp_compatible = models.ManyToManyField(
+        Component,
+        help_text="HDCP compatible",
+        related_name="video_output_hdcp_compatible",
+    )
 
 
 class SmallDevices(auto_prefetch.Model):
     """Small devices."""
 
-    product_type = models.ManyToManyField(Component, help_text="Product type")
-    capacity = models.ManyToManyField(Component, help_text="Capacity")
-    variable_temperature = models.ManyToManyField(Component, help_text="Variable temperature")
-    functions_and_settings = models.ManyToManyField(Component, help_text="Functions and settings")
-    max_speed = models.ManyToManyField(Component, help_text="Max speed")
-    bowl_material = models.ManyToManyField(Component, help_text="Bowl material")
-    included_blades_and_additives = models.ManyToManyField(Component, help_text="Included blades and additives")
-    automatic_shutdown = models.ManyToManyField(Component, help_text="Automatic shutdown")
-    water_level_indicator = models.ManyToManyField(Component, help_text="Water level indicator")
-    temperature_settings = models.ManyToManyField(Component, help_text="Temperature settings")
-    mass_container_capacity = models.ManyToManyField(Component, help_text="Mass container capacity")
-    multi_plate = models.ManyToManyField(Component, help_text="Multi-plate")
-    food_capacity = models.ManyToManyField(Component, help_text="Food capacity")
-    number_of_programs = models.ManyToManyField(Component, help_text="Number of programs")
-    number_of_people = models.ManyToManyField(Component, help_text="Number of people")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the small devices was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the small devices was last updated")
+
+    # Webhallen fields
+    product_type = models.ManyToManyField(
+        Component,
+        help_text="Product type",
+        related_name="small_devices_product_type",
+    )
+    capacity = models.ManyToManyField(Component, help_text="Capacity", related_name="small_devices_capacity")
+    variable_temperature = models.ManyToManyField(
+        Component,
+        help_text="Variable temperature",
+        related_name="small_devices_variable_temperature",
+    )
+    functions_and_settings = models.ManyToManyField(
+        Component,
+        help_text="Functions and settings",
+        related_name="small_devices_functions_and_settings",
+    )
+    max_speed = models.ManyToManyField(Component, help_text="Max speed", related_name="small_devices_max_speed")
+    bowl_material = models.ManyToManyField(
+        Component,
+        help_text="Bowl material",
+        related_name="small_devices_bowl_material",
+    )
+    included_blades_and_additives = models.ManyToManyField(
+        Component,
+        help_text="Included blades and additives",
+        related_name="small_devices_included_blades_and_additives",
+    )
+    automatic_shutdown = models.ManyToManyField(
+        Component,
+        help_text="Automatic shutdown",
+        related_name="small_devices_automatic_shutdown",
+    )
+    water_level_indicator = models.ManyToManyField(
+        Component,
+        help_text="Water level indicator",
+        related_name="small_devices_water_level_indicator",
+    )
+    temperature_settings = models.ManyToManyField(
+        Component,
+        help_text="Temperature settings",
+        related_name="small_devices_temperature_settings",
+    )
+    mass_container_capacity = models.ManyToManyField(
+        Component,
+        help_text="Mass container capacity",
+        related_name="small_devices_mass_container_capacity",
+    )
+    multi_plate = models.ManyToManyField(Component, help_text="Multi-plate", related_name="small_devices_multi_plate")
+    food_capacity = models.ManyToManyField(
+        Component,
+        help_text="Food capacity",
+        related_name="small_devices_food_capacity",
+    )
+    number_of_programs = models.ManyToManyField(
+        Component,
+        help_text="Number of programs",
+        related_name="small_devices_number_of_programs",
+    )
+    number_of_people = models.ManyToManyField(
+        Component,
+        help_text="Number of people",
+        related_name="small_devices_number_of_people",
+    )
 
 
 class Camera(auto_prefetch.Model):
     """Camera."""
 
-    image_sensor_type = models.ManyToManyField(Component, help_text="Image sensor type")
-    optical_sensor_resolution = models.ManyToManyField(Component, help_text="Optical sensor resolution")
-    type = models.ManyToManyField(Component, help_text="Type")
-    shooting_methods = models.ManyToManyField(Component, help_text="Shooting methods")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the camera was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the camera was last updated")
+
+    # Webhallen fields
+    image_sensor_type = models.ManyToManyField(
+        Component,
+        help_text="Image sensor type",
+        related_name="camera_image_sensor_type",
+    )
+    optical_sensor_resolution = models.ManyToManyField(
+        Component,
+        help_text="Optical sensor resolution",
+        related_name="camera_optical_sensor_resolution",
+    )
+    type = models.ManyToManyField(
+        Component,
+        help_text="Type",
+        related_name="camera_type",
+    )
+    shooting_methods = models.ManyToManyField(
+        Component,
+        help_text="Shooting methods",
+        related_name="camera_shooting_methods",
+    )
 
 
 class LightSource(auto_prefetch.Model):
     """Light source."""
 
-    type_of_light_source = models.ManyToManyField(Component, help_text="Type of light source")
-    luminous_flux = models.ManyToManyField(Component, help_text="Luminous flux")
-    lifespan = models.ManyToManyField(Component, help_text="Lifespan")
-    color_temperature = models.ManyToManyField(Component, help_text="Color temperature")
-    illumination_color = models.ManyToManyField(Component, help_text="Illumination color")
-    wattage = models.ManyToManyField(Component, help_text="Wattage")
-    energy_efficiency_class = models.ManyToManyField(Component, help_text="Energy efficiency class")
-    watt_equivalence = models.ManyToManyField(Component, help_text="Watt equivalence")
-    beam_angle = models.ManyToManyField(Component, help_text="Beam angle")
-    socket_type = models.ManyToManyField(Component, help_text="Socket type")
-    color_rendering_index = models.ManyToManyField(Component, help_text="Color rendering index")
-    mercury_content = models.ManyToManyField(Component, help_text="Mercury content")
-    dimmable = models.ManyToManyField(Component, help_text="Dimmable")
-    shape = models.ManyToManyField(Component, help_text="Shape")
-    power_factor = models.ManyToManyField(Component, help_text="Power factor")
-    lamp_current = models.ManyToManyField(Component, help_text="Lamp current")
-    start_time = models.ManyToManyField(Component, help_text="Start time")
-    warm_up_time = models.ManyToManyField(Component, help_text="Warm-up time")
-    luminous_efficiency = models.ManyToManyField(Component, help_text="Luminous efficiency")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the light source was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the light source was last updated")
+
+    # Webhallen fields
+    type_of_light_source = models.ManyToManyField(
+        Component,
+        help_text="Type of light source",
+        related_name="light_source_type_of_light_source",
+    )
+    luminous_flux = models.ManyToManyField(
+        Component,
+        help_text="Luminous flux",
+        related_name="light_source_luminous_flux",
+    )
+    lifespan = models.ManyToManyField(
+        Component,
+        help_text="Lifespan",
+        related_name="light_source_lifespan",
+    )
+    color_temperature = models.ManyToManyField(
+        Component,
+        help_text="Color temperature",
+        related_name="light_source_color_temperature",
+    )
+    illumination_color = models.ManyToManyField(
+        Component,
+        help_text="Illumination color",
+        related_name="light_source_illumination_color",
+    )
+    wattage = models.ManyToManyField(
+        Component,
+        help_text="Wattage",
+        related_name="light_source_wattage",
+    )
+    energy_efficiency_class = models.ManyToManyField(
+        Component,
+        help_text="Energy efficiency class",
+        related_name="light_source_energy_efficiency_class",
+    )
+    watt_equivalence = models.ManyToManyField(
+        Component,
+        help_text="Watt equivalence",
+        related_name="light_source_watt_equivalence",
+    )
+    beam_angle = models.ManyToManyField(
+        Component,
+        help_text="Beam angle",
+        related_name="light_source_beam_angle",
+    )
+    socket_type = models.ManyToManyField(
+        Component,
+        help_text="Socket type",
+        related_name="light_source_socket_type",
+    )
+    color_rendering_index = models.ManyToManyField(
+        Component,
+        help_text="Color rendering index",
+        related_name="light_source_color_rendering_index",
+    )
+    mercury_content = models.ManyToManyField(
+        Component,
+        help_text="Mercury content",
+        related_name="light_source_mercury_content",
+    )
+    dimmable = models.ManyToManyField(
+        Component,
+        help_text="Dimmable",
+        related_name="light_source_dimmable",
+    )
+    shape = models.ManyToManyField(
+        Component,
+        help_text="Shape",
+        related_name="light_source_shape",
+    )
+    power_factor = models.ManyToManyField(
+        Component,
+        help_text="Power factor",
+        related_name="light_source_power_factor",
+    )
+    lamp_current = models.ManyToManyField(
+        Component,
+        help_text="Lamp current",
+        related_name="light_source_lamp_current",
+    )
+    start_time = models.ManyToManyField(
+        Component,
+        help_text="Start time",
+        related_name="light_source_start_time",
+    )
+    warm_up_time = models.ManyToManyField(
+        Component,
+        help_text="Warm-up time",
+        related_name="light_source_warm_up_time",
+    )
+    luminous_efficiency = models.ManyToManyField(
+        Component,
+        help_text="Luminous efficiency",
+        related_name="light_source_luminous_efficiency",
+    )
 
 
 class Software(auto_prefetch.Model):
     """Software."""
 
-    number_of_licenses = models.ManyToManyField(Component, help_text="Number of licenses")
-    license_validity_period = models.ManyToManyField(Component, help_text="License validity period")
-    type_of_license = models.ManyToManyField(Component, help_text="Type of license")
-    license_category = models.ManyToManyField(Component, help_text="License category")
-    version = models.ManyToManyField(Component, help_text="Version")
-    type = models.ManyToManyField(Component, help_text="Type")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the software was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the software was last updated")
+
+    # Webhallen fields
+    number_of_licenses = models.ManyToManyField(
+        Component,
+        help_text="Number of licenses",
+        related_name="software_number_of_licenses",
+    )
+    license_validity_period = models.ManyToManyField(
+        Component,
+        help_text="License validity period",
+        related_name="software_license_validity_period",
+    )
+    type_of_license = models.ManyToManyField(
+        Component,
+        help_text="Type of license",
+        related_name="software_type_of_license",
+    )
+    license_category = models.ManyToManyField(
+        Component,
+        help_text="License category",
+        related_name="software_license_category",
+    )
+    version = models.ManyToManyField(
+        Component,
+        help_text="Version",
+        related_name="software_version",
+    )
+    type = models.ManyToManyField(
+        Component,
+        help_text="Type",
+        related_name="software_type",
+    )
 
 
 class CEAccessories(auto_prefetch.Model):
     """CE marking."""
 
-    product_type = models.ManyToManyField(Component, help_text="Product type")
-    intended_for = models.ManyToManyField(Component, help_text="Intended for")
-    suitable_for_installation = models.ManyToManyField(Component, help_text="Suitable for installation")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the CE marking was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the CE marking was last updated")
+
+    # Webhallen fields
+    product_type = models.ManyToManyField(
+        Component,
+        help_text="Product type",
+        related_name="ce_accessories_product_type",
+    )
+    intended_for = models.ManyToManyField(
+        Component,
+        help_text="Intended for",
+        related_name="ce_accessories_intended_for",
+    )
+    suitable_for_installation = models.ManyToManyField(
+        Component,
+        help_text="Suitable for installation",
+        related_name="ce_accessories_suitable_for_installation",
+    )
 
 
 class Game(auto_prefetch.Model):
     """Game."""
 
-    release_month = models.ManyToManyField(Component, help_text="Release month")
-    genre = models.ManyToManyField(Component, help_text="Genre")
-    esrb_rating = models.ManyToManyField(Component, help_text="ESRB rating")
-    pegi_content_description = models.ManyToManyField(Component, help_text="PEGI content description")
-    usk_age_rating = models.ManyToManyField(Component, help_text="USK age rating")
-    pegi_classification = models.ManyToManyField(Component, help_text="PEGI classification")
-    australian_state_evaluation = models.ManyToManyField(Component, help_text="Australian state evaluation")
-    platform = models.ManyToManyField(Component, help_text="Platform")
-    release_year = models.ManyToManyField(Component, help_text="Release year")
-    release_day = models.ManyToManyField(Component, help_text="Release day")
-    multiplayer = models.ManyToManyField(Component, help_text="Multiplayer")
-    max_number_of_players = models.ManyToManyField(Component, help_text="Max number of players")
-    online_play = models.ManyToManyField(Component, help_text="Online play")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the game was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the game was last updated")
+
+    # Webhallen fields
+    release_month = models.ManyToManyField(Component, help_text="Release month", related_name="game_release_month")
+    genre = models.ManyToManyField(Component, help_text="Genre", related_name="game_genre")
+    esrb_rating = models.ManyToManyField(Component, help_text="ESRB rating", related_name="game_esrb_rating")
+    pegi_content_description = models.ManyToManyField(
+        Component,
+        help_text="PEGI content description",
+        related_name="game_pegi_content_description",
+    )
+    usk_age_rating = models.ManyToManyField(Component, help_text="USK age rating", related_name="game_usk_age_rating")
+    pegi_classification = models.ManyToManyField(
+        Component,
+        help_text="PEGI classification",
+        related_name="game_pegi_classification",
+    )
+    australian_state_evaluation = models.ManyToManyField(
+        Component,
+        help_text="Australian state evaluation",
+        related_name="game_australian_state_evaluation",
+    )
+    platform = models.ManyToManyField(Component, help_text="Platform", related_name="game_platform")
+    release_year = models.ManyToManyField(Component, help_text="Release year", related_name="game_release_year")
+    release_day = models.ManyToManyField(Component, help_text="Release day", related_name="game_release_day")
+    multiplayer = models.ManyToManyField(Component, help_text="Multiplayer", related_name="game_multiplayer")
+    max_number_of_players = models.ManyToManyField(
+        Component,
+        help_text="Max number of players",
+        related_name="game_max_number_of_players",
+    )
+    online_play = models.ManyToManyField(Component, help_text="Online play", related_name="game_online_play")
 
 
 class ToastersAndGrills(auto_prefetch.Model):
     """Toasters and grills."""
 
-    product_type = models.ManyToManyField(Component, help_text="Product type")
-    number_of_slices = models.ManyToManyField(Component, help_text="Number of slices")
-    number_of_outlets = models.ManyToManyField(Component, help_text="Number of outlets")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the toasters and grills was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the toasters and grills was last updated")
+
+    # Webhallen fields
+    product_type = models.ManyToManyField(
+        Component,
+        help_text="Product type",
+        related_name="toasters_and_grills_product_type",
+    )
+    number_of_slices = models.ManyToManyField(
+        Component,
+        help_text="Number of slices",
+        related_name="toasters_and_grills_number_of_slices",
+    )
+    number_of_outlets = models.ManyToManyField(
+        Component,
+        help_text="Number of outlets",
+        related_name="toasters_and_grills_number_of_outlets",
+    )
 
 
 class Scale(auto_prefetch.Model):
     """Scale."""
 
-    kitchen_scale_type = models.ManyToManyField(Component, help_text="Kitchen scale type")
-    max_weight = models.ManyToManyField(Component, help_text="Max weight")
-    bathroom_scale_type = models.ManyToManyField(Component, help_text="Bathroom scale type")
-    measurement_functions = models.ManyToManyField(Component, help_text="Measurement functions")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the scale was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the scale was last updated")
+
+    # Webhallen fields
+    kitchen_scale_type = models.ManyToManyField(
+        Component,
+        help_text="Kitchen scale type",
+        related_name="scale_kitchen_scale_type",
+    )
+    max_weight = models.ManyToManyField(Component, help_text="Max weight", related_name="scale_max_weight")
+    bathroom_scale_type = models.ManyToManyField(
+        Component,
+        help_text="Bathroom scale type",
+        related_name="scale_bathroom_scale_type",
+    )
+    measurement_functions = models.ManyToManyField(
+        Component,
+        help_text="Measurement functions",
+        related_name="scale_measurement_functions",
+    )
 
 
 class HDD(auto_prefetch.Model):
     """Hard disk drive (HDD)."""
 
-    hard_disk_type = models.ManyToManyField(Component, help_text="Hard disk type")
-    interface = models.ManyToManyField(Component, help_text="Interface")
-    external_device_type = models.ManyToManyField(Component, help_text="External device type")
-    hard_disk_space = models.ManyToManyField(Component, help_text="Hard disk space")
-    spindle_speed = models.ManyToManyField(Component, help_text="Spindle speed")
-    unrecoverable_error = models.ManyToManyField(Component, help_text="Unrecoverable error")
-    data_transfer_rate = models.ManyToManyField(Component, help_text="Data transfer rate")
-    internal_data_frequency = models.ManyToManyField(Component, help_text="Internal data frequency")
-    average_seek_time = models.ManyToManyField(Component, help_text="Average seek time")
-    form_factor = models.ManyToManyField(Component, help_text="Form factor")
-    form_factor_short = models.ManyToManyField(Component, help_text="Form factor short")
-    form_factor_metric = models.ManyToManyField(Component, help_text="Form factor metric")
-    form_factor_short_metric = models.ManyToManyField(Component, help_text="Form factor short metric")
-    buffer_size = models.ManyToManyField(Component, help_text="Buffer size")
-    internal_data_write_speed = models.ManyToManyField(Component, help_text="Internal data write speed")
-    nand_flash_memory_type = models.ManyToManyField(Component, help_text="NAND flash memory type")
-    _24_7_operation = models.ManyToManyField(Component, help_text="24/7 operation")
-    _4_kb_random_read = models.ManyToManyField(Component, help_text="The 4 KB random read")
-    type = models.ManyToManyField(Component, help_text="Type")
-    ssd_form_factor = models.ManyToManyField(Component, help_text="SSD form factor")
-    hard_disk_features = models.ManyToManyField(Component, help_text="Hard disk features")
-    type_of_interface = models.ManyToManyField(Component, help_text="Type of interface")
-    interface_class = models.ManyToManyField(Component, help_text="Interface class")
-    ssd_capacity = models.ManyToManyField(Component, help_text="SSD capacity")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the HDD was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the HDD was last updated")
+
+    # Webhallen fields
+    hard_disk_type = models.ManyToManyField(Component, help_text="Hard disk type", related_name="hdd_hard_disk_type")
+    interface = models.ManyToManyField(Component, help_text="Interface", related_name="hdd_interface")
+    external_device_type = models.ManyToManyField(
+        Component,
+        help_text="External device type",
+        related_name="hdd_external_device_type",
+    )
+    hard_disk_space = models.ManyToManyField(Component, help_text="Hard disk space", related_name="hdd_hard_disk_space")
+    spindle_speed = models.ManyToManyField(Component, help_text="Spindle speed", related_name="hdd_spindle_speed")
+    unrecoverable_error = models.ManyToManyField(
+        Component,
+        help_text="Unrecoverable error",
+        related_name="hdd_unrecoverable_error",
+    )
+    data_transfer_rate = models.ManyToManyField(
+        Component,
+        help_text="Data transfer rate",
+        related_name="hdd_data_transfer_rate",
+    )
+    internal_data_frequency = models.ManyToManyField(
+        Component,
+        help_text="Internal data frequency",
+        related_name="hdd_internal_data_frequency",
+    )
+    average_seek_time = models.ManyToManyField(
+        Component,
+        help_text="Average seek time",
+        related_name="hdd_average_seek_time",
+    )
+    form_factor = models.ManyToManyField(Component, help_text="Form factor", related_name="hdd_form_factor")
+    form_factor_short = models.ManyToManyField(
+        Component,
+        help_text="Form factor short",
+        related_name="hdd_form_factor_short",
+    )
+    form_factor_metric = models.ManyToManyField(
+        Component,
+        help_text="Form factor metric",
+        related_name="hdd_form_factor_metric",
+    )
+    form_factor_short_metric = models.ManyToManyField(
+        Component,
+        help_text="Form factor short metric",
+        related_name="hdd_form_factor_short_metric",
+    )
+    buffer_size = models.ManyToManyField(Component, help_text="Buffer size", related_name="hdd_buffer_size")
+    internal_data_write_speed = models.ManyToManyField(
+        Component,
+        help_text="Internal data write speed",
+        related_name="hdd_internal_data_write_speed",
+    )
+    nand_flash_memory_type = models.ManyToManyField(
+        Component,
+        help_text="NAND flash memory type",
+        related_name="hdd_nand_flash_memory_type",
+    )
+    _24_7_operation = models.ManyToManyField(Component, help_text="24/7 operation", related_name="hdd_24_7_operation")
+    _4_kb_random_read = models.ManyToManyField(
+        Component,
+        help_text="The 4 KB random read",
+        related_name="hdd_4_kb_random_read",
+    )
+    type = models.ManyToManyField(Component, help_text="Type", related_name="hdd_type")
+    ssd_form_factor = models.ManyToManyField(Component, help_text="SSD form factor", related_name="hdd_ssd_form_factor")
+    hard_disk_features = models.ManyToManyField(
+        Component,
+        help_text="Hard disk features",
+        related_name="hdd_hard_disk_features",
+    )
+    type_of_interface = models.ManyToManyField(
+        Component,
+        help_text="Type of interface",
+        related_name="hdd_type_of_interface",
+    )
+    interface_class = models.ManyToManyField(Component, help_text="Interface class", related_name="hdd_interface_class")
+    ssd_capacity = models.ManyToManyField(Component, help_text="SSD capacity", related_name="hdd_ssd_capacity")
 
 
 class ExternalHardDrive(auto_prefetch.Model):
     """External hard drive."""
 
-    power_source = models.ManyToManyField(Component, help_text="Power source")
-    max_data_transfer_rate = models.ManyToManyField(Component, help_text="Max data transfer rate")
-    usb_c_port = models.ManyToManyField(Component, help_text="USB-C port")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the external hard drive was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the external hard drive was last updated")
+
+    # Webhallen fields
+    power_source = models.ManyToManyField(
+        Component,
+        help_text="Power source",
+        related_name="external_hard_drive_power_source",
+    )
+    max_data_transfer_rate = models.ManyToManyField(
+        Component,
+        help_text="Max data transfer rate",
+        related_name="external_hard_drive_max_data_transfer_rate",
+    )
+    usb_c_port = models.ManyToManyField(
+        Component,
+        help_text="USB-C port",
+        related_name="external_hard_drive_usb_c_port",
+    )
 
 
 class Modem(auto_prefetch.Model):
     """Modem."""
 
-    connection_technology = models.ManyToManyField(Component, help_text="Connection technology")
-    form_factor = models.ManyToManyField(Component, help_text="Form factor")
-    type = models.ManyToManyField(Component, help_text="Type")
-    max_transfer_rate = models.ManyToManyField(Component, help_text="Max transfer rate")
-    band = models.ManyToManyField(Component, help_text="Band")
-    broadband_access_for_mobile_phone = models.ManyToManyField(Component, help_text="Broadband access for mobile phone")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the modem was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the modem was last updated")
+
+    # Webhallen fields
+    connection_technology = models.ManyToManyField(
+        Component,
+        help_text="Connection technology",
+        related_name="modem_connection_technology",
+    )
+    form_factor = models.ManyToManyField(
+        Component,
+        help_text="Form factor",
+        related_name="modem_form_factor",
+    )
+    type = models.ManyToManyField(
+        Component,
+        help_text="Type",
+        related_name="modem_type",
+    )
+    max_transfer_rate = models.ManyToManyField(
+        Component,
+        help_text="Max transfer rate",
+        related_name="modem_max_transfer_rate",
+    )
+    band = models.ManyToManyField(
+        Component,
+        help_text="Band",
+        related_name="modem_band",
+    )
+    broadband_access_for_mobile_phone = models.ManyToManyField(
+        Component,
+        help_text="Broadband access for mobile phone",
+        related_name="modem_broadband_access_for_mobile_phone",
+    )
 
 
 class MobileBroadband(auto_prefetch.Model):
     """Mobile broadband."""
 
-    cellular_protocol = models.ManyToManyField(Component, help_text="Cellular protocol")
-    generation = models.ManyToManyField(Component, help_text="Generation")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the mobile broadband was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the mobile broadband was last updated")
+
+    # Webhallen fields
+    cellular_protocol = models.ManyToManyField(
+        Component,
+        help_text="Cellular protocol",
+        related_name="mobile_broadband_cellular_protocol",
+    )
+    generation = models.ManyToManyField(
+        Component,
+        help_text="Generation",
+        related_name="mobile_broadband_generation",
+    )
 
 
 class AudioInput(auto_prefetch.Model):
     """Audio input."""
 
-    microphone_type = models.ManyToManyField(Component, help_text="Microphone type")
-    sensitivity = models.ManyToManyField(Component, help_text="Sensitivity")
-    type = models.ManyToManyField(Component, help_text="Type")
-    operational_mode_for_microphone = models.ManyToManyField(Component, help_text="Operational mode for microphone")
-    connection_technology = models.ManyToManyField(Component, help_text="Connection technology")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the audio input was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the audio input was last updated")
+
+    # Webhallen fields
+    microphone_type = models.ManyToManyField(
+        Component,
+        help_text="Microphone type",
+        related_name="audio_input_microphone_type",
+    )
+    sensitivity = models.ManyToManyField(
+        Component,
+        help_text="Sensitivity",
+        related_name="audio_input_sensitivity",
+    )
+    type = models.ManyToManyField(
+        Component,
+        help_text="Type",
+        related_name="audio_input_type",
+    )
+    operational_mode_for_microphone = models.ManyToManyField(
+        Component,
+        help_text="Operational mode for microphone",
+        related_name="audio_input_operational_mode_for_microphone",
+    )
+    connection_technology = models.ManyToManyField(
+        Component,
+        help_text="Connection technology",
+        related_name="audio_input_connection_technology",
+    )
 
 
 class MemoryAdapter(auto_prefetch.Model):
     """Memory adapter."""
 
-    model = models.ManyToManyField(Component, help_text="Model")
-    interface = models.ManyToManyField(Component, help_text="Interface")
-    device_type = models.ManyToManyField(Component, help_text="Device type")
-    support_for_memory_cards = models.ManyToManyField(Component, help_text="Support for memory cards")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the memory adapter was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the memory adapter was last updated")
+
+    # Webhallen fields
+    model = models.ManyToManyField(Component, help_text="Model", related_name="memory_adapter_model")
+    interface = models.ManyToManyField(Component, help_text="Interface", related_name="memory_adapter_interface")
+    device_type = models.ManyToManyField(Component, help_text="Device type", related_name="memory_adapter_device_type")
+    support_for_memory_cards = models.ManyToManyField(
+        Component,
+        help_text="Support for memory cards",
+        related_name="memory_adapter_support_for_memory_cards",
+    )
 
 
 class InternetOfThings(auto_prefetch.Model):
     """Internet of things."""
 
-    communication_technology = models.ManyToManyField(Component, help_text="Communication technology")
-    platform = models.ManyToManyField(Component, help_text="Platform")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the internet of things was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the internet of things was last updated")
+
+    # Webhallen fields
+    communication_technology = models.ManyToManyField(
+        Component,
+        help_text="Communication technology",
+        related_name="internet_of_things_communication_technology",
+    )
+    platform = models.ManyToManyField(
+        Component,
+        help_text="Platform",
+        related_name="internet_of_things_platform",
+    )
     compatible_with_internet_of_things = models.ManyToManyField(
         Component,
         help_text="Compatible with Internet of Things",
+        related_name="internet_of_things_compatible_with_internet_of_things",
     )
-    intelligent_assistant = models.ManyToManyField(Component, help_text="Intelligent assistant")
-    voice_controlled = models.ManyToManyField(Component, help_text="Voice controlled")
+    intelligent_assistant = models.ManyToManyField(
+        Component,
+        help_text="Intelligent assistant",
+        related_name="internet_of_things_intelligent_assistant",
+    )
+    voice_controlled = models.ManyToManyField(
+        Component,
+        help_text="Voice controlled",
+        related_name="internet_of_things_voice_controlled",
+    )
 
 
 class Cleaning(auto_prefetch.Model):
     """Cleaning."""
 
-    bag_capacity = models.ManyToManyField(Component, help_text="Bag capacity")
-    product_type = models.ManyToManyField(Component, help_text="Product type")
-    container_type = models.ManyToManyField(Component, help_text="Container type")
-    cleaning_agent_type = models.ManyToManyField(Component, help_text="Cleaning agent type")
-    cleaning_method = models.ManyToManyField(Component, help_text="Cleaning method")
-    tank_capacity = models.ManyToManyField(Component, help_text="Tank capacity")
-    dust_emission_class = models.ManyToManyField(Component, help_text="Dust emission class")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the cleaning was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the cleaning was last updated")
+
+    # Webhallen fields
+    bag_capacity = models.ManyToManyField(Component, help_text="Bag capacity", related_name="cleaning_bag_capacity")
+    product_type = models.ManyToManyField(Component, help_text="Product type", related_name="cleaning_product_type")
+    container_type = models.ManyToManyField(
+        Component,
+        help_text="Container type",
+        related_name="cleaning_container_type",
+    )
+    cleaning_agent_type = models.ManyToManyField(
+        Component,
+        help_text="Cleaning agent type",
+        related_name="cleaning_cleaning_agent_type",
+    )
+    cleaning_method = models.ManyToManyField(
+        Component,
+        help_text="Cleaning method",
+        related_name="cleaning_cleaning_method",
+    )
+    tank_capacity = models.ManyToManyField(Component, help_text="Tank capacity", related_name="cleaning_tank_capacity")
+    dust_emission_class = models.ManyToManyField(
+        Component,
+        help_text="Dust emission class",
+        related_name="cleaning_dust_emission_class",
+    )
     material_cleaning_performance_class = models.ManyToManyField(
         Component,
         help_text="Material cleaning performance class",
+        related_name="cleaning_material_cleaning_performance_class",
     )
     cleaning_performance_class_for_hard_floor = models.ManyToManyField(
         Component,
         help_text="Cleaning performance class for hard floor",
+        related_name="cleaning_cleaning_performance_class_for_hard_floor",
     )
-    filter_type = models.ManyToManyField(Component, help_text="Filter type")
-    area_of_use = models.ManyToManyField(Component, help_text="Area of use")
-    maximum_motor_power = models.ManyToManyField(Component, help_text="Maximum motor power")
-    max_suction_power_air_watts = models.ManyToManyField(Component, help_text="Max suction power (air watts)")
+    filter_type = models.ManyToManyField(Component, help_text="Filter type", related_name="cleaning_filter_type")
+    area_of_use = models.ManyToManyField(Component, help_text="Area of use", related_name="cleaning_area_of_use")
+    maximum_motor_power = models.ManyToManyField(
+        Component,
+        help_text="Maximum motor power",
+        related_name="cleaning_maximum_motor_power",
+    )
+    max_suction_power_air_watts = models.ManyToManyField(
+        Component,
+        help_text="Max suction power (air watts)",
+        related_name="cleaning_max_suction_power_air_watts",
+    )
 
 
 class FlashMemory(auto_prefetch.Model):
     """Flash memory."""
 
-    read_speed = models.ManyToManyField(Component, help_text="Read speed")
-    form_factor = models.ManyToManyField(Component, help_text="Form factor")
-    product_type = models.ManyToManyField(Component, help_text="Product type")
-    storage_capacity = models.ManyToManyField(Component, help_text="Storage capacity")
-    storage_speed = models.ManyToManyField(Component, help_text="Storage speed")
-    installed_size = models.ManyToManyField(Component, help_text="Installed size")
-    interface_type = models.ManyToManyField(Component, help_text="Interface type")
-    internal_memory_capacity = models.ManyToManyField(Component, help_text="Internal memory capacity")
-    included_memory_adapter = models.ManyToManyField(Component, help_text="Included memory adapter")
-    speed_class = models.ManyToManyField(Component, help_text="Speed class")
-    supported_memory_cards = models.ManyToManyField(Component, help_text="Supported memory cards")
-    technology = models.ManyToManyField(Component, help_text="Technology")
-    user_memory = models.ManyToManyField(Component, help_text="User memory")
-    max_size_supported = models.ManyToManyField(Component, help_text="Max size supported")
-    supported_flash_memory_cards = models.ManyToManyField(Component, help_text="Supported flash memory cards")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the flash memory was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the flash memory was last updated")
+
+    # Webhallen fields
+    read_speed = models.ManyToManyField(Component, help_text="Read speed", related_name="flash_memory_read_speed")
+    form_factor = models.ManyToManyField(Component, help_text="Form factor", related_name="flash_memory_form_factor")
+    product_type = models.ManyToManyField(Component, help_text="Product type", related_name="flash_memory_product_type")
+    storage_capacity = models.ManyToManyField(
+        Component,
+        help_text="Storage capacity",
+        related_name="flash_memory_storage_capacity",
+    )
+    storage_speed = models.ManyToManyField(
+        Component,
+        help_text="Storage speed",
+        related_name="flash_memory_storage_speed",
+    )
+    installed_size = models.ManyToManyField(
+        Component,
+        help_text="Installed size",
+        related_name="flash_memory_installed_size",
+    )
+    interface_type = models.ManyToManyField(
+        Component,
+        help_text="Interface type",
+        related_name="flash_memory_interface_type",
+    )
+    internal_memory_capacity = models.ManyToManyField(
+        Component,
+        help_text="Internal memory capacity",
+        related_name="flash_memory_internal_memory_capacity",
+    )
+    included_memory_adapter = models.ManyToManyField(
+        Component,
+        help_text="Included memory adapter",
+        related_name="flash_memory_included_memory_adapter",
+    )
+    speed_class = models.ManyToManyField(Component, help_text="Speed class", related_name="flash_memory_speed_class")
+    supported_memory_cards = models.ManyToManyField(
+        Component,
+        help_text="Supported memory cards",
+        related_name="flash_memory_supported_memory_cards",
+    )
+    technology = models.ManyToManyField(Component, help_text="Technology", related_name="flash_memory_technology")
+    user_memory = models.ManyToManyField(Component, help_text="User memory", related_name="flash_memory_user_memory")
+    max_size_supported = models.ManyToManyField(
+        Component,
+        help_text="Max size supported",
+        related_name="flash_memory_max_size_supported",
+    )
+    supported_flash_memory_cards = models.ManyToManyField(
+        Component,
+        help_text="Supported flash memory cards",
+        related_name="flash_memory_supported_flash_memory_cards",
+    )
 
 
 class RadioSystem(auto_prefetch.Model):
     """Radio system."""
 
-    receiver_band = models.ManyToManyField(Component, help_text="Receiver band")
-    receiver_type = models.ManyToManyField(Component, help_text="Receiver type")
-    number_of_presets = models.ManyToManyField(Component, help_text="Number of presets")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the radio system was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the radio system was last updated")
+
+    # Webhallen fields
+    receiver_band = models.ManyToManyField(
+        Component,
+        help_text="Receiver band",
+        related_name="radio_system_receiver_band",
+    )
+    receiver_type = models.ManyToManyField(
+        Component,
+        help_text="Receiver type",
+        related_name="radio_system_receiver_type",
+    )
+    number_of_presets = models.ManyToManyField(
+        Component,
+        help_text="Number of presets",
+        related_name="radio_system_number_of_presets",
+    )
 
 
 class Data(auto_prefetch.Model):
     """Data."""
 
-    cable = models.ForeignKey(Cable, on_delete=models.CASCADE, help_text="Cable")
-    header = models.ForeignKey(Header, on_delete=models.CASCADE, help_text="Header")
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the data was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the data was last updated")
+
+    # Webhallen fields
+    cable = models.ForeignKey(Cable, on_delete=models.CASCADE, help_text="Cable", related_name="data_cable")
+    header = models.ForeignKey(Header, on_delete=models.CASCADE, help_text="Header", related_name="data_header")
     dimensions_and_weight = models.ForeignKey(
         DimensionsAndWeight,
         on_delete=models.CASCADE,
         help_text="Dimensions and weight",
+        related_name="data_dimensions_and_weight",
     )
-    general = models.ForeignKey(General, on_delete=models.CASCADE, help_text="General")
-    miscellaneous = models.ForeignKey(Miscellaneous, on_delete=models.CASCADE, help_text="Miscellaneous")
-    input_device = models.ForeignKey(InputDevice, on_delete=models.CASCADE, help_text="Input device")
+    general = models.ForeignKey(General, on_delete=models.CASCADE, help_text="General", related_name="data_general")
+    miscellaneous = models.ForeignKey(
+        Miscellaneous,
+        on_delete=models.CASCADE,
+        help_text="Miscellaneous",
+        related_name="data_miscellaneous",
+    )
+    input_device = models.ForeignKey(
+        InputDevice,
+        on_delete=models.CASCADE,
+        help_text="Input device",
+        related_name="data_input_device",
+    )
     service_and_support = models.ForeignKey(
         ServiceAndSupport,
         on_delete=models.CASCADE,
         help_text="Service and support",
+        related_name="data_service_and_support",
     )
     gross_dimensions_and_weight = models.ForeignKey(
         GrossDimensionsAndWeight,
         on_delete=models.CASCADE,
         help_text="Gross dimensions and weight",
+        related_name="data_gross_dimensions_and_weight",
     )
-    consumables = models.ManyToManyField(Consumables, help_text="Consumables")
-    battery = models.ManyToManyField(Battery, help_text="Battery")
-    av_components = models.ManyToManyField(AVComponent, help_text="AV components")
-    remote_control = models.ManyToManyField(RemoteControl, help_text="Remote control")
-    video_input = models.ManyToManyField(VideoInput, help_text="Video input")
-    system_requirements = models.ManyToManyField(SystemRequirements, help_text="System requirements")
-    network = models.ManyToManyField(Network, help_text="Network")
-    speaker_system = models.ManyToManyField(SpeakerSystem, help_text="Speaker system")
-    sound_system = models.ManyToManyField(SoundSystem, help_text="Sound system")
-    power_supply = models.ManyToManyField(PowerSupply, help_text="Power supply")
+    consumables = models.ManyToManyField(Consumables, help_text="Consumables", related_name="data_consumables")
+    battery = models.ManyToManyField(Battery, help_text="Battery", related_name="data_battery")
+    av_components = models.ManyToManyField(AVComponent, help_text="AV components", related_name="data_av_components")
+    remote_control = models.ManyToManyField(
+        RemoteControl,
+        help_text="Remote control",
+        related_name="data_remote_control",
+    )
+    video_input = models.ManyToManyField(VideoInput, help_text="Video input", related_name="data_video_input")
+    system_requirements = models.ManyToManyField(
+        SystemRequirements,
+        help_text="System requirements",
+        related_name="data_system_requirements",
+    )
+    network = models.ManyToManyField(Network, help_text="Network", related_name="data_network")
+    speaker_system = models.ManyToManyField(
+        SpeakerSystem,
+        help_text="Speaker system",
+        related_name="data_speaker_system",
+    )
+    sound_system = models.ManyToManyField(SoundSystem, help_text="Sound system", related_name="data_sound_system")
+    power_supply = models.ManyToManyField(PowerSupply, help_text="Power supply", related_name="data_power_supply")
     settings_controls_and_indicators = models.ManyToManyField(
         SettingsControlsAndIndicators,
         help_text="Settings, controls and indicators",
+        related_name="data_settings_controls_and_indicators",
     )
-    power = models.ManyToManyField(Power, help_text="Power")
-    heating_and_cooling = models.ManyToManyField(HeatingAndCooling, help_text="Heating and cooling")
-    ram = models.ManyToManyField(RAM, help_text="RAM")
-    audio_output = models.ManyToManyField(AudioOutput, help_text="Audio output")
-    heatsink_and_fan = models.ManyToManyField(HeatsinkAndFan, help_text="Heatsink and fan")
-    storage = models.ManyToManyField(Storage, help_text="Storage")
-    optical_storage_secondary = models.ManyToManyField(OpticalStorageSecondary, help_text="Optical storage secondary")
-    portable_storage_solution = models.ManyToManyField(PortableStorageSolution, help_text="Portable storage solution")
-    optical_storage = models.ManyToManyField(OpticalStorage, help_text="Optical storage")
-    memory_module = models.ManyToManyField(MemoryModule, help_text="Memory module")
-    antenna = models.ManyToManyField(Antenna, help_text="Antenna")
-    system = models.ManyToManyField(System, help_text="System")
-    controller_card = models.ManyToManyField(ControllerCard, help_text="Controller card")
-    personal_hygiene = models.ManyToManyField(PersonalHygiene, help_text="Personal hygiene")
-    warranty = models.ManyToManyField(Warranty, help_text="Warranty")
-    accessories_for_devices = models.ManyToManyField(AccessoriesForDevices, help_text="Accessories for devices")
-    video_output = models.ManyToManyField(VideoOutput, help_text="Video output")
-    small_devices = models.ManyToManyField(SmallDevices, help_text="Small devices")
-    camera = models.ManyToManyField(Camera, help_text="Camera")
-    light_source = models.ManyToManyField(LightSource, help_text="Light sources")
-    software = models.ManyToManyField(Software, help_text="Software")
-    ce_accessories = models.ManyToManyField(CEAccessories, help_text="CE accessories")
-    game = models.ManyToManyField(Game, help_text="Game")
-    toasters_and_grills = models.ManyToManyField(ToastersAndGrills, help_text="Toasters and grills")
-    scale = models.ManyToManyField(Scale, help_text="Scale")
-    hard_drive = models.ManyToManyField(HDD, help_text="Harddisk")
-    external_hard_drive = models.ManyToManyField(ExternalHardDrive, help_text="External hard drive")
-    modem = models.ManyToManyField(Modem, help_text="Modem")
-    mobile_broadband = models.ManyToManyField(MobileBroadband, help_text="Mobile broadband")
-    audio_input = models.ManyToManyField(AudioInput, help_text="Audio input")
-    memory_adapter = models.ManyToManyField(MemoryAdapter, help_text="Memory adapter")
-    internet_of_things = models.ManyToManyField(InternetOfThings, help_text="Internet of things")
-    cleaning = models.ManyToManyField(Cleaning, help_text="Cleaning")
-    flash_memory = models.ManyToManyField(FlashMemory, help_text="Flash memory")
-    radio_system = models.ManyToManyField(RadioSystem, help_text="Radio system")
+    power = models.ManyToManyField(Power, help_text="Power", related_name="data_power")
+    heating_and_cooling = models.ManyToManyField(
+        HeatingAndCooling,
+        help_text="Heating and cooling",
+        related_name="data_heating_and_cooling",
+    )
+    ram = models.ManyToManyField(RAM, help_text="RAM", related_name="data_ram")
+    audio_output = models.ManyToManyField(AudioOutput, help_text="Audio output", related_name="data_audio_output")
+    heatsink_and_fan = models.ManyToManyField(
+        HeatsinkAndFan,
+        help_text="Heatsink and fan",
+        related_name="data_heatsink_and_fan",
+    )
+    storage = models.ManyToManyField(Storage, help_text="Storage", related_name="data_storage")
+    optical_storage_secondary = models.ManyToManyField(
+        OpticalStorageSecondary,
+        help_text="Optical storage secondary",
+        related_name="data_optical_storage_secondary",
+    )
+    portable_storage_solution = models.ManyToManyField(
+        PortableStorageSolution,
+        help_text="Portable storage solution",
+        related_name="data_portable_storage_solution",
+    )
+    optical_storage = models.ManyToManyField(
+        OpticalStorage,
+        help_text="Optical storage",
+        related_name="data_optical_storage",
+    )
+    memory_module = models.ManyToManyField(MemoryModule, help_text="Memory module", related_name="data_memory_module")
+    antenna = models.ManyToManyField(Antenna, help_text="Antenna", related_name="data_antenna")
+    system = models.ManyToManyField(System, help_text="System", related_name="data_system")
+    controller_card = models.ManyToManyField(
+        ControllerCard,
+        help_text="Controller card",
+        related_name="data_controller_card",
+    )
+    personal_hygiene = models.ManyToManyField(
+        PersonalHygiene,
+        help_text="Personal hygiene",
+        related_name="data_personal_hygiene",
+    )
+    warranty = models.ManyToManyField(Warranty, help_text="Warranty", related_name="data_warranty")
+    accessories_for_devices = models.ManyToManyField(
+        AccessoriesForDevices,
+        help_text="Accessories for devices",
+        related_name="data_accessories_for_devices",
+    )
+    video_output = models.ManyToManyField(VideoOutput, help_text="Video output", related_name="data_video_output")
+    small_devices = models.ManyToManyField(SmallDevices, help_text="Small devices", related_name="data_small_devices")
+    camera = models.ManyToManyField(Camera, help_text="Camera", related_name="data_camera")
+    light_source = models.ManyToManyField(LightSource, help_text="Light sources", related_name="data_light_source")
+    software = models.ManyToManyField(Software, help_text="Software", related_name="data_software")
+    ce_accessories = models.ManyToManyField(
+        CEAccessories,
+        help_text="CE accessories",
+        related_name="data_ce_accessories",
+    )
+    game = models.ManyToManyField(Game, help_text="Game", related_name="data_game")
+    toasters_and_grills = models.ManyToManyField(
+        ToastersAndGrills,
+        help_text="Toasters and grills",
+        related_name="data_toasters_and_grills",
+    )
+    scale = models.ManyToManyField(Scale, help_text="Scale", related_name="data_scale")
+    hard_drive = models.ManyToManyField(HDD, help_text="Harddisk", related_name="data_hard_drive")
+    external_hard_drive = models.ManyToManyField(
+        ExternalHardDrive,
+        help_text="External hard drive",
+        related_name="data_external_hard_drive",
+    )
+    modem = models.ManyToManyField(Modem, help_text="Modem", related_name="data_modem")
+    mobile_broadband = models.ManyToManyField(
+        MobileBroadband,
+        help_text="Mobile broadband",
+        related_name="data_mobile_broadband",
+    )
+    audio_input = models.ManyToManyField(AudioInput, help_text="Audio input", related_name="data_audio_input")
+    memory_adapter = models.ManyToManyField(
+        MemoryAdapter,
+        help_text="Memory adapter",
+        related_name="data_memory_adapter",
+    )
+    internet_of_things = models.ManyToManyField(
+        InternetOfThings,
+        help_text="Internet of things",
+        related_name="data_internet_of_things",
+    )
+    cleaning = models.ManyToManyField(Cleaning, help_text="Cleaning", related_name="data_cleaning")
+    flash_memory = models.ManyToManyField(FlashMemory, help_text="Flash memory", related_name="data_flash_memory")
+    radio_system = models.ManyToManyField(RadioSystem, help_text="Radio system", related_name="data_radio_system")
 
 
 class Manufacturer(auto_prefetch.Model):
     """Manufacturer."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the manufacturer was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the manufacturer was last updated")
+
+    # Webhallen fields
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Manufacturer ID")
     name = models.TextField(help_text="Manufacturer name")
     takeover_url = models.URLField(help_text="Takeover URL")
@@ -1620,6 +4087,11 @@ class Manufacturer(auto_prefetch.Model):
 class PartNumber(auto_prefetch.Model):
     """Part number."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the part number was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the part number was last updated")
+
+    # Webhallen fields
     part_number = models.TextField(primary_key=True, help_text="Part number")
 
     def __str__(self) -> str:
@@ -1629,6 +4101,11 @@ class PartNumber(auto_prefetch.Model):
 class EAN(auto_prefetch.Model):
     """EAN."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the EAN was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the EAN was last updated")
+
+    # Webhallen fields
     ean = models.TextField(primary_key=True, help_text="EAN")
 
     def __str__(self) -> str:
@@ -1638,6 +4115,11 @@ class EAN(auto_prefetch.Model):
 class Prices(auto_prefetch.Model):
     """Shipping prices."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the shipping prices was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the shipping prices was last updated")
+
+    # Webhallen fields
     price = models.PositiveBigIntegerField(help_text="Price")
     shipping_method_id = models.PositiveBigIntegerField(help_text="Shipping method ID")
     is_fixed_price = models.BooleanField(help_text="Is fixed price")
@@ -1647,6 +4129,11 @@ class Prices(auto_prefetch.Model):
 class ShippingClass(auto_prefetch.Model):
     """Shipping class."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the shipping class was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the shipping class was last updated")
+
+    # Webhallen fields
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Shipping class ID")
     order = models.PositiveBigIntegerField(help_text="Order")
     prices = models.ManyToManyField(Prices, help_text="Prices")
@@ -1710,13 +4197,23 @@ class EnergyMarking(auto_prefetch.Model):
 class StatusCode(auto_prefetch.Model):
     """Status code."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the status code was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the status code was last updated")
+
+    # Webhallen fields
     status_code = models.TextField(primary_key=True, help_text="Status code")
 
 
 class ReviewHighlightProduct(auto_prefetch.Model):
     """Review highlight product."""
 
+    # Django fields
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Review highlight product ID")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the review highlight product was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the review highlight product was last updated")
+
+    # Webhallen fields
     main_category_path = models.ForeignKey(MainCategoryPath, on_delete=models.CASCADE, help_text="Main category path")
     minimum_rank_level = models.PositiveBigIntegerField(help_text="Minimum rank level")
     status_codes = models.ManyToManyField(StatusCode, help_text="Status codes")
@@ -1728,18 +4225,35 @@ class ReviewHighlightProduct(auto_prefetch.Model):
 class Avatar(auto_prefetch.Model):
     """Avatar of a user."""
 
+    # Django fields
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Avatar ID")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the avatar was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the avatar was last updated")
+
+    # Webhallen fields
     title = models.TextField(help_text="Title")
 
 
 class Knighthood(auto_prefetch.Model):
     """Webhallen knighthood."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the knighthood was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the knighthood was last updated")
+
+    # Webhallen fields
+    # TODO(TheLovinator): Warn if we find fields for this  # noqa: TD003
+
 
 class User(auto_prefetch.Model):
     """A user of Webhallen."""
 
+    # Django fields
     id = models.PositiveBigIntegerField(primary_key=True, help_text="User ID")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the user was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the user was last updated")
+
+    # Webhallen fields
     username = models.TextField(help_text="Username")
     is_public_profile = models.BooleanField(help_text="Is public profile")
     knighthood = models.ForeignKey(Knighthood, on_delete=models.CASCADE, help_text="Knighthood")
@@ -1750,13 +4264,23 @@ class User(auto_prefetch.Model):
 class PossibleDeliveryMethod(auto_prefetch.Model):
     """Possible delivery method."""
 
+    # Django fields
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Possible delivery method ID")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the possible delivery method was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the possible delivery method was last updated")
 
 
 class ReviewHighlight(auto_prefetch.Model):
     """Review highlight."""
 
+    # Django fields
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Review highlight ID")
+
+    # This is created instead of created_at because created_at is from the Webhallen API
+    created = models.DateTimeField(auto_now_add=True, help_text="When the review highlight was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the review highlight was last updated")
+
+    # Webhallen fields
     text = models.TextField(help_text="Review highlight text")
     rating = models.PositiveBigIntegerField(help_text="Rating")
     upvotes = models.PositiveBigIntegerField(help_text="Upvotes")
@@ -1773,6 +4297,11 @@ class ReviewHighlight(auto_prefetch.Model):
 class ResursPartPaymentPrice(auto_prefetch.Model):
     """https://www.webhallen.com/se/info/48-Betala-senare-med-Resurs."""
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the Resurs part payment price was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the Resurs part payment price was last updated")
+
+    # Webhallen fields
     monthly_cost = models.TextField(help_text="Monthly cost")
     duration_months = models.PositiveBigIntegerField(help_text="Duration in months")
 
@@ -1780,7 +4309,12 @@ class ResursPartPaymentPrice(auto_prefetch.Model):
 class Insurance(auto_prefetch.Model):
     """Insurance."""
 
+    # Django fields
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Insurance ID")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the insurance was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the insurance was last updated")
+
+    # Webhallen fields
     name = models.TextField(help_text="Insurance name")
     price = models.PositiveBigIntegerField(help_text="Insurance price")
     provider = models.PositiveBigIntegerField(help_text="Insurance provider")
@@ -1804,7 +4338,10 @@ class Insurance(auto_prefetch.Model):
 class ExcludeShippingMethod(auto_prefetch.Model):
     """Excluded shipping method."""
 
+    # Django fields
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Exclude shipping method ID")
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the exclude shipping method was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the exclude shipping method was last updated")
 
     def __str__(self) -> str:
         return f"Exclude shipping method - {self.id}"
@@ -1827,6 +4364,11 @@ class Meta(auto_prefetch.Model):
 
     """
 
+    # Django fields
+    created_at = models.DateTimeField(auto_now_add=True, help_text="When the meta was created")
+    updated_at = models.DateTimeField(auto_now=True, help_text="When the meta was last updated")
+
+    # Webhallen fields
     highlight_member_offer = models.BooleanField(help_text="Highlight member offer")
     excluded_shipping_methods = models.ManyToManyField(ExcludeShippingMethod, help_text="Excluded shipping methods")
     is_hygiene_article = models.BooleanField(help_text="Is hygiene article")
@@ -1950,16 +4492,28 @@ class Product(auto_prefetch.Model):
     stock = auto_prefetch.ForeignKey(Stock, on_delete=models.CASCADE, help_text="Stock")
 
     # ManyToMany fields
-    categories = models.ManyToManyField(Categories, help_text="Categories")
-    eans = models.ManyToManyField(EAN, help_text="EANs")
-    images = models.ManyToManyField(Image, help_text="Images")
-    insurance = models.ManyToManyField(Insurance, help_text="Insurance")
-    part_numbers = models.ManyToManyField(PartNumber, help_text="Part numbers")
-    possible_delivery_methods = models.ManyToManyField(PossibleDeliveryMethod, help_text="Possible delivery methods")
-    resurs_part_payment_price = models.ManyToManyField(ResursPartPaymentPrice, help_text="Resurs part payment price")
-    review_highlight = models.ManyToManyField(ReviewHighlight, help_text="Review highlights")
-    status_codes = models.ManyToManyField(StatusCode, help_text="Status codes")
-    variants = models.ManyToManyField(Variants, help_text="Variants")
+    categories = models.ManyToManyField(Categories, help_text="Categories", related_name="product_categories")
+    eans = models.ManyToManyField(EAN, help_text="EANs", related_name="product_eans")
+    images = models.ManyToManyField(Image, help_text="Images", related_name="product_images")
+    insurance = models.ManyToManyField(Insurance, help_text="Insurance", related_name="product_insurance")
+    part_numbers = models.ManyToManyField(PartNumber, help_text="Part numbers", related_name="product_part_numbers")
+    possible_delivery_methods = models.ManyToManyField(
+        PossibleDeliveryMethod,
+        help_text="Possible delivery methods",
+        related_name="product_possible_delivery_methods",
+    )
+    resurs_part_payment_price = models.ManyToManyField(
+        ResursPartPaymentPrice,
+        help_text="Resurs part payment price",
+        related_name="product_resurs_part_payment_price",
+    )
+    review_highlight = models.ManyToManyField(
+        ReviewHighlight,
+        help_text="Review highlights",
+        related_name="product_review_highlight",
+    )
+    status_codes = models.ManyToManyField(StatusCode, help_text="Status codes", related_name="product_status_codes")
+    variants = models.ManyToManyField(Variants, help_text="Variants", related_name="product_variants")
 
     def __str__(self) -> str:
         return f"{self.name} ({self.webhallen_id})"
