@@ -8,7 +8,6 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
-coverage = "^7.6.3"
 django = "^5.1.2"
 django-allauth = { extras = ["socialaccount"], version = "^65.0.2" }
 django-auto-prefetch = "^1.10.0"
@@ -20,22 +19,24 @@ django-ninja = "^1.3.0"
 django-pgclone = "^3.5.0"
 django-pghistory = "^3.4.4"
 django-pgstats = "^1.4.0"
-djlint = "^1.35.2"
+django-pictures = "^1.3.3"
 gunicorn = "^23.0.0"
 hishel = { extras = ["sqlite"], version = "^0.0.33" }
 httpx = "^0.27.2"
 platformdirs = "^4.3.6"
-pre-commit = "^4.0.1"
 psycopg = { extras = ["binary", "pool"], version = "^3.2.3" }
-pytest = "^8.3.3"
-pytest-cov = "^5.0.0"
-pytest-django = "^4.9.0"
-pytest-mock = "^3.14.0"
 python-dotenv = "^1.0.1"
 scrapy = "^2.11.2"
-sentry-sdk = { extras = ["django"], version = "^2.16.0" }
+sentry-sdk = { extras = ["django"], version = "^2.17.0" }
 sitemap-parser = { git = "https://github.com/TheLovinator1/sitemap-parser.git" }
-django-pictures = "^1.3.3"
+
+[tool.poetry.group.dev.dependencies]
+coverage = "^7.6.3"
+djlint = "^1.35.2"
+pre-commit = "^4.0.1"
+pytest = "^8.3.3"
+pytest-cov = "^5.0.0"
+pytest-mock = "^3.14.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -72,6 +73,23 @@ lint.ignore = [
     "S101",    # asserts allowed in tests...
     "S311",    # Standard pseudo-random generators are not suitable for cryptographic purposes
     "PT001",   # Checks for argument-free @pytest.fixture() decorators
+]
+"**/everything.py" = [
+    "S101",
+    "ANN401",
+    "D103",
+    "D102",
+    "D101",
+    "PLC2401",
+    "ANN001",
+    "E722",
+    "PT015",
+    "A001",
+    "PLR0914",
+    "PLR0915",
+    "PLR0912",
+    "C901",
+    "PLC3002",
 ]
 
 [tool.djlint]
