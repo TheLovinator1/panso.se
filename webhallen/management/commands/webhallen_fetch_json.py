@@ -13,15 +13,9 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    """Command to download JSON for products in the sitemap.
+    """Command to download JSON for products in the sitemap."""
 
-    You can pass the `--all` flag to download all products, even those not in the sitemap.
-
-    Raises:
-        CommandError: If the argument is "error".
-    """
-
-    help = "Download JSON for products in the sitemap"
+    help = "Grabs the sitemap from Webhallen, parses it, and uses the URLs to fetch JSON data for products."
 
     def handle(self, *args: tuple, **kwargs: dict) -> None:
         """Handles the command."""

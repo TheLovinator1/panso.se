@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class Command(BaseCommand):
     """Download all JSON data from the database and save to disk."""
 
-    help = "Download all JSON data from the database and save to disk."
+    help = "Save all JSON data from the database to disk."
 
     def handle(self, *args: tuple, **kwargs: dict) -> None:  # noqa: ARG002
         """Handles the command."""

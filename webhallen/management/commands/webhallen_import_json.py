@@ -10,9 +10,9 @@ from webhallen.models.scraped import WebhallenProductJSON
 
 
 class Command(BaseCommand):
-    """Create a single JSON file with all unique keys and an example value from JSON objects."""
+    """Convert JSON data to models."""
 
-    help = "Aggregate all keys from JSON data in the database into a single file with one example value per key."
+    help = "Populate the our models with the JSON data from the database."
 
     def handle(self, *args: tuple, **kwargs: dict) -> None:  # noqa: ARG002
         """Handles the command."""
