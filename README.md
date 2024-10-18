@@ -80,7 +80,7 @@ If you want to add a new app, you can run `python manage.py startapp app_name` a
   - Aggregate all keys from JSON data in the database into a single JSON file, with one example value per key.
 - `python manage.py webhallen_fetch_json`
   - Fetch the sitemap from Webhallen, parse it, and use the URLs to retrieve product JSON data.
-- `python manage.py webhallen_import_json`
+- `python manage.py webhallen_populate`
   - Populate models with the JSON data stored in the database.
 - `python manage.py webhallen_save_json_to_disk`
   - Download all JSON data from the database and save it to disk.

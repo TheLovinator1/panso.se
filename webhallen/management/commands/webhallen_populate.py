@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 
 from django.core.management.base import BaseCommand
@@ -16,10 +15,6 @@ class Command(BaseCommand):
 
     def handle(self, *args: tuple, **kwargs: dict) -> None:  # noqa: ARG002
         """Handles the command."""
-        output_path = Path("output")
-        output_path.mkdir(parents=True, exist_ok=True)
-
-        # Download all JSON data from the database
         json_data = WebhallenProductJSON.objects.all().filter(data__isnull=False)
 
         for product_data in json_data:
@@ -35,8 +30,6 @@ class Command(BaseCommand):
 
             # Recursive function to extract keys and values
             self.handle_json(data, webhallen_id)
-
-        self.stdout.write(self.style.SUCCESS(f"Successfully aggregated keys to {output_path}"))
 
     def handle_json(self, data: dict[str, Any], webhallen_id: int) -> None:
         """Convert JSON data to models."""
