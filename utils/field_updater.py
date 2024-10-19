@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from django.db import models
+    from django.db.models.base import Model
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -73,7 +74,7 @@ def update_field(instance: models.Model, django_field_name: str, new_value: str 
     return 0
 
 
-def update_fields(instance: models.Model, data: dict, field_mapping: dict[str, str]) -> None:
+def update_fields(instance: models.Model, data: dict, field_mapping: dict[str, str]) -> Model:
     """Update multiple fields on an instance using a mapping from external field names to model field names.
 
     Args:
@@ -81,6 +82,9 @@ def update_fields(instance: models.Model, data: dict, field_mapping: dict[str, s
         data (dict): The new data to update the fields with.
         field_mapping (dict[str, str]): A dictionary mapping external field names to model field names. Left side is
             the json key and the right side is the model field name.
+
+    Returns:
+        models.Model: The updated instance.
     """
     updated_field_count = 0
     for json_field, django_field_name in field_mapping.items():
@@ -102,3 +106,5 @@ def update_fields(instance: models.Model, data: dict, field_mapping: dict[str, s
             logger.info("Updated %s fields for %s", updated_field_count, instance)
         except Exception:
             logger.exception("Error saving instance %s", instance)
+
+    return instance

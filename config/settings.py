@@ -70,6 +70,7 @@ INSTALLED_APPS: list[str] = [
     "allauth.socialaccount.providers.github",
     "panso.apps.PansoConfig",
     "webhallen.apps.WebhallenConfig",
+    "inet.apps.InetConfig",
 ]
 
 MIDDLEWARE: list[str] = [
