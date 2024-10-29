@@ -559,17 +559,17 @@ steam = ["python3-openid (>=3.0.8)"]
 
 [[package]]
 name = "django-auto-prefetch"
-version = "1.10.0"
+version = "1.11.0"
 description = "Automatically prefetch foreign key values as needed."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "django_auto_prefetch-1.10.0-py3-none-any.whl", hash = "sha256:9d096aba3e7844f7f88b3216c66debcbc7abfa5943642f60ae400bb6050dda23"},
-    {file = "django_auto_prefetch-1.10.0.tar.gz", hash = "sha256:d86ac16be05cd218d84234d7fb01beda6daa2336b8861602c44ad166e4079566"},
+    {file = "django_auto_prefetch-1.11.0-py3-none-any.whl", hash = "sha256:cbbd9036bc769cb6add90a435aca07b7b472ed330af2a8799862ae60deb8b636"},
+    {file = "django_auto_prefetch-1.11.0.tar.gz", hash = "sha256:7fa97ee167d2e09f63e509311825344b5c8c42e8b39a3c7f5ad8b9bc3abced41"},
 ]
 
 [package.dependencies]
-django = ">=3.2"
+django = ">=4.2"
 
 [[package]]
 name = "django-browser-reload"
