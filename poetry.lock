@@ -652,13 +652,13 @@ test = ["django-stubs", "mypy (==1.7.1)", "psycopg2-binary", "pytest", "pytest-a
 
 [[package]]
 name = "django-pgclone"
-version = "3.5.0"
+version = "3.6.0"
 description = "Dump and restore Postgres databases with Django."
 optional = false
-python-versions = "<4,>=3.8.0"
+python-versions = "<4,>=3.9.0"
 files = [
-    {file = "django_pgclone-3.5.0-py3-none-any.whl", hash = "sha256:ce90ec19c5a4de471555bb6640eef6cad165859aa605904967ce1463b67c14d1"},
-    {file = "django_pgclone-3.5.0.tar.gz", hash = "sha256:54ba5dcce3a623982def4402d17351df154c31bac8b32b0f51c8d8d8473053b8"},
+    {file = "django_pgclone-3.6.0-py3-none-any.whl", hash = "sha256:db4ebc0858d6de057042f2f9c66b6d4515c9c151e6db97a33445032fe8cd87d9"},
+    {file = "django_pgclone-3.6.0.tar.gz", hash = "sha256:76d4285e0ac3394792c0aaae5dabfa5e0a7856f476149c4394b3fcd3454c21c4"},
 ]
 
 [package.dependencies]
