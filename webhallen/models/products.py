@@ -21,6 +21,26 @@ logger: logging.Logger = logging.getLogger(__name__)
 # TODO(TheLovinator): All docstrings are placeholders and need to be updated  # noqa: TD003
 
 
+def create_and_import_component(data: dict, component_name: str) -> Component:
+    """Create and import a component.
+
+    Args:
+        data (dict): The data to import.
+        component_name (str): The name of the component.
+
+    Returns:
+        Component: The created component.
+    """
+    component_data: dict = data.get(component_name, {})
+    component, created = Component.objects.get_or_create(
+        attribute_id=component_data.get("attributeId"),
+    )
+    if created:
+        logger.info("Created new component: %s", component)
+    component.import_json(component_data)
+    return component
+
+
 class CanonicalVariant(auto_prefetch.Model):
     """Canonical variant."""
 
@@ -803,36 +823,78 @@ class Section(auto_prefetch.Model):
     """A section."""
 
     # Django fields
+    # 7
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Section ID")
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the section was created")
     updated_at = models.DateTimeField(auto_now=True, help_text="When the section was last updated")
 
     # Webhallen fields
+
+    # "Vi har LEGO, drönare, roligt merchandise och mycket mer"
     meta_title = models.TextField(help_text="Meta title")
+
+    # true
     active = models.BooleanField(help_text="Is active")
+
+    # "lek_gadgets"
     icon = models.TextField(help_text="Icon")
+
+    # "Leksaker & Hobby"
     name = models.TextField(help_text="Name")
+
+    def __str__(self) -> str:
+        return f"Section - {self.name}"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "metaTitle": "meta_title",
+            "active": "active",
+            "icon": "icon",
+            "name": "name",
+        }
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
 
 
 class MainCategoryPath(auto_prefetch.Model):
     """The main category path."""
 
     # Django fields
+    # 3600
     id = models.PositiveBigIntegerField(primary_key=True, help_text="Main category path ID")
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the main category path was created")
     updated_at = models.DateTimeField(auto_now=True, help_text="When the main category path was last updated")
 
     # Webhallen fields
-    fyndware_description = models.TextField(help_text="Fyndware description")
-    meta_title = models.TextField(help_text="Meta title")
-    seo_name = models.TextField(help_text="SEO name")
-    active = models.BooleanField(help_text="Is active")
-    order = models.PositiveBigIntegerField(help_text="Order")
-    icon = models.TextField(help_text="Icon")
-    name = models.TextField(help_text="Name")
-    has_products = models.BooleanField(help_text="Has products")
-    index = models.PositiveBigIntegerField(help_text="Index")
-    url_name = models.TextField(help_text="URL name")
+    fyndware_description = models.TextField(help_text="Fyndware description")  # ""
+    meta_title = models.TextField(help_text="Meta title")  # "Brädspel - Roliga spel för barn, vuxna & vänner!"
+    seo_name = models.TextField(help_text="SEO name")  # "Sällskapsspel"
+    active = models.BooleanField(help_text="Is active")  # true
+    order = models.PositiveBigIntegerField(help_text="Order")  # 2
+    icon = models.TextField(help_text="Icon")  # "bradspel"
+    name = models.TextField(help_text="Name")  # "Brädspel"
+    has_products = models.BooleanField(help_text="Has products")  # true
+    index = models.PositiveBigIntegerField(help_text="Index")  # 0
+    url_name = models.TextField(help_text="URL name")  # "pc"
+
+    def __str__(self) -> str:
+        return f"Main category path - {self.name}"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "fyndwareDescription": "fyndware_description",
+            "metaTitle": "meta_title",
+            "seoName": "seo_name",
+            "active": "active",
+            "order": "order",
+            "icon": "icon",
+            "name": "name",
+            "hasProducts": "has_products",
+            "index": "index",
+            "url_name": "url_name",
+        }
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
 
 
 class Parts(auto_prefetch.Model):
@@ -843,27 +905,67 @@ class Parts(auto_prefetch.Model):
     updated_at = models.DateTimeField(auto_now=True, help_text="When the part was last updated")
 
     # Webhallen fields
-    comb = models.TextField(help_text="Value and unit")
-    nnv = models.TextField(help_text="Numeric value. Int or float if value is number")
-    text_value = models.TextField(help_text="Text value. A string if value is number")
-    unit = models.TextField(help_text="Unit. Only if unit for value is given")
-    value = models.TextField(help_text="Value")
+    comb = models.TextField(help_text="Value and unit")  # "Hona"
+
+    # TODO(TheLovinator): What is this?  # noqa: TD003
+    nnv = models.TextField(help_text="Numeric value. Int or float if value is number")  # null
+    text_value = models.TextField(help_text="Text value. A string if value is number")  # "Hona"
+    unit = models.TextField(help_text="Unit. Only if unit for value is given")  # ""
+    value = models.TextField(help_text="Value")  # "Hona"
+
+    def __str__(self) -> str:
+        return f"Part - {self.value}"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "comb": "comb",
+            "nnv": "nnv",
+            "textValue": "text_value",
+            "unit": "unit",
+            "value": "value",
+        }
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
 
 
 class Component(auto_prefetch.Model):
     """Information under the Data field."""
 
     # Django fields
+    # 246
     attribute_id = models.PositiveBigIntegerField(primary_key=True, help_text="Attribute ID")
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the component was created")
     updated_at = models.DateTimeField(auto_now=True, help_text="When the component was last updated")
 
     # Webhallen fields
-    name = models.TextField(help_text="Name")
-    value = models.TextField(help_text="Value")
+    name = models.TextField(help_text="Name")  # "Typ av I/O-kabel"
+    value = models.TextField(help_text="Value")  # "Strömkabel"
 
     # Relationships
-    parts = models.ManyToManyField(Parts, help_text="Parts", related_name="components")
+    part = models.ForeignKey(Parts, on_delete=models.CASCADE, help_text="Part", related_name="components")
+
+    def __str__(self) -> str:
+        return f"Component - {self.name}"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        field_mapping: dict[str, str] = {
+            "name": "name",
+            "value": "value",
+        }
+        update_fields(instance=self, data=data, field_mapping=field_mapping)
+
+        parts = data.get("parts", {})
+        part, created = Parts.objects.get_or_create(
+            comb=parts.get("comb"),
+            nnv=parts.get("nnv"),
+            text_value=parts.get("text_value"),
+            unit=parts.get("unit"),
+            value=parts.get("value"),
+        )
+        if created:
+            logger.info("Created new part: %s", part)
+        self.part = part
 
 
 class Header(auto_prefetch.Model):
@@ -953,9 +1055,77 @@ class Header(auto_prefetch.Model):
         related_name="products_series",
     )
 
+    def __str__(self) -> str:
+        return "Header"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Förpackad kvantitet
+        packaged_quantity: Component = create_and_import_component(data, "Förpackad kvantitet")
+        self.packaged_quantity.add(packaged_quantity)
+
+        # Märke
+        brand: Component = create_and_import_component(data, "Märke")
+        self.brand.add(brand)
+
+        # Produktlinje
+        product_line: Component = create_and_import_component(data, "Produktlinje")
+        self.product_line.add(product_line)
+
+        # Tillverkare
+        manufacturer: Component = create_and_import_component(data, "Tillverkare")
+        self.manufacturer.add(manufacturer)
+
+        # Modell
+        model: Component = create_and_import_component(data, "Modell")
+        self.model.add(model)
+
+        # Kompatibilitet
+        compatibility: Component = create_and_import_component(data, "Kompatibilitet")
+        self.compatibility.add(compatibility)
+
+        # Landsspecifika satser
+        country_specific_batches: Component = create_and_import_component(data, "Landsspecifika satser")
+        self.country_specific_batches.add(country_specific_batches)
+
+        # Lokalisering
+        localization: Component = create_and_import_component(data, "Lokalisering")
+        self.localization.add(localization)
+
+        # Spelutgivare
+        game_publisher: Component = create_and_import_component(data, "Spelutgivare")
+        self.game_publisher.add(game_publisher)
+
+        # Spelutvecklare
+        game_developer: Component = create_and_import_component(data, "Spelutvecklare")
+        self.game_developer.add(game_developer)
+
+        # Utgåva
+        edition: Component = create_and_import_component(data, "Utgåva")
+        self.edition.add(edition)
+
+        # Sats
+        batch: Component = create_and_import_component(data, "Sats")
+        self.batch.add(batch)
+
+        # Tillverkarens modellnummer
+        manufacturer_model_number: Component = create_and_import_component(data, "Tillverkarens modellnummer")
+        self.manufacturer_model_number.add(manufacturer_model_number)
+
+        # Utgivningsdatum
+        release_date: Component = create_and_import_component(data, "Utgivningsdatum")
+        self.release_date.add(release_date)
+
+        # Serie
+        series: Component = create_and_import_component(data, "Serie")
+        self.series.add(series)
+
 
 class DimensionsAndWeight(auto_prefetch.Model):
-    """Dimensions and weight."""
+    """Mått och vikt.
+
+    Note: All the field names are translated from Swedish to English.
+    """
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the dimensions and weight were created")
@@ -989,13 +1159,75 @@ class DimensionsAndWeight(auto_prefetch.Model):
     )
     max_length = models.ManyToManyField(Component, help_text="Maximum length", related_name="dimensions_max_length")
 
+    def __str__(self) -> str:
+        return "Dimensions and weight"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Vikt
+        weight: Component = create_and_import_component(data, "Vikt")
+        self.weight.add(weight)
+
+        # Längd
+        length: Component = create_and_import_component(data, "Längd")
+        self.length.add(length)
+
+        # Bredd
+        width: Component = create_and_import_component(data, "Bredd")
+        self.width.add(width)
+
+        # Höjd
+        height: Component = create_and_import_component(data, "Höjd")
+        self.height.add(height)
+
+        # Längd i meter
+        length_in_meters: Component = create_and_import_component(data, "Längd i meter")
+        self.length_in_meters.add(length_in_meters)
+
+        # Diameter
+        diameter: Component = create_and_import_component(data, "Diameter")
+        self.diameter.add(diameter)
+
+        # Kommentarer
+        comments: Component = create_and_import_component(data, "Kommentarer")
+        self.comments.add(comments)
+
+        # Grovlek
+        thickness: Component = create_and_import_component(data, "Grovlek")
+        self.thickness.add(thickness)
+
+        # Volym
+        volume: Component = create_and_import_component(data, "Volym")
+        self.volume.add(volume)
+
+        # Kommentar
+        comment: Component = create_and_import_component(data, "Kommentar")
+        self.comment.add(comment)
+
+        # Min. höjd
+        min_height: Component = create_and_import_component(data, "Min. höjd")
+        self.min_height.add(min_height)
+
+        # Ryggstödshöjd
+        backrest_height: Component = create_and_import_component(data, "Ryggstödshöjd")
+        self.backrest_height.add(backrest_height)
+
+        # Ryggstödsbredd
+        backrest_width: Component = create_and_import_component(data, "Ryggstödsbredd")
+        self.backrest_width.add(backrest_width)
+
+        # Max längd
+        max_length: Component = create_and_import_component(data, "Max längd")
+        self.max_length.add(max_length)
+
 
 class General(auto_prefetch.Model):
-    """General information."""
+    """Allmänt."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the general information was created")
     updated_at = models.DateTimeField(auto_now=True, help_text="When the general information was last updated")
+
     # Webhallen fields
     product_type = models.ManyToManyField(
         Component,
@@ -1257,8 +1489,6 @@ class General(auto_prefetch.Model):
         help_text="Tilt tension adjustment",
         related_name="products_tilt_tension_adjustment",
     )
-
-    # TODO (TheLovinator): Rename in API to class when exporting  # noqa: TD003
     _class = models.ManyToManyField(
         Component,
         help_text="Class",
@@ -1350,6 +1580,291 @@ class General(auto_prefetch.Model):
         related_name="products_diameter",
     )
 
+    def __str__(self) -> str:
+        return "General"
+
+    def import_json(self, data: dict) -> None:  # noqa: PLR0914, PLR0915
+        """Import JSON data."""
+        # Produkttyp
+        product_type: Component = create_and_import_component(data, "Produkttyp")
+        self.product_type.add(product_type)
+
+        # Tillbehörskategori
+        accessory_category: Component = create_and_import_component(data, "Tillbehörskategori")
+        self.accessory_category.add(accessory_category)
+
+        # Underkategori förbrukningsartiklar
+        consumable_subcategory: Component = create_and_import_component(data, "Underkategori förbrukningsartiklar")
+        self.consumable_subcategory.add(consumable_subcategory)
+
+        # Teknik
+        technology: Component = create_and_import_component(data, "Teknik")
+        self.technology.add(technology)
+
+        # Klass skrivarförbrukningsartiklar
+        printer_consumables_class: Component = create_and_import_component(data, "Klass skrivarförbrukningsartiklar")
+        self.printer_consumables_class.add(printer_consumables_class)
+
+        # Underkategori
+        subcategory: Component = create_and_import_component(data, "Underkategori")
+        self.subcategory.add(subcategory)
+
+        # Kategori
+        category: Component = create_and_import_component(data, "Kategori")
+        self.category.add(category)
+
+        # Installationstyp
+        installation_type: Component = create_and_import_component(data, "Installationstyp")
+        self.installation_type.add(installation_type)
+
+        # Utformad för
+        designed_for: Component = create_and_import_component(data, "Utformad för")
+        self.designed_for.add(designed_for)
+
+        # Miljö
+        environment: Component = create_and_import_component(data, "Miljö")
+        self.environment.add(environment)
+
+        # Antal inställda delar
+        number_of_set_parts: Component = create_and_import_component(data, "Antal inställda delar")
+        self.number_of_set_parts.add(number_of_set_parts)
+
+        # Lämplig för
+        suitable_for: Component = create_and_import_component(data, "Lämplig för")
+        self.suitable_for.add(suitable_for)
+
+        # Funktioner
+        features: Component = create_and_import_component(data, "Funktioner")
+        self.features.add(features)
+
+        # Inlärning
+        learning: Component = create_and_import_component(data, "Inlärning")
+        self.learning.add(learning)
+
+        # Min. ålder
+        min_age: Component = create_and_import_component(data, "Min. ålder")
+        self.min_age.add(min_age)
+
+        # Max. ålder
+        max_age: Component = create_and_import_component(data, "Max. ålder")
+        self.max_age.add(max_age)
+
+        # En-kortsdator ingår
+        one_board_computer_included: Component = create_and_import_component(data, "En-kortsdator ingår")
+        self.one_board_computer_included.add(one_board_computer_included)
+
+        # Vattentät
+        waterproof: Component = create_and_import_component(data, "Vattentät")
+        self.waterproof.add(waterproof)
+
+        # Dimmer
+        dimmer: Component = create_and_import_component(data, "Dimmer")
+        self.dimmer.add(dimmer)
+
+        # Kabellängd
+        cable_length: Component = create_and_import_component(data, "Kabellängd")
+        self.cable_length.add(cable_length)
+
+        # Watt som stöds för glödlampa
+        supported_wattage_for_light_bulb: Component = create_and_import_component(data, "Watt som stöds för glödlampa")
+        self.supported_wattage_for_light_bulb.add(supported_wattage_for_light_bulb)
+
+        # Antal installerade glödlampor
+        number_of_installed_light_bulbs: Component = create_and_import_component(data, "Antal installerade glödlampor")
+        self.number_of_installed_light_bulbs.add(number_of_installed_light_bulbs)
+
+        # Antal glödlampor som stöds
+        number_of_supported_light_bulbs: Component = create_and_import_component(data, "Antal glödlampor som stöds")
+        self.number_of_supported_light_bulbs.add(number_of_supported_light_bulbs)
+
+        # Batteri ingår
+        battery_included: Component = create_and_import_component(data, "Batteri ingår")
+        self.battery_included.add(battery_included)
+
+        # Omkopplingstyp
+        switch_type: Component = create_and_import_component(data, "Omkopplingstyp")
+        self.switch_type.add(switch_type)
+
+        # Omkopplingsplats
+        switch_location: Component = create_and_import_component(data, "Omkopplingsplats")
+        self.switch_location.add(switch_location)
+
+        # Klämmontering
+        clamp_mount: Component = create_and_import_component(data, "Klämmontering")
+        self.clamp_mount.add(clamp_mount)
+
+        # Verktygsuppsättning (delar)
+        tool_set_parts: Component = create_and_import_component(data, "Verktygsuppsättning (delar)")
+        self.tool_set_parts.add(tool_set_parts)
+
+        # Uttag
+        socket: Component = create_and_import_component(data, "Uttag")
+        self.socket.add(socket)
+
+        # Uttagsstorlek
+        socket_size: Component = create_and_import_component(data, "Uttagsstorlek")
+        self.socket_size.add(socket_size)
+
+        # Spets
+        tip: Component = create_and_import_component(data, "Spets")
+        self.tip.add(tip)
+
+        # Spetsstorlek
+        tip_size: Component = create_and_import_component(data, "Spetsstorlek")
+        self.tip_size.add(tip_size)
+
+        # Storlek
+        size: Component = create_and_import_component(data, "Storlek")
+        self.size.add(size)
+
+        # Form
+        shape: Component = create_and_import_component(data, "Form")
+        self.shape.add(shape)
+
+        # Spårningsdata
+        tracking_data: Component = create_and_import_component(data, "Spårningsdata")
+        self.tracking_data.add(tracking_data)
+
+        # Lösning
+        solution: Component = create_and_import_component(data, "Lösning")
+        self.solution.add(solution)
+
+        # Tecken/tema
+        character_theme: Component = create_and_import_component(data, "Tecken/tema")
+        self.character_theme.add(character_theme)
+
+        # Växelströmsadapter medföljer
+        ac_adapter_included: Component = create_and_import_component(data, "Växelströmsadapter medföljer")
+        self.AC_adapter_included.add(ac_adapter_included)
+
+        # Stil
+        style: Component = create_and_import_component(data, "Stil")
+        self.style.add(style)
+
+        # Rekommenderas för
+        recommended_for: Component = create_and_import_component(data, "Rekommenderas för")
+        self.recommended_for.add(recommended_for)
+
+        # Rekommenderad användning
+        recommended_use: Component = create_and_import_component(data, "Rekommenderad användning")
+        self.recommended_use.add(recommended_use)
+
+        # Anslutning
+        connection: Component = create_and_import_component(data, "Anslutning")
+        self.connection.add(connection)
+
+        # Typ
+        _type: Component = create_and_import_component(data, "Typ")
+        self.type.add(_type)
+
+        # Total längd
+        total_length: Component = create_and_import_component(data, "Total längd")
+        self.total_length.add(total_length)
+
+        # Betalningsteknik
+        payment_technology: Component = create_and_import_component(data, "Betalningsteknik")
+        self.payment_technology.add(payment_technology)
+
+        # Mekanism
+        mechanism: Component = create_and_import_component(data, "Mekanism")
+        self.mechanism.add(mechanism)
+
+        # Lutningslås
+        tilt_lock: Component = create_and_import_component(data, "Lutningslås")
+        self.tilt_lock.add(tilt_lock)
+
+        # Huvudstöd
+        headrest: Component = create_and_import_component(data, "Huvudstöd")
+        self.headrest.add(headrest)
+
+        # Armstöd
+        armrest: Component = create_and_import_component(data, "Armstöd")
+        self.armrest.add(armrest)
+
+        # Lutning
+        tilt: Component = create_and_import_component(data, "Lutning")
+        self.tilt.add(tilt)
+
+        # Ergonomisk
+        ergonomic: Component = create_and_import_component(data, "Ergonomisk")
+        self.ergonomic.add(ergonomic)
+
+        # Lutande spänningsjustering
+        tilt_tension_adjustment: Component = create_and_import_component(data, "Lutande spänningsjustering")
+        self.tilt_tension_adjustment.add(tilt_tension_adjustment)
+
+        # Klass
+        _class: Component = create_and_import_component(data, "Klass")
+        self._class.add(_class)
+
+        # Kitinnehåll
+        kit_contents: Component = create_and_import_component(data, "Kitinnehåll")
+        self.kit_contents.add(kit_contents)
+
+        # Underkategori medier
+        media_subcategory: Component = create_and_import_component(data, "Underkategori medier")
+        self.media_subcategory.add(media_subcategory)
+
+        # Inomhus/utomhus
+        indoor_outdoor: Component = create_and_import_component(data, "Inomhus/utomhus")
+        self.indoor_outdoor.add(indoor_outdoor)
+
+        # Termometerskala
+        thermometer_scale: Component = create_and_import_component(data, "Termometerskala")
+        self.thermometer_scale.add(thermometer_scale)
+
+        # Användningslägen
+        usage_modes: Component = create_and_import_component(data, "Användningslägen")
+        self.usage_modes.add(usage_modes)
+
+        # Bilströmsadapter medföljer
+        car_power_adapter_included: Component = create_and_import_component(data, "Bilströmsadapter medföljer")
+        self.car_power_adapter_included.add(car_power_adapter_included)
+
+        # Inbyggda komponenter
+        built_in_components: Component = create_and_import_component(data, "Inbyggda komponenter")
+        self.built_in_components.add(built_in_components)
+
+        # Armkonstruktion
+        arm_construction: Component = create_and_import_component(data, "Armkonstruktion")
+        self.arm_construction.add(arm_construction)
+
+        # Antal moduler
+        number_of_modules: Component = create_and_import_component(data, "Antal moduler")
+        self.number_of_modules.add(number_of_modules)
+
+        # Antal uppsättningar komponenter
+        number_of_component_sets: Component = create_and_import_component(data, "Antal uppsättningar komponenter")
+        self.number_of_component_sets.add(number_of_component_sets)
+
+        # Antal uttag
+        number_of_sockets: Component = create_and_import_component(data, "Antal uttag")
+        self.number_of_sockets.add(number_of_sockets)
+
+        # Utgångsanslutningstyp
+        output_connection_type: Component = create_and_import_component(data, "Utgångsanslutningstyp")
+        self.output_connection_type.add(output_connection_type)
+
+        # Konfiguration av utgångsstänger
+        output_bar_configuration: Component = create_and_import_component(data, "Konfiguration av utgångsstänger")
+        self.output_bar_configuration.add(output_bar_configuration)
+
+        # Låstyp
+        lock_type: Component = create_and_import_component(data, "Låstyp")
+        self.lock_type.add(lock_type)
+
+        # Ström
+        power: Component = create_and_import_component(data, "Ström")
+        self.power.add(power)
+
+        # Sladdlös
+        cordless: Component = create_and_import_component(data, "Sladdlös")
+        self.cordless.add(cordless)
+
+        # Diameter
+        diameter: Component = create_and_import_component(data, "Diameter")
+        self.diameter.add(diameter)
+
 
 class Miscellaneous(auto_prefetch.Model):
     """Miscellaneous information."""
@@ -1357,6 +1872,7 @@ class Miscellaneous(auto_prefetch.Model):
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the miscellaneous information was created")
     updated_at = models.DateTimeField(auto_now=True, help_text="When the miscellaneous information was last updated")
+
     # Webhallen fields
     color = models.ManyToManyField(Component, help_text="Color", related_name="miscellaneous_color")
     color_category = models.ManyToManyField(
@@ -1535,6 +2051,212 @@ class Miscellaneous(auto_prefetch.Model):
         related_name="miscellaneous_product_condition",
     )
     ai_ready = models.ManyToManyField(Component, help_text="AI ready", related_name="miscellaneous_ai_ready")
+
+    def __str__(self) -> str:
+        return "Miscellaneous"
+
+    def import_json(self, data: dict) -> None:  # noqa: PLR0914, PLR0915
+        """Import JSON data."""
+        # Färg
+        color: Component = create_and_import_component(data, "Färg")
+        self.color.add(color)
+
+        # Färgkategori
+        color_category: Component = create_and_import_component(data, "Färgkategori")
+        self.color_category.add(color_category)
+
+        # Monteringsgränssnitt för platt bildskärm
+        flat_screen_mounting_interface: Component = create_and_import_component(
+            data,
+            "Monteringsgränssnitt för platt bildskärm",
+        )
+        self.flat_screen_mounting_interface.add(flat_screen_mounting_interface)
+
+        # Rackmonteringssats
+        rack_mounting_kit: Component = create_and_import_component(data, "Rackmonteringssats")
+        self.rack_mounting_kit.add(rack_mounting_kit)
+
+        # Kompatibla spelkonsol
+        compatible_game_console: Component = create_and_import_component(data, "Kompatibla spelkonsol")
+        self.compatible_game_console.add(compatible_game_console)
+
+        # Ljudtrycknivå
+        sound_pressure_level: Component = create_and_import_component(data, "Ljudtrycknivå")
+        self.sound_pressure_level.add(sound_pressure_level)
+
+        # Yttre färg
+        external_color: Component = create_and_import_component(data, "Yttre färg")
+        self.external_color.add(external_color)
+
+        # Krypteringsalgoritm
+        encryption_algorithm: Component = create_and_import_component(data, "Krypteringsalgoritm")
+        self.encryption_algorithm.add(encryption_algorithm)
+
+        # Formfaktorkomptibilitet för hårddisk
+        hard_drive_form_factor_compatibility: Component = create_and_import_component(
+            data,
+            "Formfaktorkomptibilitet för hårddisk",
+        )
+        self.hard_drive_form_factor_compatibility.add(hard_drive_form_factor_compatibility)
+
+        # Hårddiskkompatibel formfaktor (metrisk)
+        hard_drive_compatible_form_factor_metric: Component = create_and_import_component(
+            data,
+            "Hårddiskkompatibel formfaktor (metrisk)",
+        )
+        self.hard_drive_compatible_form_factor_metric.add(hard_drive_compatible_form_factor_metric)
+
+        # Material
+        material: Component = create_and_import_component(data, "Material")
+        self.material.add(material)
+
+        # Produktmaterial
+        product_material: Component = create_and_import_component(data, "Produktmaterial")
+        self.product_material.add(product_material)
+
+        # Egenskaper
+        features: Component = create_and_import_component(data, "Egenskaper")
+        self.features.add(features)
+
+        # Gaming
+        gaming: Component = create_and_import_component(data, "Gaming")
+        self.gaming.add(gaming)
+
+        # Finish
+        finish: Component = create_and_import_component(data, "Finish")
+        self.finish.add(finish)
+
+        # Fungerar med Chromebook
+        works_with_chromebook: Component = create_and_import_component(data, "Fungerar med Chromebook")
+        self.works_with_chromebook.add(works_with_chromebook)
+
+        # Återvunnet produktinnehåll
+        recycled_product_content: Component = create_and_import_component(data, "Återvunnet produktinnehåll")
+        self.recycled_product_content.add(recycled_product_content)
+
+        # Inkluderade tillbehör
+        included_accessories: Component = create_and_import_component(data, "Inkluderade tillbehör")
+        self.included_accessories.add(included_accessories)
+
+        # Driftstid utan nätanslutning
+        operating_time_without_power_connection: Component = create_and_import_component(
+            data,
+            "Driftstid utan nätanslutning",
+        )
+        self.operating_time_without_power_connection.add(operating_time_without_power_connection)
+
+        # Sladdlös användning
+        cordless_use: Component = create_and_import_component(data, "Sladdlös användning")
+        self.cordless_use.add(cordless_use)
+
+        # Maxlast
+        max_load: Component = create_and_import_component(data, "Maxlast")
+        self.max_load.add(max_load)
+
+        # Återvunnet förpackningsinnehåll
+        recycled_packaging_content: Component = create_and_import_component(data, "Återvunnet förpackningsinnehåll")
+        self.recycled_packaging_content.add(recycled_packaging_content)
+
+        # Skydd
+        protection: Component = create_and_import_component(data, "Skydd")
+        self.protection.add(protection)
+
+        # Förpackningstyp
+        packaging_type: Component = create_and_import_component(data, "Förpackningstyp")
+        self.packaging_type.add(packaging_type)
+
+        # Designfunktioner
+        design_features: Component = create_and_import_component(data, "Designfunktioner")
+        self.design_features.add(design_features)
+
+        # Pakettyp
+        package_type: Component = create_and_import_component(data, "Pakettyp")
+        self.package_type.add(package_type)
+
+        # Standarder som följs
+        standards_followed: Component = create_and_import_component(data, "Standarder som följs")
+        self.standards_followed.add(standards_followed)
+
+        # Kaffebryggartillbehör
+        coffee_maker_accessories: Component = create_and_import_component(data, "Kaffebryggartillbehör")
+        self.coffee_maker_accessories.add(coffee_maker_accessories)
+
+        # Maxdjup för vattentålighet
+        max_depth_for_water_resistance: Component = create_and_import_component(data, "Maxdjup för vattentålighet")
+        self.max_depth_for_water_resistance.add(max_depth_for_water_resistance)
+
+        # För undervattensbruk
+        for_underwater_use: Component = create_and_import_component(data, "För undervattensbruk")
+        self.for_underwater_use.add(for_underwater_use)
+
+        # Typ av prissättning
+        pricing_type: Component = create_and_import_component(data, "Typ av prissättning")
+        self.pricing_type.add(pricing_type)
+
+        # Kapacitet
+        capacity: Component = create_and_import_component(data, "Kapacitet")
+        self.capacity.add(capacity)
+
+        # Produkttyp
+        product_type: Component = create_and_import_component(data, "Produkttyp")
+        self.product_type.add(product_type)
+
+        # Processorpaket
+        processor_package: Component = create_and_import_component(data, "Processorpaket")
+        self.processor_package.add(processor_package)
+
+        # Vattentät
+        waterproof: Component = create_and_import_component(data, "Vattentät")
+        self.waterproof.add(waterproof)
+
+        # Reparationsbarhetsindex
+        reparability_index: Component = create_and_import_component(data, "Reparationsbarhetsindex")
+        self.reparability_index.add(reparability_index)
+
+        # Ljudnivå
+        sound_level: Component = create_and_import_component(data, "Ljudnivå")
+        self.sound_level.add(sound_level)
+
+        # Bullerklass
+        noise_class: Component = create_and_import_component(data, "Bullerklass")
+        self.noise_class.add(noise_class)
+
+        # Robust design
+        rugged_design: Component = create_and_import_component(data, "Robust design")
+        self.rugged_design.add(rugged_design)
+
+        # Mjukvarucertifiering
+        software_certification: Component = create_and_import_component(data, "Mjukvarucertifiering")
+        self.software_certification.add(software_certification)
+
+        # Försäljningsprogram från tillverkaren
+        manufacturer_sales_program: Component = create_and_import_component(
+            data,
+            "Försäljningsprogram från tillverkaren",
+        )
+        self.manufacturer_sales_program.add(manufacturer_sales_program)
+
+        # Återvunnet produktinnehåll (kommentar)
+        recycled_product_content_comment: Component = create_and_import_component(
+            data,
+            "Återvunnet produktinnehåll (kommentar)",
+        )
+        self.recycled_product_content_comment.add(recycled_product_content_comment)
+
+        # Återvunnet förpackningsinnehåll (kommentar)
+        recycled_packaging_content_comment: Component = create_and_import_component(
+            data,
+            "Återvunnet förpackningsinnehåll (kommentar)",
+        )
+        self.recycled_packaging_content_comment.add(recycled_packaging_content_comment)
+
+        # Produktens skick
+        product_condition: Component = create_and_import_component(data, "Produktens skick")
+        self.product_condition.add(product_condition)
+
+        # AI-klar
+        ai_ready: Component = create_and_import_component(data, "AI-klar")
+        self.ai_ready.add(ai_ready)
 
 
 class Cable(auto_prefetch.Model):
@@ -4543,3 +5265,16 @@ class Product(auto_prefetch.Model):
             "ticket": "ticket",
         }
         update_fields(instance=self, data=data, field_mapping=field_mapping)
+
+        # FyndwareClass
+        self.handle_fyndware_class(data)
+
+    def handle_fyndware_class(self, data: dict) -> None:
+        """Handle fyndwareClass."""
+        fyndware_class_data = data.get("fyndwareClass")
+        if fyndware_class_data:
+            fyndware_class, _ = FyndwareClass.objects.get_or_create(webhallen_id=fyndware_class_data["id"])
+            fyndware_class.import_json(fyndware_class_data)
+
+            self.fyndware_class = fyndware_class
+            self.save()
