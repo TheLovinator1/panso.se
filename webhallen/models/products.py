@@ -21,7 +21,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 # TODO(TheLovinator): All docstrings are placeholders and need to be updated  # noqa: TD003
 
 
-def create_and_import_component(data: dict, component_name: str) -> Component:
+def create_and_import_component(data: dict, component_name: str) -> Component | None:
     """Create and import a component.
 
     Args:
@@ -32,12 +32,15 @@ def create_and_import_component(data: dict, component_name: str) -> Component:
         Component: The created component.
     """
     component_data: dict = data.get(component_name, {})
-    component, created = Component.objects.get_or_create(
-        attribute_id=component_data.get("attributeId"),
-    )
+    if not component_data:
+        logger.warning("No component data found for %s", component_name)
+        return None
+
+    component, created = Component.objects.get_or_create(attribute_id=component_data.get("attributeId"))
     if created:
         logger.info("Created new component: %s", component)
     component.import_json(component_data)
+
     return component
 
 
@@ -1061,63 +1064,63 @@ class Header(auto_prefetch.Model):
     def import_json(self, data: dict) -> None:
         """Import JSON data."""
         # Förpackad kvantitet
-        packaged_quantity: Component = create_and_import_component(data, "Förpackad kvantitet")
+        packaged_quantity: Component | None = create_and_import_component(data, "Förpackad kvantitet")
         self.packaged_quantity.add(packaged_quantity)
 
         # Märke
-        brand: Component = create_and_import_component(data, "Märke")
+        brand: Component | None = create_and_import_component(data, "Märke")
         self.brand.add(brand)
 
         # Produktlinje
-        product_line: Component = create_and_import_component(data, "Produktlinje")
+        product_line: Component | None = create_and_import_component(data, "Produktlinje")
         self.product_line.add(product_line)
 
         # Tillverkare
-        manufacturer: Component = create_and_import_component(data, "Tillverkare")
+        manufacturer: Component | None = create_and_import_component(data, "Tillverkare")
         self.manufacturer.add(manufacturer)
 
         # Modell
-        model: Component = create_and_import_component(data, "Modell")
+        model: Component | None = create_and_import_component(data, "Modell")
         self.model.add(model)
 
         # Kompatibilitet
-        compatibility: Component = create_and_import_component(data, "Kompatibilitet")
+        compatibility: Component | None = create_and_import_component(data, "Kompatibilitet")
         self.compatibility.add(compatibility)
 
         # Landsspecifika satser
-        country_specific_batches: Component = create_and_import_component(data, "Landsspecifika satser")
+        country_specific_batches: Component | None = create_and_import_component(data, "Landsspecifika satser")
         self.country_specific_batches.add(country_specific_batches)
 
         # Lokalisering
-        localization: Component = create_and_import_component(data, "Lokalisering")
+        localization: Component | None = create_and_import_component(data, "Lokalisering")
         self.localization.add(localization)
 
         # Spelutgivare
-        game_publisher: Component = create_and_import_component(data, "Spelutgivare")
+        game_publisher: Component | None = create_and_import_component(data, "Spelutgivare")
         self.game_publisher.add(game_publisher)
 
         # Spelutvecklare
-        game_developer: Component = create_and_import_component(data, "Spelutvecklare")
+        game_developer: Component | None = create_and_import_component(data, "Spelutvecklare")
         self.game_developer.add(game_developer)
 
         # Utgåva
-        edition: Component = create_and_import_component(data, "Utgåva")
+        edition: Component | None = create_and_import_component(data, "Utgåva")
         self.edition.add(edition)
 
         # Sats
-        batch: Component = create_and_import_component(data, "Sats")
+        batch: Component | None = create_and_import_component(data, "Sats")
         self.batch.add(batch)
 
         # Tillverkarens modellnummer
-        manufacturer_model_number: Component = create_and_import_component(data, "Tillverkarens modellnummer")
+        manufacturer_model_number: Component | None = create_and_import_component(data, "Tillverkarens modellnummer")
         self.manufacturer_model_number.add(manufacturer_model_number)
 
         # Utgivningsdatum
-        release_date: Component = create_and_import_component(data, "Utgivningsdatum")
+        release_date: Component | None = create_and_import_component(data, "Utgivningsdatum")
         self.release_date.add(release_date)
 
         # Serie
-        series: Component = create_and_import_component(data, "Serie")
+        series: Component | None = create_and_import_component(data, "Serie")
         self.series.add(series)
 
 
@@ -1165,59 +1168,59 @@ class DimensionsAndWeight(auto_prefetch.Model):
     def import_json(self, data: dict) -> None:
         """Import JSON data."""
         # Vikt
-        weight: Component = create_and_import_component(data, "Vikt")
+        weight: Component | None = create_and_import_component(data, "Vikt")
         self.weight.add(weight)
 
         # Längd
-        length: Component = create_and_import_component(data, "Längd")
+        length: Component | None = create_and_import_component(data, "Längd")
         self.length.add(length)
 
         # Bredd
-        width: Component = create_and_import_component(data, "Bredd")
+        width: Component | None = create_and_import_component(data, "Bredd")
         self.width.add(width)
 
         # Höjd
-        height: Component = create_and_import_component(data, "Höjd")
+        height: Component | None = create_and_import_component(data, "Höjd")
         self.height.add(height)
 
         # Längd i meter
-        length_in_meters: Component = create_and_import_component(data, "Längd i meter")
+        length_in_meters: Component | None = create_and_import_component(data, "Längd i meter")
         self.length_in_meters.add(length_in_meters)
 
         # Diameter
-        diameter: Component = create_and_import_component(data, "Diameter")
+        diameter: Component | None = create_and_import_component(data, "Diameter")
         self.diameter.add(diameter)
 
         # Kommentarer
-        comments: Component = create_and_import_component(data, "Kommentarer")
+        comments: Component | None = create_and_import_component(data, "Kommentarer")
         self.comments.add(comments)
 
         # Grovlek
-        thickness: Component = create_and_import_component(data, "Grovlek")
+        thickness: Component | None = create_and_import_component(data, "Grovlek")
         self.thickness.add(thickness)
 
         # Volym
-        volume: Component = create_and_import_component(data, "Volym")
+        volume: Component | None = create_and_import_component(data, "Volym")
         self.volume.add(volume)
 
         # Kommentar
-        comment: Component = create_and_import_component(data, "Kommentar")
+        comment: Component | None = create_and_import_component(data, "Kommentar")
         self.comment.add(comment)
 
         # Min. höjd
-        min_height: Component = create_and_import_component(data, "Min. höjd")
+        min_height: Component | None = create_and_import_component(data, "Min. höjd")
         self.min_height.add(min_height)
 
         # Ryggstödshöjd
-        backrest_height: Component = create_and_import_component(data, "Ryggstödshöjd")
+        backrest_height: Component | None = create_and_import_component(data, "Ryggstödshöjd")
         self.backrest_height.add(backrest_height)
 
         # Ryggstödsbredd
-        backrest_width: Component = create_and_import_component(data, "Ryggstödsbredd")
+        backrest_width: Component | None = create_and_import_component(data, "Ryggstödsbredd")
         self.backrest_width.add(backrest_width)
 
         # Max längd
-        max_length: Component = create_and_import_component(data, "Max längd")
+        max_length: Component | None = create_and_import_component(data, "Max längd")
         self.max_length.add(max_length)
 
 
@@ -1586,283 +1589,304 @@ class General(auto_prefetch.Model):
     def import_json(self, data: dict) -> None:  # noqa: PLR0914, PLR0915
         """Import JSON data."""
         # Produkttyp
-        product_type: Component = create_and_import_component(data, "Produkttyp")
+        product_type: Component | None = create_and_import_component(data, "Produkttyp")
         self.product_type.add(product_type)
 
         # Tillbehörskategori
-        accessory_category: Component = create_and_import_component(data, "Tillbehörskategori")
+        accessory_category: Component | None = create_and_import_component(data, "Tillbehörskategori")
         self.accessory_category.add(accessory_category)
 
         # Underkategori förbrukningsartiklar
-        consumable_subcategory: Component = create_and_import_component(data, "Underkategori förbrukningsartiklar")
+        consumable_subcategory: Component | None = create_and_import_component(
+            data,
+            "Underkategori förbrukningsartiklar",
+        )
         self.consumable_subcategory.add(consumable_subcategory)
 
         # Teknik
-        technology: Component = create_and_import_component(data, "Teknik")
+        technology: Component | None = create_and_import_component(data, "Teknik")
         self.technology.add(technology)
 
         # Klass skrivarförbrukningsartiklar
-        printer_consumables_class: Component = create_and_import_component(data, "Klass skrivarförbrukningsartiklar")
+        printer_consumables_class: Component | None = create_and_import_component(
+            data,
+            "Klass skrivarförbrukningsartiklar",
+        )
         self.printer_consumables_class.add(printer_consumables_class)
 
         # Underkategori
-        subcategory: Component = create_and_import_component(data, "Underkategori")
+        subcategory: Component | None = create_and_import_component(data, "Underkategori")
         self.subcategory.add(subcategory)
 
         # Kategori
-        category: Component = create_and_import_component(data, "Kategori")
+        category: Component | None = create_and_import_component(data, "Kategori")
         self.category.add(category)
 
         # Installationstyp
-        installation_type: Component = create_and_import_component(data, "Installationstyp")
+        installation_type: Component | None = create_and_import_component(data, "Installationstyp")
         self.installation_type.add(installation_type)
 
         # Utformad för
-        designed_for: Component = create_and_import_component(data, "Utformad för")
+        designed_for: Component | None = create_and_import_component(data, "Utformad för")
         self.designed_for.add(designed_for)
 
         # Miljö
-        environment: Component = create_and_import_component(data, "Miljö")
+        environment: Component | None = create_and_import_component(data, "Miljö")
         self.environment.add(environment)
 
         # Antal inställda delar
-        number_of_set_parts: Component = create_and_import_component(data, "Antal inställda delar")
+        number_of_set_parts: Component | None = create_and_import_component(data, "Antal inställda delar")
         self.number_of_set_parts.add(number_of_set_parts)
 
         # Lämplig för
-        suitable_for: Component = create_and_import_component(data, "Lämplig för")
+        suitable_for: Component | None = create_and_import_component(data, "Lämplig för")
         self.suitable_for.add(suitable_for)
 
         # Funktioner
-        features: Component = create_and_import_component(data, "Funktioner")
+        features: Component | None = create_and_import_component(data, "Funktioner")
         self.features.add(features)
 
         # Inlärning
-        learning: Component = create_and_import_component(data, "Inlärning")
+        learning: Component | None = create_and_import_component(data, "Inlärning")
         self.learning.add(learning)
 
         # Min. ålder
-        min_age: Component = create_and_import_component(data, "Min. ålder")
+        min_age: Component | None = create_and_import_component(data, "Min. ålder")
         self.min_age.add(min_age)
 
         # Max. ålder
-        max_age: Component = create_and_import_component(data, "Max. ålder")
+        max_age: Component | None = create_and_import_component(data, "Max. ålder")
         self.max_age.add(max_age)
 
         # En-kortsdator ingår
-        one_board_computer_included: Component = create_and_import_component(data, "En-kortsdator ingår")
+        one_board_computer_included: Component | None = create_and_import_component(data, "En-kortsdator ingår")
         self.one_board_computer_included.add(one_board_computer_included)
 
         # Vattentät
-        waterproof: Component = create_and_import_component(data, "Vattentät")
+        waterproof: Component | None = create_and_import_component(data, "Vattentät")
         self.waterproof.add(waterproof)
 
         # Dimmer
-        dimmer: Component = create_and_import_component(data, "Dimmer")
+        dimmer: Component | None = create_and_import_component(data, "Dimmer")
         self.dimmer.add(dimmer)
 
         # Kabellängd
-        cable_length: Component = create_and_import_component(data, "Kabellängd")
+        cable_length: Component | None = create_and_import_component(data, "Kabellängd")
         self.cable_length.add(cable_length)
 
         # Watt som stöds för glödlampa
-        supported_wattage_for_light_bulb: Component = create_and_import_component(data, "Watt som stöds för glödlampa")
+        supported_wattage_for_light_bulb: Component | None = create_and_import_component(
+            data,
+            "Watt som stöds för glödlampa",
+        )
         self.supported_wattage_for_light_bulb.add(supported_wattage_for_light_bulb)
 
         # Antal installerade glödlampor
-        number_of_installed_light_bulbs: Component = create_and_import_component(data, "Antal installerade glödlampor")
+        number_of_installed_light_bulbs: Component | None = create_and_import_component(
+            data,
+            "Antal installerade glödlampor",
+        )
         self.number_of_installed_light_bulbs.add(number_of_installed_light_bulbs)
 
         # Antal glödlampor som stöds
-        number_of_supported_light_bulbs: Component = create_and_import_component(data, "Antal glödlampor som stöds")
+        number_of_supported_light_bulbs: Component | None = create_and_import_component(
+            data,
+            "Antal glödlampor som stöds",
+        )
         self.number_of_supported_light_bulbs.add(number_of_supported_light_bulbs)
 
         # Batteri ingår
-        battery_included: Component = create_and_import_component(data, "Batteri ingår")
+        battery_included: Component | None = create_and_import_component(data, "Batteri ingår")
         self.battery_included.add(battery_included)
 
         # Omkopplingstyp
-        switch_type: Component = create_and_import_component(data, "Omkopplingstyp")
+        switch_type: Component | None = create_and_import_component(data, "Omkopplingstyp")
         self.switch_type.add(switch_type)
 
         # Omkopplingsplats
-        switch_location: Component = create_and_import_component(data, "Omkopplingsplats")
+        switch_location: Component | None = create_and_import_component(data, "Omkopplingsplats")
         self.switch_location.add(switch_location)
 
         # Klämmontering
-        clamp_mount: Component = create_and_import_component(data, "Klämmontering")
+        clamp_mount: Component | None = create_and_import_component(data, "Klämmontering")
         self.clamp_mount.add(clamp_mount)
 
         # Verktygsuppsättning (delar)
-        tool_set_parts: Component = create_and_import_component(data, "Verktygsuppsättning (delar)")
+        tool_set_parts: Component | None = create_and_import_component(data, "Verktygsuppsättning (delar)")
         self.tool_set_parts.add(tool_set_parts)
 
         # Uttag
-        socket: Component = create_and_import_component(data, "Uttag")
+        socket: Component | None = create_and_import_component(data, "Uttag")
         self.socket.add(socket)
 
         # Uttagsstorlek
-        socket_size: Component = create_and_import_component(data, "Uttagsstorlek")
+        socket_size: Component | None = create_and_import_component(data, "Uttagsstorlek")
         self.socket_size.add(socket_size)
 
         # Spets
-        tip: Component = create_and_import_component(data, "Spets")
+        tip: Component | None = create_and_import_component(data, "Spets")
         self.tip.add(tip)
 
         # Spetsstorlek
-        tip_size: Component = create_and_import_component(data, "Spetsstorlek")
+        tip_size: Component | None = create_and_import_component(data, "Spetsstorlek")
         self.tip_size.add(tip_size)
 
         # Storlek
-        size: Component = create_and_import_component(data, "Storlek")
+        size: Component | None = create_and_import_component(data, "Storlek")
         self.size.add(size)
 
         # Form
-        shape: Component = create_and_import_component(data, "Form")
+        shape: Component | None = create_and_import_component(data, "Form")
         self.shape.add(shape)
 
         # Spårningsdata
-        tracking_data: Component = create_and_import_component(data, "Spårningsdata")
+        tracking_data: Component | None = create_and_import_component(data, "Spårningsdata")
         self.tracking_data.add(tracking_data)
 
         # Lösning
-        solution: Component = create_and_import_component(data, "Lösning")
+        solution: Component | None = create_and_import_component(data, "Lösning")
         self.solution.add(solution)
 
         # Tecken/tema
-        character_theme: Component = create_and_import_component(data, "Tecken/tema")
+        character_theme: Component | None = create_and_import_component(data, "Tecken/tema")
         self.character_theme.add(character_theme)
 
         # Växelströmsadapter medföljer
-        ac_adapter_included: Component = create_and_import_component(data, "Växelströmsadapter medföljer")
+        ac_adapter_included: Component | None = create_and_import_component(data, "Växelströmsadapter medföljer")
         self.AC_adapter_included.add(ac_adapter_included)
 
         # Stil
-        style: Component = create_and_import_component(data, "Stil")
+        style: Component | None = create_and_import_component(data, "Stil")
         self.style.add(style)
 
         # Rekommenderas för
-        recommended_for: Component = create_and_import_component(data, "Rekommenderas för")
+        recommended_for: Component | None = create_and_import_component(data, "Rekommenderas för")
         self.recommended_for.add(recommended_for)
 
         # Rekommenderad användning
-        recommended_use: Component = create_and_import_component(data, "Rekommenderad användning")
+        recommended_use: Component | None = create_and_import_component(data, "Rekommenderad användning")
         self.recommended_use.add(recommended_use)
 
         # Anslutning
-        connection: Component = create_and_import_component(data, "Anslutning")
+        connection: Component | None = create_and_import_component(data, "Anslutning")
         self.connection.add(connection)
 
         # Typ
-        _type: Component = create_and_import_component(data, "Typ")
+        _type: Component | None = create_and_import_component(data, "Typ")
         self.type.add(_type)
 
         # Total längd
-        total_length: Component = create_and_import_component(data, "Total längd")
+        total_length: Component | None = create_and_import_component(data, "Total längd")
         self.total_length.add(total_length)
 
         # Betalningsteknik
-        payment_technology: Component = create_and_import_component(data, "Betalningsteknik")
+        payment_technology: Component | None = create_and_import_component(data, "Betalningsteknik")
         self.payment_technology.add(payment_technology)
 
         # Mekanism
-        mechanism: Component = create_and_import_component(data, "Mekanism")
+        mechanism: Component | None = create_and_import_component(data, "Mekanism")
         self.mechanism.add(mechanism)
 
         # Lutningslås
-        tilt_lock: Component = create_and_import_component(data, "Lutningslås")
+        tilt_lock: Component | None = create_and_import_component(data, "Lutningslås")
         self.tilt_lock.add(tilt_lock)
 
         # Huvudstöd
-        headrest: Component = create_and_import_component(data, "Huvudstöd")
+        headrest: Component | None = create_and_import_component(data, "Huvudstöd")
         self.headrest.add(headrest)
 
         # Armstöd
-        armrest: Component = create_and_import_component(data, "Armstöd")
+        armrest: Component | None = create_and_import_component(data, "Armstöd")
         self.armrest.add(armrest)
 
         # Lutning
-        tilt: Component = create_and_import_component(data, "Lutning")
+        tilt: Component | None = create_and_import_component(data, "Lutning")
         self.tilt.add(tilt)
 
         # Ergonomisk
-        ergonomic: Component = create_and_import_component(data, "Ergonomisk")
+        ergonomic: Component | None = create_and_import_component(data, "Ergonomisk")
         self.ergonomic.add(ergonomic)
 
         # Lutande spänningsjustering
-        tilt_tension_adjustment: Component = create_and_import_component(data, "Lutande spänningsjustering")
+        tilt_tension_adjustment: Component | None = create_and_import_component(data, "Lutande spänningsjustering")
         self.tilt_tension_adjustment.add(tilt_tension_adjustment)
 
         # Klass
-        _class: Component = create_and_import_component(data, "Klass")
+        _class: Component | None = create_and_import_component(data, "Klass")
         self._class.add(_class)
 
         # Kitinnehåll
-        kit_contents: Component = create_and_import_component(data, "Kitinnehåll")
+        kit_contents: Component | None = create_and_import_component(data, "Kitinnehåll")
         self.kit_contents.add(kit_contents)
 
         # Underkategori medier
-        media_subcategory: Component = create_and_import_component(data, "Underkategori medier")
+        media_subcategory: Component | None = create_and_import_component(data, "Underkategori medier")
         self.media_subcategory.add(media_subcategory)
 
         # Inomhus/utomhus
-        indoor_outdoor: Component = create_and_import_component(data, "Inomhus/utomhus")
+        indoor_outdoor: Component | None = create_and_import_component(data, "Inomhus/utomhus")
         self.indoor_outdoor.add(indoor_outdoor)
 
         # Termometerskala
-        thermometer_scale: Component = create_and_import_component(data, "Termometerskala")
+        thermometer_scale: Component | None = create_and_import_component(data, "Termometerskala")
         self.thermometer_scale.add(thermometer_scale)
 
         # Användningslägen
-        usage_modes: Component = create_and_import_component(data, "Användningslägen")
+        usage_modes: Component | None = create_and_import_component(data, "Användningslägen")
         self.usage_modes.add(usage_modes)
 
         # Bilströmsadapter medföljer
-        car_power_adapter_included: Component = create_and_import_component(data, "Bilströmsadapter medföljer")
+        car_power_adapter_included: Component | None = create_and_import_component(data, "Bilströmsadapter medföljer")
         self.car_power_adapter_included.add(car_power_adapter_included)
 
         # Inbyggda komponenter
-        built_in_components: Component = create_and_import_component(data, "Inbyggda komponenter")
+        built_in_components: Component | None = create_and_import_component(data, "Inbyggda komponenter")
         self.built_in_components.add(built_in_components)
 
         # Armkonstruktion
-        arm_construction: Component = create_and_import_component(data, "Armkonstruktion")
+        arm_construction: Component | None = create_and_import_component(data, "Armkonstruktion")
         self.arm_construction.add(arm_construction)
 
         # Antal moduler
-        number_of_modules: Component = create_and_import_component(data, "Antal moduler")
+        number_of_modules: Component | None = create_and_import_component(data, "Antal moduler")
         self.number_of_modules.add(number_of_modules)
 
         # Antal uppsättningar komponenter
-        number_of_component_sets: Component = create_and_import_component(data, "Antal uppsättningar komponenter")
+        number_of_component_sets: Component | None = create_and_import_component(
+            data,
+            "Antal uppsättningar komponenter",
+        )
         self.number_of_component_sets.add(number_of_component_sets)
 
         # Antal uttag
-        number_of_sockets: Component = create_and_import_component(data, "Antal uttag")
+        number_of_sockets: Component | None = create_and_import_component(data, "Antal uttag")
         self.number_of_sockets.add(number_of_sockets)
 
         # Utgångsanslutningstyp
-        output_connection_type: Component = create_and_import_component(data, "Utgångsanslutningstyp")
+        output_connection_type: Component | None = create_and_import_component(data, "Utgångsanslutningstyp")
         self.output_connection_type.add(output_connection_type)
 
         # Konfiguration av utgångsstänger
-        output_bar_configuration: Component = create_and_import_component(data, "Konfiguration av utgångsstänger")
+        output_bar_configuration: Component | None = create_and_import_component(
+            data,
+            "Konfiguration av utgångsstänger",
+        )
         self.output_bar_configuration.add(output_bar_configuration)
 
         # Låstyp
-        lock_type: Component = create_and_import_component(data, "Låstyp")
+        lock_type: Component | None = create_and_import_component(data, "Låstyp")
         self.lock_type.add(lock_type)
 
         # Ström
-        power: Component = create_and_import_component(data, "Ström")
+        power: Component | None = create_and_import_component(data, "Ström")
         self.power.add(power)
 
         # Sladdlös
-        cordless: Component = create_and_import_component(data, "Sladdlös")
+        cordless: Component | None = create_and_import_component(data, "Sladdlös")
         self.cordless.add(cordless)
 
         # Diameter
-        diameter: Component = create_and_import_component(data, "Diameter")
+        diameter: Component | None = create_and_import_component(data, "Diameter")
         self.diameter.add(diameter)
 
 
@@ -2058,204 +2082,210 @@ class Miscellaneous(auto_prefetch.Model):
     def import_json(self, data: dict) -> None:  # noqa: PLR0914, PLR0915
         """Import JSON data."""
         # Färg
-        color: Component = create_and_import_component(data, "Färg")
+        color: Component | None = create_and_import_component(data, "Färg")
         self.color.add(color)
 
         # Färgkategori
-        color_category: Component = create_and_import_component(data, "Färgkategori")
+        color_category: Component | None = create_and_import_component(data, "Färgkategori")
         self.color_category.add(color_category)
 
         # Monteringsgränssnitt för platt bildskärm
-        flat_screen_mounting_interface: Component = create_and_import_component(
+        flat_screen_mounting_interface: Component | None = create_and_import_component(
             data,
             "Monteringsgränssnitt för platt bildskärm",
         )
         self.flat_screen_mounting_interface.add(flat_screen_mounting_interface)
 
         # Rackmonteringssats
-        rack_mounting_kit: Component = create_and_import_component(data, "Rackmonteringssats")
+        rack_mounting_kit: Component | None = create_and_import_component(data, "Rackmonteringssats")
         self.rack_mounting_kit.add(rack_mounting_kit)
 
         # Kompatibla spelkonsol
-        compatible_game_console: Component = create_and_import_component(data, "Kompatibla spelkonsol")
+        compatible_game_console: Component | None = create_and_import_component(data, "Kompatibla spelkonsol")
         self.compatible_game_console.add(compatible_game_console)
 
         # Ljudtrycknivå
-        sound_pressure_level: Component = create_and_import_component(data, "Ljudtrycknivå")
+        sound_pressure_level: Component | None = create_and_import_component(data, "Ljudtrycknivå")
         self.sound_pressure_level.add(sound_pressure_level)
 
         # Yttre färg
-        external_color: Component = create_and_import_component(data, "Yttre färg")
+        external_color: Component | None = create_and_import_component(data, "Yttre färg")
         self.external_color.add(external_color)
 
         # Krypteringsalgoritm
-        encryption_algorithm: Component = create_and_import_component(data, "Krypteringsalgoritm")
+        encryption_algorithm: Component | None = create_and_import_component(data, "Krypteringsalgoritm")
         self.encryption_algorithm.add(encryption_algorithm)
 
         # Formfaktorkomptibilitet för hårddisk
-        hard_drive_form_factor_compatibility: Component = create_and_import_component(
+        hard_drive_form_factor_compatibility: Component | None = create_and_import_component(
             data,
             "Formfaktorkomptibilitet för hårddisk",
         )
         self.hard_drive_form_factor_compatibility.add(hard_drive_form_factor_compatibility)
 
         # Hårddiskkompatibel formfaktor (metrisk)
-        hard_drive_compatible_form_factor_metric: Component = create_and_import_component(
+        hard_drive_compatible_form_factor_metric: Component | None = create_and_import_component(
             data,
             "Hårddiskkompatibel formfaktor (metrisk)",
         )
         self.hard_drive_compatible_form_factor_metric.add(hard_drive_compatible_form_factor_metric)
 
         # Material
-        material: Component = create_and_import_component(data, "Material")
+        material: Component | None = create_and_import_component(data, "Material")
         self.material.add(material)
 
         # Produktmaterial
-        product_material: Component = create_and_import_component(data, "Produktmaterial")
+        product_material: Component | None = create_and_import_component(data, "Produktmaterial")
         self.product_material.add(product_material)
 
         # Egenskaper
-        features: Component = create_and_import_component(data, "Egenskaper")
+        features: Component | None = create_and_import_component(data, "Egenskaper")
         self.features.add(features)
 
         # Gaming
-        gaming: Component = create_and_import_component(data, "Gaming")
+        gaming: Component | None = create_and_import_component(data, "Gaming")
         self.gaming.add(gaming)
 
         # Finish
-        finish: Component = create_and_import_component(data, "Finish")
+        finish: Component | None = create_and_import_component(data, "Finish")
         self.finish.add(finish)
 
         # Fungerar med Chromebook
-        works_with_chromebook: Component = create_and_import_component(data, "Fungerar med Chromebook")
+        works_with_chromebook: Component | None = create_and_import_component(data, "Fungerar med Chromebook")
         self.works_with_chromebook.add(works_with_chromebook)
 
         # Återvunnet produktinnehåll
-        recycled_product_content: Component = create_and_import_component(data, "Återvunnet produktinnehåll")
+        recycled_product_content: Component | None = create_and_import_component(data, "Återvunnet produktinnehåll")
         self.recycled_product_content.add(recycled_product_content)
 
         # Inkluderade tillbehör
-        included_accessories: Component = create_and_import_component(data, "Inkluderade tillbehör")
+        included_accessories: Component | None = create_and_import_component(data, "Inkluderade tillbehör")
         self.included_accessories.add(included_accessories)
 
         # Driftstid utan nätanslutning
-        operating_time_without_power_connection: Component = create_and_import_component(
+        operating_time_without_power_connection: Component | None = create_and_import_component(
             data,
             "Driftstid utan nätanslutning",
         )
         self.operating_time_without_power_connection.add(operating_time_without_power_connection)
 
         # Sladdlös användning
-        cordless_use: Component = create_and_import_component(data, "Sladdlös användning")
+        cordless_use: Component | None = create_and_import_component(data, "Sladdlös användning")
         self.cordless_use.add(cordless_use)
 
         # Maxlast
-        max_load: Component = create_and_import_component(data, "Maxlast")
+        max_load: Component | None = create_and_import_component(data, "Maxlast")
         self.max_load.add(max_load)
 
         # Återvunnet förpackningsinnehåll
-        recycled_packaging_content: Component = create_and_import_component(data, "Återvunnet förpackningsinnehåll")
+        recycled_packaging_content: Component | None = create_and_import_component(
+            data,
+            "Återvunnet förpackningsinnehåll",
+        )
         self.recycled_packaging_content.add(recycled_packaging_content)
 
         # Skydd
-        protection: Component = create_and_import_component(data, "Skydd")
+        protection: Component | None = create_and_import_component(data, "Skydd")
         self.protection.add(protection)
 
         # Förpackningstyp
-        packaging_type: Component = create_and_import_component(data, "Förpackningstyp")
+        packaging_type: Component | None = create_and_import_component(data, "Förpackningstyp")
         self.packaging_type.add(packaging_type)
 
         # Designfunktioner
-        design_features: Component = create_and_import_component(data, "Designfunktioner")
+        design_features: Component | None = create_and_import_component(data, "Designfunktioner")
         self.design_features.add(design_features)
 
         # Pakettyp
-        package_type: Component = create_and_import_component(data, "Pakettyp")
+        package_type: Component | None = create_and_import_component(data, "Pakettyp")
         self.package_type.add(package_type)
 
         # Standarder som följs
-        standards_followed: Component = create_and_import_component(data, "Standarder som följs")
+        standards_followed: Component | None = create_and_import_component(data, "Standarder som följs")
         self.standards_followed.add(standards_followed)
 
         # Kaffebryggartillbehör
-        coffee_maker_accessories: Component = create_and_import_component(data, "Kaffebryggartillbehör")
+        coffee_maker_accessories: Component | None = create_and_import_component(data, "Kaffebryggartillbehör")
         self.coffee_maker_accessories.add(coffee_maker_accessories)
 
         # Maxdjup för vattentålighet
-        max_depth_for_water_resistance: Component = create_and_import_component(data, "Maxdjup för vattentålighet")
+        max_depth_for_water_resistance: Component | None = create_and_import_component(
+            data,
+            "Maxdjup för vattentålighet",
+        )
         self.max_depth_for_water_resistance.add(max_depth_for_water_resistance)
 
         # För undervattensbruk
-        for_underwater_use: Component = create_and_import_component(data, "För undervattensbruk")
+        for_underwater_use: Component | None = create_and_import_component(data, "För undervattensbruk")
         self.for_underwater_use.add(for_underwater_use)
 
         # Typ av prissättning
-        pricing_type: Component = create_and_import_component(data, "Typ av prissättning")
+        pricing_type: Component | None = create_and_import_component(data, "Typ av prissättning")
         self.pricing_type.add(pricing_type)
 
         # Kapacitet
-        capacity: Component = create_and_import_component(data, "Kapacitet")
+        capacity: Component | None = create_and_import_component(data, "Kapacitet")
         self.capacity.add(capacity)
 
         # Produkttyp
-        product_type: Component = create_and_import_component(data, "Produkttyp")
+        product_type: Component | None = create_and_import_component(data, "Produkttyp")
         self.product_type.add(product_type)
 
         # Processorpaket
-        processor_package: Component = create_and_import_component(data, "Processorpaket")
+        processor_package: Component | None = create_and_import_component(data, "Processorpaket")
         self.processor_package.add(processor_package)
 
         # Vattentät
-        waterproof: Component = create_and_import_component(data, "Vattentät")
+        waterproof: Component | None = create_and_import_component(data, "Vattentät")
         self.waterproof.add(waterproof)
 
         # Reparationsbarhetsindex
-        reparability_index: Component = create_and_import_component(data, "Reparationsbarhetsindex")
+        reparability_index: Component | None = create_and_import_component(data, "Reparationsbarhetsindex")
         self.reparability_index.add(reparability_index)
 
         # Ljudnivå
-        sound_level: Component = create_and_import_component(data, "Ljudnivå")
+        sound_level: Component | None = create_and_import_component(data, "Ljudnivå")
         self.sound_level.add(sound_level)
 
         # Bullerklass
-        noise_class: Component = create_and_import_component(data, "Bullerklass")
+        noise_class: Component | None = create_and_import_component(data, "Bullerklass")
         self.noise_class.add(noise_class)
 
         # Robust design
-        rugged_design: Component = create_and_import_component(data, "Robust design")
+        rugged_design: Component | None = create_and_import_component(data, "Robust design")
         self.rugged_design.add(rugged_design)
 
         # Mjukvarucertifiering
-        software_certification: Component = create_and_import_component(data, "Mjukvarucertifiering")
+        software_certification: Component | None = create_and_import_component(data, "Mjukvarucertifiering")
         self.software_certification.add(software_certification)
 
         # Försäljningsprogram från tillverkaren
-        manufacturer_sales_program: Component = create_and_import_component(
+        manufacturer_sales_program: Component | None = create_and_import_component(
             data,
             "Försäljningsprogram från tillverkaren",
         )
         self.manufacturer_sales_program.add(manufacturer_sales_program)
 
         # Återvunnet produktinnehåll (kommentar)
-        recycled_product_content_comment: Component = create_and_import_component(
+        recycled_product_content_comment: Component | None = create_and_import_component(
             data,
             "Återvunnet produktinnehåll (kommentar)",
         )
         self.recycled_product_content_comment.add(recycled_product_content_comment)
 
         # Återvunnet förpackningsinnehåll (kommentar)
-        recycled_packaging_content_comment: Component = create_and_import_component(
+        recycled_packaging_content_comment: Component | None = create_and_import_component(
             data,
             "Återvunnet förpackningsinnehåll (kommentar)",
         )
         self.recycled_packaging_content_comment.add(recycled_packaging_content_comment)
 
         # Produktens skick
-        product_condition: Component = create_and_import_component(data, "Produktens skick")
+        product_condition: Component | None = create_and_import_component(data, "Produktens skick")
         self.product_condition.add(product_condition)
 
         # AI-klar
-        ai_ready: Component = create_and_import_component(data, "AI-klar")
+        ai_ready: Component | None = create_and_import_component(data, "AI-klar")
         self.ai_ready.add(ai_ready)
 
 
@@ -2270,13 +2300,174 @@ class Cable(auto_prefetch.Model):
     something = models.TextField(help_text="Something")  # TODO(TheLovinator): What is this?  # noqa: TD003
     cable = models.ManyToManyField(Component, help_text="Cable")
 
+    # Typ för vänster kontakt
+    type_for_left_connector = models.ManyToManyField(
+        Component,
+        help_text="Type of left connector",
+        related_name="cable_type_for_left_connector",
+    )
+
+    # Typ av högerkontakt
+    type_of_right_connector = models.ManyToManyField(
+        Component,
+        help_text="Type of right connector",
+        related_name="cable_type_of_right_connector",
+    )
+
+    # Höger kontakttyp
+    right_connector_type = models.ManyToManyField(
+        Component,
+        help_text="Right connector type",
+        related_name="cable_right_connector_type",
+    )
+
+    # Typ av I/O-kabel
+    io_cable_type = models.ManyToManyField(Component, help_text="Type of I/O cable", related_name="cable_io_cable_type")
+
+    # Vänster kontakttyp
+    left_connector_type = models.ManyToManyField(
+        Component,
+        help_text="Left connector type",
+        related_name="cable_left_connector_type",
+    )
+
+    # Underkategori för kablar
+    cable_subcategory = models.ManyToManyField(
+        Component,
+        help_text="Cable subcategory",
+        related_name="cable_cable_subcategory",
+    )
+
+    # Teknik
+    technology = models.ManyToManyField(Component, help_text="Technology", related_name="cable_technology")
+
+    # Typ av AV-kabel
+    av_cable_type = models.ManyToManyField(Component, help_text="Type of AV cable", related_name="cable_av_cable_type")
+
+    # Typ av nätverkskabel
+    network_cable_type = models.ManyToManyField(
+        Component,
+        help_text="Type of network cable",
+        related_name="cable_network_cable_type",
+    )
+
+    # Kategori
+    category = models.ManyToManyField(Component, help_text="Category", related_name="cable_category")
+
+    # Kablageschema
+    cable_scheme = models.ManyToManyField(Component, help_text="Cable scheme", related_name="cable_cable_scheme")
+
+    # Typ av gränssnitt
+    interface_type = models.ManyToManyField(Component, help_text="Interface type", related_name="cable_interface_type")
+
+    # Typ av kabel för lagringslösning
+    storage_solution_cable_type = models.ManyToManyField(
+        Component,
+        help_text="Type of storage solution cable",
+        related_name="cable_storage_solution_cable_type",
+    )
+
+    # Gränssnitt som stöds
+    supported_interface = models.ManyToManyField(
+        Component,
+        help_text="Supported interface",
+        related_name="cable_supported_interface",
+    )
+
+    # Standarder som följs
+    standards_followed = models.ManyToManyField(
+        Component,
+        help_text="Standards followed",
+        related_name="cable_standards_followed",
+    )
+
+    # Typ av fiberoptik
+    fiber_optic_type = models.ManyToManyField(
+        Component,
+        help_text="Type of fiber optic",
+        related_name="cable_fiber_optic_type",
+    )
+
+    def __str__(self) -> str:
+        return "Cable"
+
+    def import_json(self, data: dict) -> None:  # noqa: PLR0914
+        """Import JSON data."""
+        # Typ för vänster kontakt
+        type_for_left_connector: Component | None = create_and_import_component(data, "Typ för vänster kontakt")
+        self.type_for_left_connector.add(type_for_left_connector)
+
+        # Typ av högerkontakt
+        type_of_right_connector: Component | None = create_and_import_component(data, "Typ av högerkontakt")
+        self.type_of_right_connector.add(type_of_right_connector)
+
+        # Höger kontakttyp
+        right_connector_type: Component | None = create_and_import_component(data, "Höger kontakttyp")
+        self.right_connector_type.add(right_connector_type)
+
+        # Typ av I/O-kabel
+        io_cable_type: Component | None = create_and_import_component(data, "Typ av I/O-kabel")
+        self.io_cable_type.add(io_cable_type)
+
+        # Vänster kontakttyp
+        left_connector_type: Component | None = create_and_import_component(data, "Vänster kontakttyp")
+        self.left_connector_type.add(left_connector_type)
+
+        # Underkategori för kablar
+        cable_subcategory: Component | None = create_and_import_component(data, "Underkategori för kablar")
+        self.cable_subcategory.add(cable_subcategory)
+
+        # Teknik
+        technology: Component | None = create_and_import_component(data, "Teknik")
+        self.technology.add(technology)
+
+        # Typ av AV-kabel
+        av_cable_type: Component | None = create_and_import_component(data, "Typ av AV-kabel")
+        self.av_cable_type.add(av_cable_type)
+
+        # Typ av nätverkskabel
+        network_cable_type: Component | None = create_and_import_component(data, "Typ av nätverkskabel")
+        self.network_cable_type.add(network_cable_type)
+
+        # Kategori
+        category: Component | None = create_and_import_component(data, "Kategori")
+        self.category.add(category)
+
+        # Kablageschema
+        cable_scheme: Component | None = create_and_import_component(data, "Kablageschema")
+        self.cable_scheme.add(cable_scheme)
+
+        # Typ av gränssnitt
+        interface_type: Component | None = create_and_import_component(data, "Typ av gränssnitt")
+        self.interface_type.add(interface_type)
+
+        # Typ av kabel för lagringslösning
+        storage_solution_cable_type: Component | None = create_and_import_component(
+            data,
+            "Typ av kabel för lagringslösning",
+        )
+        self.storage_solution_cable_type.add(storage_solution_cable_type)
+
+        # Gränssnitt som stöds
+        supported_interface: Component | None = create_and_import_component(data, "Gränssnitt som stöds")
+        self.supported_interface.add(supported_interface)
+
+        # Standarder som följs
+        standards_followed: Component | None = create_and_import_component(data, "Standarder som följs")
+        self.standards_followed.add(standards_followed)
+
+        # Typ av fiberoptik
+        fiber_optic_type: Component | None = create_and_import_component(data, "Typ av fiberoptik")
+        self.fiber_optic_type.add(fiber_optic_type)
+
 
 class InputDevice(auto_prefetch.Model):
-    """Input device."""
+    """Inmatningsenhet."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the input device was created")
     updated_at = models.DateTimeField(auto_now=True, help_text="When the input device was last updated")
+
     # Webhallen fields
     connection_technology = models.ManyToManyField(
         Component,
@@ -2371,6 +2562,113 @@ class InputDevice(auto_prefetch.Model):
         related_name="input_device_numeric_keypad",
     )
 
+    def __str__(self) -> str:
+        return "Input device"
+
+    def import_json(self, data: dict) -> None:  # noqa: PLR0914
+        """Import JSON data."""
+        # Anslutningsteknik
+        connection_technology: Component | None = create_and_import_component(data, "Anslutningsteknik")
+        self.connection_technology.add(connection_technology)
+
+        # Gränssnitt
+        interface: Component | None = create_and_import_component(data, "Gränssnitt")
+        self.interface.add(interface)
+
+        # Produkttyp
+        product_type: Component | None = create_and_import_component(data, "Produkttyp")
+        self.product_type.add(product_type)
+
+        # Bakgrundsbelyst
+        backlit: Component | None = create_and_import_component(data, "Bakgrundsbelyst")
+        self.backlit.add(backlit)
+
+        # Formfaktor
+        form_factor: Component | None = create_and_import_component(data, "Formfaktor")
+        self.form_factor.add(form_factor)
+
+        # Typ av gränssnitt
+        interface_type: Component | None = create_and_import_component(data, "Typ av gränssnitt")
+        self.interface_type.add(interface_type)
+
+        # Typ av ingångsadapter
+        input_adapter_type: Component | None = create_and_import_component(data, "Typ av ingångsadapter")
+        self.input_adapter_type.add(input_adapter_type)
+
+        # Tangentbordslokalisering
+        keyboard_localization: Component | None = create_and_import_component(data, "Tangentbordslokalisering")
+        self.keyboard_localization.add(keyboard_localization)
+
+        # Teknik för rörelsedetektering
+        motion_detection_technology: Component | None = create_and_import_component(
+            data,
+            "Teknik för rörelsedetektering",
+        )
+        self.motion_detection_technology.add(motion_detection_technology)
+
+        # Inriktning
+        orientation: Component | None = create_and_import_component(data, "Inriktning")
+        self.orientation.add(orientation)
+
+        # Antal knappar
+        number_of_buttons: Component | None = create_and_import_component(data, "Antal knappar")
+        self.number_of_buttons.add(number_of_buttons)
+
+        # Rörelseupplösning
+        motion_resolution: Component | None = create_and_import_component(data, "Rörelseupplösning")
+        self.motion_resolution.add(motion_resolution)
+
+        # Notebook-mus
+        notebook_mouse: Component | None = create_and_import_component(data, "Notebook-mus")
+        self.notebook_mouse.add(notebook_mouse)
+
+        # Ergonomisk design
+        ergonomic_design: Component | None = create_and_import_component(data, "Ergonomisk design")
+        self.ergonomic_design.add(ergonomic_design)
+
+        # Tangentbordslayout
+        keyboard_layout: Component | None = create_and_import_component(data, "Tangentbordslayout")
+        self.keyboard_layout.add(keyboard_layout)
+
+        # Tangentbordsteknologi
+        keyboard_technology: Component | None = create_and_import_component(data, "Tangentbordsteknologi")
+        self.keyboard_technology.add(keyboard_technology)
+
+        # Aktivt horis. område
+        active_horizontal_area: Component | None = create_and_import_component(data, "Aktivt horis. område")
+        self.active_horizontal_area.add(active_horizontal_area)
+
+        # Aktivt vert. område
+        active_vertical_area: Component | None = create_and_import_component(data, "Aktivt vert. område")
+        self.active_vertical_area.add(active_vertical_area)
+
+        # Anti-ghosting
+        anti_ghosting: Component | None = create_and_import_component(data, "Anti-ghosting")
+        self.anti_ghosting.add(anti_ghosting)
+
+        # Antal samtidiga tangenttryck
+        number_of_simultaneous_keypresses: Component | None = create_and_import_component(
+            data,
+            "Antal samtidiga tangenttryck",
+        )
+        self.number_of_simultaneous_keypresses.add(number_of_simultaneous_keypresses)
+
+        # Typ
+        _type: Component | None = create_and_import_component(data, "Typ")
+        self.type.add(_type)
+
+        # Nyckellåstyp
+        key_lock_type: Component | None = create_and_import_component(data, "Nyckellåstyp")
+        self.key_lock_type.add(key_lock_type)
+
+        # Bakgrundsbelysning
+        backlight: Component | None = create_and_import_component(data, "Bakgrundsbelysning")
+        self.backlight.add(backlight)
+
+        # Numeriskt tangentbord
+        numeric_keypad: Component | None = create_and_import_component(data, "Numeriskt tangentbord")
+        self.numeric_keypad.add(numeric_keypad)
+
 
 class ServiceAndSupport(auto_prefetch.Model):
     """Service and support."""
@@ -2380,15 +2678,25 @@ class ServiceAndSupport(auto_prefetch.Model):
     updated_at = models.DateTimeField(auto_now=True, help_text="When the service and support was last updated")
 
     # Webhallen fields
-    service_and_support = models.ManyToManyField(Component, help_text="Service and support")
+    type = models.ManyToManyField(Component, help_text="Type", related_name="service_and_support_type")
+
+    def __str__(self) -> str:
+        return "Service and support"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Typ
+        _type: Component | None = create_and_import_component(data, "Typ")
+        self.type.add(_type)
 
 
 class GrossDimensionsAndWeight(auto_prefetch.Model):
-    """Gross dimensions and weight."""
+    """Mått och vikt (brutto)."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the gross dimensions and weight was created")
     updated_at = models.DateTimeField(auto_now=True, help_text="When the gross dimensions and weight was last updated")
+
     # Webhallen fields
     packing_weight = models.ManyToManyField(
         Component,
@@ -2411,9 +2719,30 @@ class GrossDimensionsAndWeight(auto_prefetch.Model):
         related_name="gross_dimensions_packing_width",
     )
 
+    def __str__(self) -> str:
+        return "Gross dimensions and weight"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Emballagets vikt
+        packing_weight: Component | None = create_and_import_component(data, "Emballagets vikt")
+        self.packing_weight.add(packing_weight)
+
+        # Emballagets höjd
+        packing_height: Component | None = create_and_import_component(data, "Emballagets höjd")
+        self.packing_height.add(packing_height)
+
+        # Emballagets djup
+        packing_depth: Component | None = create_and_import_component(data, "Emballagets djup")
+        self.packing_depth.add(packing_depth)
+
+        # Emballagets bredd
+        packing_width: Component | None = create_and_import_component(data, "Emballagets bredd")
+        self.packing_width.add(packing_width)
+
 
 class Consumables(auto_prefetch.Model):
-    """Consumables."""
+    """Förbrukningsartiklar."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the consumables was created")
@@ -2436,14 +2765,67 @@ class Consumables(auto_prefetch.Model):
         help_text="Coverage for lifetime",
         related_name="consumables_coverage_for_lifetime",
     )
+    original = models.ManyToManyField(Component, help_text="Original", related_name="consumables_original")
+    included_quantity = models.ManyToManyField(
+        Component,
+        help_text="Included quantity",
+        related_name="consumables_included_quantity",
+    )
+    capacity = models.ManyToManyField(Component, help_text="Capacity", related_name="consumables_capacity")
+    toner_cartridge_features = models.ManyToManyField(
+        Component,
+        help_text="Toner cartridge features",
+        related_name="consumables_toner_cartridge_features",
+    )
+
+    def __str__(self) -> str:
+        return "Consumables"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Färg
+        color: Component | None = create_and_import_component(data, "Färg")
+        self.color.add(color)
+
+        # Typ av förbrukningsartikel
+        consumable_type: Component | None = create_and_import_component(data, "Typ av förbrukningsartikel")
+        self.consumable_type.add(consumable_type)
+
+        # Antal sidor under livslängd
+        number_of_pages_during_lifetime: Component | None = create_and_import_component(
+            data,
+            "Antal sidor under livslängd",
+        )
+        self.number_of_pages_during_lifetime.add(number_of_pages_during_lifetime)
+
+        # Täckning för livslängd
+        coverage_for_lifetime: Component | None = create_and_import_component(data, "Täckning för livslängd")
+        self.coverage_for_lifetime.add(coverage_for_lifetime)
+
+        # Original
+        original: Component | None = create_and_import_component(data, "Original")
+        self.original.add(original)
+
+        # Inkluderat antal
+        included_quantity: Component | None = create_and_import_component(data, "Inkluderat antal")
+        self.included_quantity.add(included_quantity)
+
+        # Kapacitet
+        capacity: Component | None = create_and_import_component(data, "Kapacitet")
+        self.capacity.add(capacity)
+
+        # Egenskaper för tonerkassett
+        toner_cartridge_features: Component | None = create_and_import_component(data, "Egenskaper för tonerkassett")
+        self.toner_cartridge_features.add(toner_cartridge_features)
 
 
 class Battery(auto_prefetch.Model):
-    """Battery."""
+    """Batteri."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the battery was created")
     updated_at = models.DateTimeField(auto_now=True, help_text="When the battery was last updated")
+
     # Webhallen fields
     included_quantity = models.ManyToManyField(
         Component,
@@ -2486,21 +2868,174 @@ class Battery(auto_prefetch.Model):
     capacity_wh = models.ManyToManyField(Component, help_text="Capacity (Wh)", related_name="battery_capacity_wh")
     battery_type = models.ManyToManyField(Component, help_text="Battery type", related_name="battery_type")
 
+    def __str__(self) -> str:
+        return "Battery"
+
+    def import_json(self, data: dict) -> None:  # noqa: PLR0914
+        """Import JSON data."""
+        # Inkluderad kvantitet
+        included_quantity: Component | None = create_and_import_component(data, "Inkluderad kvantitet")
+        self.included_quantity.add(included_quantity)
+
+        # Teknik
+        technology: Component | None = create_and_import_component(data, "Teknik")
+        self.technology.add(technology)
+
+        # Formfaktor
+        form_factor: Component | None = create_and_import_component(data, "Formfaktor")
+        self.form_factor.add(form_factor)
+
+        # Kapacitet (Ah)
+        capacity_ah: Component | None = create_and_import_component(data, "Kapacitet (Ah)")
+        self.capacity_ah.add(capacity_ah)
+
+        # Tillförd spänning
+        supplied_voltage: Component | None = create_and_import_component(data, "Tillförd spänning")
+        self.supplied_voltage.add(supplied_voltage)
+
+        # Installerat antal
+        installed_count: Component | None = create_and_import_component(data, "Installerat antal")
+        self.installed_count.add(installed_count)
+
+        # Laddningstid
+        charging_time: Component | None = create_and_import_component(data, "Laddningstid")
+        self.charging_time.add(charging_time)
+
+        # Batteritid (upp till)
+        battery_time_up_to: Component | None = create_and_import_component(data, "Batteritid (upp till)")
+        self.battery_time_up_to.add(battery_time_up_to)
+
+        # Kapacitet
+        capacity: Component | None = create_and_import_component(data, "Kapacitet")
+        self.capacity.add(capacity)
+
+        # Samtalstid
+        talk_time: Component | None = create_and_import_component(data, "Samtalstid")
+        self.talk_time.add(talk_time)
+
+        # Väntelägestid
+        standby_time: Component | None = create_and_import_component(data, "Väntelägestid")
+        self.standby_time.add(standby_time)
+
+        # Körtid
+        run_time: Component | None = create_and_import_component(data, "Körtid")
+        self.run_time.add(run_time)
+
+        # Trådlös laddning
+        wireless_charging: Component | None = create_and_import_component(data, "Trådlös laddning")
+        self.wireless_charging.add(wireless_charging)
+
+        # Snabbladdningsteknologi
+        fast_charging_technology: Component | None = create_and_import_component(data, "Snabbladdningsteknologi")
+        self.fast_charging_technology.add(fast_charging_technology)
+
+        # Kapacitet (Wh)
+        capacity_wh: Component | None = create_and_import_component(data, "Kapacitet (Wh)")
+        self.capacity_wh.add(capacity_wh)
+
+        # Batterityp
+        battery_type: Component | None = create_and_import_component(data, "Batterityp")
+        self.battery_type.add(battery_type)
+
 
 class AVComponent(auto_prefetch.Model):
-    """AV component."""
+    """AV-komponenter."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the AV component was created")
     updated_at = models.DateTimeField(auto_now=True, help_text="When the AV component was last updated")
 
     # Webhallen fields
-    something = models.TextField(help_text="Something")  # TODO(TheLovinator): What is this?  # noqa: TD003
-    av_component = models.ManyToManyField(Component, help_text="AV component")
+    mounting_components = models.ManyToManyField(
+        Component,
+        help_text="Mounting components",
+        related_name="av_component_mounting_components",
+    )
+    type = models.ManyToManyField(Component, help_text="Type", related_name="av_component_type")
+    recommended_use = models.ManyToManyField(
+        Component,
+        help_text="Recommended use",
+        related_name="av_component_recommended_use",
+    )
+    color = models.ManyToManyField(Component, help_text="Color", related_name="av_component_color")
+    material = models.ManyToManyField(Component, help_text="Material", related_name="av_component_material")
+    recommended_tv_size = models.ManyToManyField(
+        Component,
+        help_text="Recommended TV size",
+        related_name="av_component_recommended_tv_size",
+    )
+    tilt = models.ManyToManyField(Component, help_text="Tilt", related_name="av_component_tilt")
+    rotation = models.ManyToManyField(Component, help_text="Rotation", related_name="av_component_rotation")
+    panning = models.ManyToManyField(Component, help_text="Panning", related_name="av_component_panning")
+    leveling = models.ManyToManyField(Component, help_text="Leveling", related_name="av_component_leveling")
+    swivel_joint = models.ManyToManyField(Component, help_text="Swivel joint", related_name="av_component_swivel_joint")
+    design = models.ManyToManyField(Component, help_text="Design", related_name="av_component_design")
+    lifting_capacity = models.ManyToManyField(
+        Component,
+        help_text="Lifting capacity",
+        related_name="av_component_lifting_capacity",
+    )
+
+    def __str__(self) -> str:
+        return "AV component"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Monteringskomponenter
+        mounting_components: Component | None = create_and_import_component(data, "Monteringskomponenter")
+        self.mounting_components.add(mounting_components)
+
+        # Typ
+        _type: Component | None = create_and_import_component(data, "Typ")
+        self.type.add(_type)
+
+        # Rekommenderad användning
+        recommended_use: Component | None = create_and_import_component(data, "Rekommenderad användning")
+        self.recommended_use.add(recommended_use)
+
+        # Färg
+        color: Component | None = create_and_import_component(data, "Färg")
+        self.color.add(color)
+
+        # Material
+        material: Component | None = create_and_import_component(data, "Material")
+        self.material.add(material)
+
+        # Rekommenderad TV-storlek
+        recommended_tv_size: Component | None = create_and_import_component(data, "Rekommenderad TV-storlek")
+        self.recommended_tv_size.add(recommended_tv_size)
+
+        # Lutning
+        tilt: Component | None = create_and_import_component(data, "Lutning")
+        self.tilt.add(tilt)
+
+        # Rotation
+        rotation: Component | None = create_and_import_component(data, "Rotation")
+        self.rotation.add(rotation)
+
+        # Panorering
+        panning: Component | None = create_and_import_component(data, "Panorering")
+        self.panning.add(panning)
+
+        # Utjämning
+        leveling: Component | None = create_and_import_component(data, "Utjämning")
+        self.leveling.add(leveling)
+
+        # Svängtapp
+        swivel_joint: Component | None = create_and_import_component(data, "Svängtapp")
+        self.swivel_joint.add(swivel_joint)
+
+        # Design
+        design: Component | None = create_and_import_component(data, "Design")
+        self.design.add(design)
+
+        # Lyftkraft
+        lifting_capacity: Component | None = create_and_import_component(data, "Lyftkraft")
+        self.lifting_capacity.add(lifting_capacity)
 
 
 class RemoteControl(auto_prefetch.Model):
-    """Remote control."""
+    """Fjärrkontroll."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the remote control was created")
@@ -2533,9 +3068,34 @@ class RemoteControl(auto_prefetch.Model):
         related_name="remote_control_number_of_devices_supported",
     )
 
+    def __str__(self) -> str:
+        return "Remote control"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Max arbetsavstånd
+        max_working_distance: Component | None = create_and_import_component(data, "Max arbetsavstånd")
+        self.max_working_distance.add(max_working_distance)
+
+        # Fjärrkontrollteknik
+        remote_control_technology: Component | None = create_and_import_component(data, "Fjärrkontrollteknik")
+        self.remote_control_technology.add(remote_control_technology)
+
+        # Enheter som stöds
+        supported_devices: Component | None = create_and_import_component(data, "Enheter som stöds")
+        self.supported_devices.add(supported_devices)
+
+        # Typ
+        _type: Component | None = create_and_import_component(data, "Typ")
+        self.type.add(_type)
+
+        # Enhetsantal som stöds
+        number_of_devices_supported: Component | None = create_and_import_component(data, "Enhetsantal som stöds")
+        self.number_of_devices_supported.add(number_of_devices_supported)
+
 
 class VideoInput(auto_prefetch.Model):
-    """Video input."""
+    """Videoingång."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the video input was created")
@@ -2689,9 +3249,162 @@ class VideoInput(auto_prefetch.Model):
         related_name="video_input_light_sensitivity",
     )
 
+    def __str__(self) -> str:
+        return "Video input"
+
+    def import_json(self, data: dict) -> None:  # noqa: PLR0914, PLR0915
+        """Import JSON data."""
+        # Stöd för ljudingång
+        support_for_audio_input: Component | None = create_and_import_component(data, "Stöd för ljudingång")
+        self.support_for_audio_input.add(support_for_audio_input)
+
+        # Format för digital video
+        format_for_digital_video: Component | None = create_and_import_component(data, "Format för digital video")
+        self.format_for_digital_video.add(format_for_digital_video)
+
+        # Format för analog video
+        format_for_analog_video: Component | None = create_and_import_component(data, "Format för analog video")
+        self.format_for_analog_video.add(format_for_analog_video)
+
+        # Analog videosignal
+        analog_video_signal: Component | None = create_and_import_component(data, "Analog videosignal")
+        self.analog_video_signal.add(analog_video_signal)
+
+        # Upplösning vid digital videofångst
+        resolution_for_digital_video_capture: Component | None = create_and_import_component(
+            data,
+            "Upplösning vid digital videofångst",
+        )
+        self.resolution_for_digital_video_capture.add(resolution_for_digital_video_capture)
+
+        # Typ av gränssnitt
+        type_of_interface: Component | None = create_and_import_component(data, "Typ av gränssnitt")
+        self.type_of_interface.add(type_of_interface)
+
+        # Anslutningsteknik
+        connection_technology: Component | None = create_and_import_component(data, "Anslutningsteknik")
+        self.connection_technology.add(connection_technology)
+
+        # Stöd för ljud
+        support_for_audio: Component | None = create_and_import_component(data, "Stöd för ljud")
+        self.support_for_audio.add(support_for_audio)
+
+        # Kameratyp
+        camera_type: Component | None = create_and_import_component(data, "Kameratyp")
+        self.camera_type.add(camera_type)
+
+        # Datorgränssnitt
+        computer_interface: Component | None = create_and_import_component(data, "Datorgränssnitt")
+        self.computer_interface.add(computer_interface)
+
+        # Maximal digital videoupplösning
+        maximum_digital_video_resolution: Component | None = create_and_import_component(
+            data,
+            "Maximal digital videoupplösning",
+        )
+        self.maximum_digital_video_resolution.add(maximum_digital_video_resolution)
+
+        # Bildhastighet (max)
+        frame_rate_max: Component | None = create_and_import_component(data, "Bildhastighet (max)")
+        self.frame_rate_max.add(frame_rate_max)
+
+        # Dag- och nattfunktion
+        day_and_night_function: Component | None = create_and_import_component(data, "Dag- och nattfunktion")
+        self.day_and_night_function.add(day_and_night_function)
+
+        # Kameramonteringstyp
+        camera_mounting_type: Component | None = create_and_import_component(data, "Kameramonteringstyp")
+        self.camera_mounting_type.add(camera_mounting_type)
+
+        # Mekanisk kameradesign
+        mechanical_camera_design: Component | None = create_and_import_component(data, "Mekanisk kameradesign")
+        self.mechanical_camera_design.add(mechanical_camera_design)
+
+        # Formfaktor
+        form_factor: Component | None = create_and_import_component(data, "Formfaktor")
+        self.form_factor.add(form_factor)
+
+        # Upplösning för stillbildstagning
+        resolution_for_still_shot: Component | None = create_and_import_component(
+            data,
+            "Upplösning för stillbildstagning",
+        )
+        self.resolution_for_still_shot.add(resolution_for_still_shot)
+
+        # Rörelsedetektion
+        motion_detection: Component | None = create_and_import_component(data, "Rörelsedetektion")
+        self.motion_detection.add(motion_detection)
+
+        # Videogränssnitt
+        video_interface: Component | None = create_and_import_component(data, "Videogränssnitt")
+        self.video_interface.add(video_interface)
+
+        # Typ
+        _type: Component | None = create_and_import_component(data, "Typ")
+        self.type.add(_type)
+
+        # Bildinspelningsformat
+        image_capture_format: Component | None = create_and_import_component(data, "Bildinspelningsformat")
+        self.image_capture_format.add(image_capture_format)
+
+        # Egenskaper
+        properties: Component | None = create_and_import_component(data, "Egenskaper")
+        self.properties.add(properties)
+
+        # Digital zoomning
+        digital_zoom: Component | None = create_and_import_component(data, "Digital zoomning")
+        self.digital_zoom.add(digital_zoom)
+
+        # Ansiktsigenkänning
+        face_recognition: Component | None = create_and_import_component(data, "Ansiktsigenkänning")
+        self.face_recognition.add(face_recognition)
+
+        # Stöd för högupplösningsvideo
+        support_for_high_resolution_video: Component | None = create_and_import_component(
+            data,
+            "Stöd för högupplösningsvideo",
+        )
+        self.support_for_high_resolution_video.add(support_for_high_resolution_video)
+
+        # Kontinuerlig tagningshastighet
+        continuous_shooting_rate: Component | None = create_and_import_component(data, "Kontinuerlig tagningshastighet")
+        self.continuous_shooting_rate.add(continuous_shooting_rate)
+
+        # Bildstabiliserare
+        image_stabilizer: Component | None = create_and_import_component(data, "Bildstabiliserare")
+        self.image_stabilizer.add(image_stabilizer)
+
+        # Max. videoupplösning
+        max_video_resolution: Component | None = create_and_import_component(data, "Max. videoupplösning")
+        self.max_video_resolution.add(max_video_resolution)
+
+        # Tillhandahållna gränssnitt
+        provided_interfaces: Component | None = create_and_import_component(data, "Tillhandahållna gränssnitt")
+        self.provided_interfaces.add(provided_interfaces)
+
+        # Specialeffekter
+        special_effects: Component | None = create_and_import_component(data, "Specialeffekter")
+        self.special_effects.add(special_effects)
+
+        # Digitalkameratyp
+        digital_camera_type: Component | None = create_and_import_component(data, "Digitalkameratyp")
+        self.digital_camera_type.add(digital_camera_type)
+
+        # ISO (max)
+        iso_max: Component | None = create_and_import_component(data, "ISO (max)")
+        self.iso_max.add(iso_max)
+
+        # Kombinerad med
+        combined_with: Component | None = create_and_import_component(data, "Kombinerad med")
+        self.combined_with.add(combined_with)
+
+        # Ljuskänslighet
+        light_sensitivity: Component | None = create_and_import_component(data, "Ljuskänslighet")
+        self.light_sensitivity.add(light_sensitivity)
+
 
 class SystemRequirements(auto_prefetch.Model):
-    """System requirements."""
+    """Systemkrav."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the system requirements was created")
@@ -2709,6 +3422,23 @@ class SystemRequirements(auto_prefetch.Model):
         help_text="Supported host platform",
         related_name="system_requirements_supported_host_platform",
     )
+
+    def __str__(self) -> str:
+        return "System requirements"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Operativsystem erfordras
+        required_operating_system: Component | None = create_and_import_component(data, "Operativsystem erfordras")
+        self.required_operating_system.add(required_operating_system)
+
+        # OS-familj
+        os_family: Component | None = create_and_import_component(data, "OS-familj")
+        self.os_family.add(os_family)
+
+        # Värdenhetsplattform som stöds
+        supported_host_platform: Component | None = create_and_import_component(data, "Värdenhetsplattform som stöds")
+        self.supported_host_platform.add(supported_host_platform)
 
 
 class Network(auto_prefetch.Model):
@@ -2843,13 +3573,155 @@ class Network(auto_prefetch.Model):
     cloud_managed = models.ManyToManyField(Component, help_text="Cloud managed", related_name="network_cloud_managed")
     wire_protocol = models.ManyToManyField(Component, help_text="Wire protocol", related_name="network_wire_protocol")
 
+    def __str__(self) -> str:
+        return "Network"
+
+    def import_json(self, data: dict) -> None:  # noqa: PLR0914, PLR0915
+        """Import JSON data."""
+        # Typ
+        _type: Component | None = create_and_import_component(data, "Typ")
+        self.type.add(_type)
+
+        # Antal portar
+        number_of_ports: Component | None = create_and_import_component(data, "Antal portar")
+        self.number_of_ports.add(number_of_ports)
+
+        # Underkategori
+        subcategory: Component | None = create_and_import_component(data, "Underkategori")
+        self.subcategory.add(subcategory)
+
+        # Formfaktor
+        form_factor: Component | None = create_and_import_component(data, "Formfaktor")
+        self.form_factor.add(form_factor)
+
+        # Undertyp
+        subtype: Component | None = create_and_import_component(data, "Undertyp")
+        self.subtype.add(subtype)
+
+        # Managed
+        managed: Component | None = create_and_import_component(data, "Managed")
+        self.managed.add(managed)
+
+        # Jumbo Frame-support
+        jumbo_frame_support: Component | None = create_and_import_component(data, "Jumbo Frame-support")
+        self.jumbo_frame_support.add(jumbo_frame_support)
+
+        # PoE (Power Over Ethernet)
+        power_over_ethernet: Component | None = create_and_import_component(data, "PoE (Power Over Ethernet)")
+        self.power_over_ethernet.add(power_over_ethernet)
+
+        # Anslutningsteknik
+        connection_technology: Component | None = create_and_import_component(data, "Anslutningsteknik")
+        self.connection_technology.add(connection_technology)
+
+        # Datalänkprotokoll
+        data_link_protocol: Component | None = create_and_import_component(data, "Datalänkprotokoll")
+        self.data_link_protocol.add(data_link_protocol)
+
+        # Typ av kablage
+        type_of_cabling: Component | None = create_and_import_component(data, "Typ av kablage")
+        self.type_of_cabling.add(type_of_cabling)
+
+        # Gränssnittstyp (buss)
+        interface_type_bus: Component | None = create_and_import_component(data, "Gränssnittstyp (buss)")
+        self.interface_type_bus.add(interface_type_bus)
+
+        # Dataöverföringshastighet
+        data_transfer_speed: Component | None = create_and_import_component(data, "Dataöverföringshastighet")
+        self.data_transfer_speed.add(data_transfer_speed)
+
+        # Nätverks/transportprotokoll
+        network_transport_protocol: Component | None = create_and_import_component(data, "Nätverks/transportprotokoll")
+        self.network_transport_protocol.add(network_transport_protocol)
+
+        # Trådlöst protokoll
+        wireless_protocol: Component | None = create_and_import_component(data, "Trådlöst protokoll")
+        self.wireless_protocol.add(wireless_protocol)
+
+        # AC-Standard
+        ac_standard: Component | None = create_and_import_component(data, "AC-Standard")
+        self.ac_standard.add(ac_standard)
+
+        # Protokoll för administration på distans
+        remote_administration_protocol: Component | None = create_and_import_component(
+            data,
+            "Protokoll för administration på distans",
+        )
+        self.remote_administration_protocol.add(remote_administration_protocol)
+
+        # Antal WAN-portar
+        number_of_wan_ports: Component | None = create_and_import_component(data, "Antal WAN-portar")
+        self.number_of_wan_ports.add(number_of_wan_ports)
+
+        # Nätverksprotokoll
+        network_protocol: Component | None = create_and_import_component(data, "Nätverksprotokoll")
+        self.network_protocol.add(network_protocol)
+
+        # Inbyggd Switch
+        builtin_switch: Component | None = create_and_import_component(data, "Inbyggd Switch")
+        self.builtin_switch.add(builtin_switch)
+
+        # Viktiga funktioner
+        important_functions: Component | None = create_and_import_component(data, "Viktiga funktioner")
+        self.important_functions.add(important_functions)
+
+        # Nätverksgränssnitt
+        network_interface: Component | None = create_and_import_component(data, "Nätverksgränssnitt")
+        self.network_interface.add(network_interface)
+
+        # Avancerad omkoppling
+        advanced_switching: Component | None = create_and_import_component(data, "Avancerad omkoppling")
+        self.advanced_switching.add(advanced_switching)
+
+        # Gränssnitt för fjärradministration
+        remote_management_interface: Component | None = create_and_import_component(
+            data,
+            "Gränssnitt för fjärradministration",
+        )
+        self.remote_management_interface.add(remote_management_interface)
+
+        # Max område inomhus
+        max_area_indoor: Component | None = create_and_import_component(data, "Max område inomhus")
+        self.max_area_indoor.add(max_area_indoor)
+
+        # Trådlös anslutning
+        wireless_connection: Component | None = create_and_import_component(data, "Trådlös anslutning")
+        self.wireless_connection.add(wireless_connection)
+
+        # LAN-presentation och trådlös d:o
+        lan_presentation_and_wireless_d_o: Component | None = create_and_import_component(
+            data,
+            "LAN-presentation och trådlös d:o",
+        )
+        self.lan_presentation_and_wireless_d_o.add(lan_presentation_and_wireless_d_o)
+
+        # Bildöverföringsprotokoll för LAN och trådlöst
+        image_transfer_protocol_for_lan_and_wireless: Component | None = create_and_import_component(
+            data,
+            "Bildöverföringsprotokoll för LAN och trådlöst",
+        )
+        self.image_transfer_protocol_for_lan_and_wireless.add(image_transfer_protocol_for_lan_and_wireless)
+
+        # Stöd för Wireless LAN
+        support_for_wireless_lan: Component | None = create_and_import_component(data, "Stöd för Wireless LAN")
+        self.support_for_wireless_lan.add(support_for_wireless_lan)
+
+        # Molnhanterad
+        cloud_managed: Component | None = create_and_import_component(data, "Molnhanterad")
+        self.cloud_managed.add(cloud_managed)
+
+        # Trådprotokoll
+        wire_protocol: Component | None = create_and_import_component(data, "Trådprotokoll")
+        self.wire_protocol.add(wire_protocol)
+
 
 class SpeakerSystem(auto_prefetch.Model):
-    """Speaker system."""
+    """Högtalarsystem."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the speaker system was created")
     updated_at = models.DateTimeField(auto_now=True, help_text="When the speaker system was last updated")
+
     # Webhallen fields
     connection_technology = models.ManyToManyField(
         Component,
@@ -2938,6 +3810,92 @@ class SpeakerSystem(auto_prefetch.Model):
         related_name="speaker_system_peak_current",
     )
 
+    def __str__(self) -> str:
+        return "Speaker system"
+
+    def import_json(self, data: dict) -> None:  # noqa: PLR0914
+        """Import JSON data."""
+        # Anslutningsteknik
+        connection_technology: Component | None = create_and_import_component(data, "Anslutningsteknik")
+        self.connection_technology.add(connection_technology)
+
+        # Förstärkningstyp
+        amplification_type: Component | None = create_and_import_component(data, "Förstärkningstyp")
+        self.amplification_type.add(amplification_type)
+
+        # Konfigurering av högtalarsystem
+        speaker_configuration: Component | None = create_and_import_component(data, "Konfigurering av högtalarsystem")
+        self.speaker_configuration.add(speaker_configuration)
+
+        # Kontinuerlig ström för ljudsystem (totalt)
+        continuous_current_for_sound_system_total: Component | None = create_and_import_component(
+            data,
+            "Kontinuerlig ström för ljudsystem (totalt)",
+        )
+        self.continuous_current_for_sound_system_total.add(continuous_current_for_sound_system_total)
+
+        # Systemkomponenter
+        system_components: Component | None = create_and_import_component(data, "Systemkomponenter")
+        self.system_components.add(system_components)
+
+        # Toppström för ljudsystem (totalt)
+        peak_current_for_sound_system_total: Component | None = create_and_import_component(
+            data,
+            "Toppström för ljudsystem (totalt)",
+        )
+        self.peak_current_for_sound_system_total.add(peak_current_for_sound_system_total)
+
+        # Frekvensrespons
+        frequency_response: Component | None = create_and_import_component(data, "Frekvensrespons")
+        self.frequency_response.add(frequency_response)
+
+        # Inbyggda avkodare
+        builtin_decoders: Component | None = create_and_import_component(data, "Inbyggda avkodare")
+        self.builtin_decoders.add(builtin_decoders)
+
+        # Antal övergångskanaler
+        number_of_crossover_channels: Component | None = create_and_import_component(data, "Antal övergångskanaler")
+        self.number_of_crossover_channels.add(number_of_crossover_channels)
+
+        # Kontinuerlig ström
+        continuous_current: Component | None = create_and_import_component(data, "Kontinuerlig ström")
+        self.continuous_current.add(continuous_current)
+
+        # Handsfree-funktion
+        handsfree_function: Component | None = create_and_import_component(data, "Handsfree-funktion")
+        self.handsfree_function.add(handsfree_function)
+
+        # App-kontrollerad
+        app_controlled: Component | None = create_and_import_component(data, "App-kontrollerad")
+        self.app_controlled.add(app_controlled)
+
+        # Rekommenderad placering
+        recommended_location: Component | None = create_and_import_component(data, "Rekommenderad placering")
+        self.recommended_location.add(recommended_location)
+
+        # Flera rum
+        multiple_rooms: Component | None = create_and_import_component(data, "Flera rum")
+        self.multiple_rooms.add(multiple_rooms)
+
+        # Serie
+        series: Component | None = create_and_import_component(data, "Serie")
+        self.series.add(series)
+
+        # Högtalarelementdiameter (metrisk)
+        speaker_element_diameter_metric: Component | None = create_and_import_component(
+            data,
+            "Högtalarelementdiameter (metrisk)",
+        )
+        self.speaker_element_diameter_metric.add(speaker_element_diameter_metric)
+
+        # Integrerade komponenter
+        integrated_components: Component | None = create_and_import_component(data, "Integrerade komponenter")
+        self.integrated_components.add(integrated_components)
+
+        # Toppström
+        peak_current: Component | None = create_and_import_component(data, "Toppström")
+        self.peak_current.add(peak_current)
+
 
 class SoundSystem(auto_prefetch.Model):
     """Sound system."""
@@ -3013,13 +3971,87 @@ class SoundSystem(auto_prefetch.Model):
     )
     audio_format = models.ManyToManyField(Component, help_text="Audio format", related_name="sound_system_audio_format")
 
+    def __str__(self) -> str:
+        return "Sound system"
+
+    def import_json(self, data: dict) -> None:  # noqa: PLR0914
+        """Import JSON data."""
+        # Designad för
+        designed_for: Component | None = create_and_import_component(data, "Designad för")
+        self.designed_for.add(designed_for)
+
+        # Typ
+        _type: Component | None = create_and_import_component(data, "Typ")
+        self.type.add(_type)
+
+        # Rekommenderad användning
+        recommended_use: Component | None = create_and_import_component(data, "Rekommenderad användning")
+        self.recommended_use.add(recommended_use)
+
+        # Läge för ljudutgång
+        mode_for_audio_output: Component | None = create_and_import_component(data, "Läge för ljudutgång")
+        self.mode_for_audio_output.add(mode_for_audio_output)
+
+        # Funktioner
+        functions: Component | None = create_and_import_component(data, "Funktioner")
+        self.functions.add(functions)
+
+        # Max manöveravstånd
+        max_actuation_distance: Component | None = create_and_import_component(data, "Max manöveravstånd")
+        self.max_actuation_distance.add(max_actuation_distance)
+
+        # Underkategori
+        sub_category: Component | None = create_and_import_component(data, "Underkategori")
+        self.sub_category.add(sub_category)
+
+        # Surround-ljudeffekter
+        surround_sound_effects: Component | None = create_and_import_component(data, "Surround-ljudeffekter")
+        self.surround_sound_effects.add(surround_sound_effects)
+
+        # Inbyggda avkodare
+        builtin_decoders: Component | None = create_and_import_component(data, "Inbyggda avkodare")
+        self.builtin_decoders.add(builtin_decoders)
+
+        # Surroundsystem-klass
+        surround_system_class: Component | None = create_and_import_component(data, "Surroundsystem-klass")
+        self.surround_system_class.add(surround_system_class)
+
+        # Högtalarsystem
+        speaker_system: Component | None = create_and_import_component(data, "Högtalarsystem")
+        self.speaker_system.add(speaker_system)
+
+        # Surround-läge
+        surround_mode: Component | None = create_and_import_component(data, "Surround-läge")
+        self.surround_mode.add(surround_mode)
+
+        # Digitalspelarfunktioner
+        digital_player_features: Component | None = create_and_import_component(data, "Digitalspelarfunktioner")
+        self.digital_player_features.add(digital_player_features)
+
+        # Digialt ljudformat [sic]
+        digital_audio_format: Component | None = create_and_import_component(data, "Digialt ljudformat")
+        self.digital_audio_format.add(digital_audio_format)
+
+        # Kombinerad med
+        combined_with: Component | None = create_and_import_component(data, "Kombinerad med")
+        self.combined_with.add(combined_with)
+
+        # Typ av digitalspelare
+        type_of_digital_player: Component | None = create_and_import_component(data, "Typ av digitalspelare")
+        self.type_of_digital_player.add(type_of_digital_player)
+
+        # Ljudformat
+        audio_format: Component | None = create_and_import_component(data, "Ljudformat")
+        self.audio_format.add(audio_format)
+
 
 class PowerSupply(auto_prefetch.Model):
-    """Power supply."""
+    """Nätdel."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the power supply was created")
     updated_at = models.DateTimeField(auto_now=True, help_text="When the power supply was last updated")
+
     # Webhallen fields
     power_source = models.ManyToManyField(Component, help_text="Power source", related_name="power_supply_power_source")
     power = models.ManyToManyField(Component, help_text="Power", related_name="power_supply_power")
@@ -3076,6 +4108,11 @@ class PowerSupply(auto_prefetch.Model):
         help_text="Type of input connector",
         related_name="power_supply_type_of_input_connector",
     )
+    number_of_input_connectors = models.ManyToManyField(
+        Component,
+        help_text="Number of input connectors",
+        related_name="power_supply_number_of_input_connectors",
+    )
     type_of_output_contact = models.ManyToManyField(
         Component,
         help_text="Type of output contact",
@@ -3109,9 +4146,116 @@ class PowerSupply(auto_prefetch.Model):
         related_name="power_supply_energy_consumption_during_operation",
     )
 
+    def __str__(self) -> str:
+        return "Power supply"
+
+    def import_json(self, data: dict) -> None:  # noqa: PLR0914
+        """Import JSON data."""
+        # Strömkälla
+        power_source: Component | None = create_and_import_component(data, "Strömkälla")
+        self.power_source.add(power_source)
+
+        # Effekt
+        power: Component | None = create_and_import_component(data, "Effekt")
+        self.power.add(power)
+
+        # Kapacitet (VA)
+        capacity_va: Component | None = create_and_import_component(data, "Kapacitet (VA)")
+        self.capacity_va.add(capacity_va)
+
+        # Antal utkontakter
+        number_of_outlets: Component | None = create_and_import_component(data, "Antal utkontakter")
+        self.number_of_outlets.add(number_of_outlets)
+
+        # Tillförd spänning
+        supplied_voltage: Component | None = create_and_import_component(data, "Tillförd spänning")
+        self.supplied_voltage.add(supplied_voltage)
+
+        # Nätspänning
+        mains_voltage: Component | None = create_and_import_component(data, "Nätspänning")
+        self.mains_voltage.add(mains_voltage)
+
+        # UPS-teknik
+        ups_technology: Component | None = create_and_import_component(data, "UPS-teknik")
+        self.ups_technology.add(ups_technology)
+
+        # Formfaktor
+        form_factor: Component | None = create_and_import_component(data, "Formfaktor")
+        self.form_factor.add(form_factor)
+
+        # Spänningsavledning
+        voltage_dissipation: Component | None = create_and_import_component(data, "Spänningsavledning")
+        self.voltage_dissipation.add(voltage_dissipation)
+
+        # Erfordrad frekvens
+        demanded_frequency: Component | None = create_and_import_component(data, "Erfordrad frekvens")
+        self.demanded_frequency.add(demanded_frequency)
+
+        # Erfordrad spänning
+        demanded_voltage: Component | None = create_and_import_component(data, "Erfordrad spänning")
+        self.demanded_voltage.add(demanded_voltage)
+
+        # Max elektrisk ström
+        max_electric_current: Component | None = create_and_import_component(data, "Max elektrisk ström")
+        self.max_electric_current.add(max_electric_current)
+
+        # Typ
+        _type: Component | None = create_and_import_component(data, "Typ")
+        self.type.add(_type)
+
+        # Erforderlig frekvens
+        required_frequency: Component | None = create_and_import_component(data, "Erforderlig frekvens")
+        self.required_frequency.add(required_frequency)
+
+        # Typ av ingångskontakt
+        type_of_input_connector: Component | None = create_and_import_component(data, "Typ av ingångskontakt")
+        self.type_of_input_connector.add(type_of_input_connector)
+
+        # Antal ingångskontakter
+        number_of_input_connectors: Component | None = create_and_import_component(data, "Antal ingångskontakter")
+        self.number_of_input_connectors.add(number_of_input_connectors)
+
+        # Typ av utkontakt
+        type_of_output_contact: Component | None = create_and_import_component(data, "Typ av utkontakt")
+        self.type_of_output_contact.add(type_of_output_contact)
+
+        # Modulär kabelhantering
+        modular_cable_management: Component | None = create_and_import_component(data, "Modulär kabelhantering")
+        self.modular_cable_management.add(modular_cable_management)
+
+        # Nätaggregatets kompatibilitet
+        power_supply_compatibility: Component | None = create_and_import_component(
+            data,
+            "Nätaggregatets kompatibilitet",
+        )
+        self.power_supply_compatibility.add(power_supply_compatibility)
+
+        # Kylsystem
+        cooling_system: Component | None = create_and_import_component(data, "Kylsystem")
+        self.cooling_system.add(cooling_system)
+
+        # 80 PLUS-certifiering
+        the_80_plus_certification: Component | None = create_and_import_component(data, "80 PLUS-certifiering")
+        self.the_80_plus_certification.add(the_80_plus_certification)
+
+        # Alternativ
+        alternative: Component | None = create_and_import_component(data, "Alternativ")
+        self.alternative.add(alternative)
+
+        # Sladdlängd
+        cord_length: Component | None = create_and_import_component(data, "Sladdlängd")
+        self.cord_length.add(cord_length)
+
+        # Energiförbrukning vid drift
+        energy_consumption_during_operation: Component | None = create_and_import_component(
+            data,
+            "Energiförbrukning vid drift",
+        )
+        self.energy_consumption_during_operation.add(energy_consumption_during_operation)
+
 
 class SettingsControlsAndIndicators(auto_prefetch.Model):
-    """Settings, controls and indicators."""
+    """Inställningar, reglage och indikatorer."""
 
     # Django fields
     created_at = models.DateTimeField(
@@ -3170,9 +4314,56 @@ class SettingsControlsAndIndicators(auto_prefetch.Model):
         related_name="settings_controls_and_indicators_controls_on_handle",
     )
 
+    def __str__(self) -> str:
+        return "Settings, controls and indicators"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Antal fläkthastighetsinställningar
+        number_of_fan_speed_settings: Component | None = create_and_import_component(
+            data,
+            "Antal fläkthastighetsinställningar",
+        )
+        self.number_of_fan_speed_settings.add(number_of_fan_speed_settings)
+
+        # Fjärrkontroll
+        remote_control: Component | None = create_and_import_component(data, "Fjärrkontroll")
+        self.remote_control.add(remote_control)
+
+        # Reglagetyp
+        control_type: Component | None = create_and_import_component(data, "Reglagetyp")
+        self.control_type.add(control_type)
+
+        # Pulsfunktion
+        pulse_function: Component | None = create_and_import_component(data, "Pulsfunktion")
+        self.pulse_function.add(pulse_function)
+
+        # Antal hastighetsinställningar
+        number_of_speed_settings: Component | None = create_and_import_component(data, "Antal hastighetsinställningar")
+        self.number_of_speed_settings.add(number_of_speed_settings)
+
+        # Rumsnavigering
+        room_navigation: Component | None = create_and_import_component(data, "Rumsnavigering")
+        self.room_navigation.add(room_navigation)
+
+        # Uppvärmningstid
+        heating_time: Component | None = create_and_import_component(data, "Uppvärmningstid")
+        self.heating_time.add(heating_time)
+
+        # Programmerbara rengöringsintervall
+        programmable_cleaning_intervals: Component | None = create_and_import_component(
+            data,
+            "Programmerbara rengöringsintervall",
+        )
+        self.programmable_cleaning_intervals.add(programmable_cleaning_intervals)
+
+        # Kontroller på handtaget
+        controls_on_handle: Component | None = create_and_import_component(data, "Kontroller på handtaget")
+        self.controls_on_handle.add(controls_on_handle)
+
 
 class Power(auto_prefetch.Model):
-    """Power."""
+    """Ström."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the power was created")
@@ -3225,6 +4416,82 @@ class Power(auto_prefetch.Model):
         help_text="https://en.wikipedia.org/wiki/Ampacity",
         related_name="power_ampere_capacity",
     )
+
+    def __str__(self) -> str:
+        return "Power"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Strömförbrukning
+        power_consumption: Component | None = create_and_import_component(data, "Strömförbrukning")
+        self.power_consumption.add(power_consumption)
+
+        # Strömkälla
+        power_source: Component | None = create_and_import_component(data, "Strömkälla")
+        self.power_source.add(power_source)
+
+        # Spänning
+        voltage: Component | None = create_and_import_component(data, "Spänning")
+        self.voltage.add(voltage)
+
+        # Batteriladdning
+        battery_charge: Component | None = create_and_import_component(data, "Batteriladdning")
+        self.battery_charge.add(battery_charge)
+
+        # Driftstid utan nätanslutning
+        operation_time_without_mains: Component | None = create_and_import_component(
+            data,
+            "Driftstid utan nätanslutning",
+        )
+        self.operation_time_without_mains.add(operation_time_without_mains)
+
+        # Drift
+        operation: Component | None = create_and_import_component(data, "Drift")
+        self.operation.add(operation)
+
+        # Energikonsumtion per år
+        energy_consumption_per_year: Component | None = create_and_import_component(
+            data,
+            "Energikonsumtion per år",
+        )
+        self.energy_consumption_per_year.add(energy_consumption_per_year)
+
+        # Strömkonsumtion (driftläge)
+        power_consumption_operating_mode: Component | None = create_and_import_component(
+            data,
+            "Strömkonsumtion (driftläge)",
+        )
+        self.power_consumption_operating_mode.add(power_consumption_operating_mode)
+
+        # Energiklass
+        energy_class: Component | None = create_and_import_component(data, "Energiklass")
+        self.energy_class.add(energy_class)
+
+        # På/av-omkopplare
+        on_off_switch: Component | None = create_and_import_component(data, "På/av-omkopplare")
+        self.on_off_switch.add(on_off_switch)
+
+        # Strömförbrukning HDR (På-läge)
+        power_consumption_hdr_on_mode: Component | None = create_and_import_component(
+            data,
+            "Strömförbrukning HDR (På-läge)",
+        )
+        self.power_consumption_hdr_on_mode.add(power_consumption_hdr_on_mode)
+
+        # Energiklass (HDR)
+        energy_class_hdr: Component | None = create_and_import_component(data, "Energiklass (HDR)")
+        self.energy_class_hdr.add(energy_class_hdr)
+
+        # (EER) Energy Efficiency Ratio
+        energy_efficiency_ratio: Component | None = create_and_import_component(
+            data,
+            "(EER) Energy Efficiency Ratio",
+        )
+        self.energy_efficiency_ratio.add(energy_efficiency_ratio)
+
+        # Märkström
+        ampere_capacity: Component | None = create_and_import_component(data, "Märkström")
+        self.ampere_capacity.add(ampere_capacity)
 
 
 class HeatingAndCooling(auto_prefetch.Model):
