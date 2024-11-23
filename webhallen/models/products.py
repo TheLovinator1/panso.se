@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 import auto_prefetch
 from django.conf import settings
@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+T = TypeVar("T")
 
 # TODO(TheLovinator): All docstrings are placeholders and need to be updated  # noqa: TD003
 
@@ -2297,9 +2298,6 @@ class Cable(auto_prefetch.Model):
     updated_at = models.DateTimeField(auto_now=True, help_text="When the cable was last updated")
 
     # Webhallen fields
-    something = models.TextField(help_text="Something")  # TODO(TheLovinator): What is this?  # noqa: TD003
-    cable = models.ManyToManyField(Component, help_text="Cable")
-
     # Typ för vänster kontakt
     type_for_left_connector = models.ManyToManyField(
         Component,
@@ -6525,6 +6523,59 @@ class HDD(auto_prefetch.Model):
     interface_class = models.ManyToManyField(Component, help_text="Interface class", related_name="hdd_interface_class")
     ssd_capacity = models.ManyToManyField(Component, help_text="SSD capacity", related_name="hdd_ssd_capacity")
 
+    def __str__(self) -> str:
+        return "HDD"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Hårddisktyp
+        hard_disk_type: Component | None = create_and_import_component(data, "Hårddisktyp")
+        self.hard_disk_type.add(hard_disk_type)
+
+        # Gränssnitt
+        interface: Component | None = create_and_import_component(data, "Gränssnitt")
+        self.interface.add(interface)
+
+        # Extern enhetstyp
+        external_device_type: Component | None = create_and_import_component(data, "Extern enhetstyp")
+        self.external_device_type.add(external_device_type)
+
+        # Hårddiskutrymme
+        hard_disk_space: Component | None = create_and_import_component(data, "Hårddiskutrymme")
+        self.hard_disk_space.add(hard_disk_space)
+
+        # Spindelhastighet
+        spindle_speed: Component | None = create_and_import_component(data, "Spindelhastighet")
+        self.spindle_speed.add(spindle_speed)
+
+        # Icke återställningsbar fel
+        unrecoverable_error: Component | None = create_and_import_component(data, "Icke återställningsbar fel")
+        self.unrecoverable_error.add(unrecoverable_error)
+
+        # Dataöverföringshastighet
+        data_transfer_rate: Component | None = create_and_import_component(data, "Dataöverföringshastighet")
+        self.data_transfer_rate.add(data_transfer_rate)
+
+        # Intern datafrekvens
+        internal_data_frequency: Component | None = create_and_import_component(data, "Intern datafrekvens")
+        self.internal_data_frequency.add(internal_data_frequency)
+
+        # Genomsnittlig söktid
+        average_seek_time: Component | None = create_and_import_component(data, "Genomsnittlig söktid")
+        self.average_seek_time.add(average_seek_time)
+
+        # Formfaktor
+        form_factor: Component | None = create_and_import_component(data, "Formfaktor")
+        self.form_factor.add(form_factor)
+
+        # Formfaktor kort
+        form_factor_short: Component | None = create_and_import_component(data, "Formfaktor kort")
+        self.form_factor_short.add(form_factor_short)
+
+        # Formfaktor metrisk
+        form_factor_metric: Component | None = create_and_import_component(data, "Formfaktor metrisk")
+        self.form_factor_metric.add(form_factor_metric)
+
 
 class ExternalHardDrive(auto_prefetch.Model):
     """External hard drive."""
@@ -6549,6 +6600,23 @@ class ExternalHardDrive(auto_prefetch.Model):
         help_text="USB-C port",
         related_name="external_hard_drive_usb_c_port",
     )
+
+    def __str__(self) -> str:
+        return "External hard drive"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Strömkälla
+        power_source: Component | None = create_and_import_component(data, "Strömkälla")
+        self.power_source.add(power_source)
+
+        # Max dataöverföringshastighet
+        max_data_transfer_rate: Component | None = create_and_import_component(data, "Max dataöverföringshastighet")
+        self.max_data_transfer_rate.add(max_data_transfer_rate)
+
+        # USB-C-port
+        usb_c_port: Component | None = create_and_import_component(data, "USB-C-port")
+        self.usb_c_port.add(usb_c_port)
 
 
 class Modem(auto_prefetch.Model):
@@ -6590,9 +6658,41 @@ class Modem(auto_prefetch.Model):
         related_name="modem_broadband_access_for_mobile_phone",
     )
 
+    def __str__(self) -> str:
+        return "Modem"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Anslutningsteknik
+        connection_technology: Component | None = create_and_import_component(data, "Anslutningsteknik")
+        self.connection_technology.add(connection_technology)
+
+        # Formfaktor
+        form_factor: Component | None = create_and_import_component(data, "Formfaktor")
+        self.form_factor.add(form_factor)
+
+        # Typ
+        _type: Component | None = create_and_import_component(data, "Typ")
+        self.type.add(_type)
+
+        # Max överföringshastighet
+        max_transfer_rate: Component | None = create_and_import_component(data, "Max överföringshastighet")
+        self.max_transfer_rate.add(max_transfer_rate)
+
+        # Band
+        band: Component | None = create_and_import_component(data, "Band")
+        self.band.add(band)
+
+        # Bredbandsåtkomst för mobiltelefon
+        broadband_access_for_mobile_phone: Component | None = create_and_import_component(
+            data,
+            "Bredbandsåtkomst för mobiltelefon",
+        )
+        self.broadband_access_for_mobile_phone.add(broadband_access_for_mobile_phone)
+
 
 class MobileBroadband(auto_prefetch.Model):
-    """Mobile broadband."""
+    """Mobilt bredband."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the mobile broadband was created")
@@ -6610,9 +6710,22 @@ class MobileBroadband(auto_prefetch.Model):
         related_name="mobile_broadband_generation",
     )
 
+    def __str__(self) -> str:
+        return "Mobile broadband"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Cellulärt protokoll
+        cellular_protocol: Component | None = create_and_import_component(data, "Cellulärt protokoll")
+        self.cellular_protocol.add(cellular_protocol)
+
+        # Generation
+        generation: Component | None = create_and_import_component(data, "Generation")
+        self.generation.add(generation)
+
 
 class AudioInput(auto_prefetch.Model):
-    """Audio input."""
+    """Ljudingång."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the audio input was created")
@@ -6645,9 +6758,37 @@ class AudioInput(auto_prefetch.Model):
         related_name="audio_input_connection_technology",
     )
 
+    def __str__(self) -> str:
+        return "Audio input"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Mikrofontyp
+        microphone_type: Component | None = create_and_import_component(data, "Mikrofontyp")
+        self.microphone_type.add(microphone_type)
+
+        # Känslighet
+        sensitivity: Component | None = create_and_import_component(data, "Känslighet")
+        self.sensitivity.add(sensitivity)
+
+        # Typ
+        _type: Component | None = create_and_import_component(data, "Typ")
+        self.type.add(_type)
+
+        # Operativt läge för mikrofon
+        operational_mode_for_microphone: Component | None = create_and_import_component(
+            data,
+            "Operativt läge för mikrofon",
+        )
+        self.operational_mode_for_microphone.add(operational_mode_for_microphone)
+
+        # Anslutningsteknik
+        connection_technology: Component | None = create_and_import_component(data, "Anslutningsteknik")
+        self.connection_technology.add(connection_technology)
+
 
 class MemoryAdapter(auto_prefetch.Model):
-    """Memory adapter."""
+    """Minnesadapter."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the memory adapter was created")
@@ -6663,9 +6804,30 @@ class MemoryAdapter(auto_prefetch.Model):
         related_name="memory_adapter_support_for_memory_cards",
     )
 
+    def __str__(self) -> str:
+        return "Memory adapter"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Modell
+        model: Component | None = create_and_import_component(data, "Modell")
+        self.model.add(model)
+
+        # Gränssnitt
+        interface: Component | None = create_and_import_component(data, "Gränssnitt")
+        self.interface.add(interface)
+
+        # Enhetstyp
+        device_type: Component | None = create_and_import_component(data, "Enhetstyp")
+        self.device_type.add(device_type)
+
+        # Stöd för minneskort
+        support_for_memory_cards: Component | None = create_and_import_component(data, "Stöd för minneskort")
+        self.support_for_memory_cards.add(support_for_memory_cards)
+
 
 class InternetOfThings(auto_prefetch.Model):
-    """Internet of things."""
+    """Internet of Things (IoT)."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the internet of things was created")
@@ -6698,9 +6860,37 @@ class InternetOfThings(auto_prefetch.Model):
         related_name="internet_of_things_voice_controlled",
     )
 
+    def __str__(self) -> str:
+        return "Internet of Things"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Kommunikationsteknologi
+        communication_technology: Component | None = create_and_import_component(data, "Kommunikationsteknologi")
+        self.communication_technology.add(communication_technology)
+
+        # Plattform
+        platform: Component | None = create_and_import_component(data, "Plattform")
+        self.platform.add(platform)
+
+        # Kompatibel med Internet of Things (IoT)
+        compatible_with_internet_of_things: Component | None = create_and_import_component(
+            data,
+            "Kompatibel med Internet of Things (IoT)",
+        )
+        self.compatible_with_internet_of_things.add(compatible_with_internet_of_things)
+
+        # Intelligent assistent
+        intelligent_assistant: Component | None = create_and_import_component(data, "Intelligent assistent")
+        self.intelligent_assistant.add(intelligent_assistant)
+
+        # Röstkontrollerad
+        voice_controlled: Component | None = create_and_import_component(data, "Röstkontrollerad")
+        self.voice_controlled.add(voice_controlled)
+
 
 class Cleaning(auto_prefetch.Model):
-    """Cleaning."""
+    """Rengöring."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the cleaning was created")
@@ -6753,9 +6943,72 @@ class Cleaning(auto_prefetch.Model):
         related_name="cleaning_max_suction_power_air_watts",
     )
 
+    def __str__(self) -> str:
+        return "Cleaning"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Kapacitet hos påse
+        bag_capacity: Component | None = create_and_import_component(data, "Kapacitet hos påse")
+        self.bag_capacity.add(bag_capacity)
+
+        # Produkttyp
+        product_type: Component | None = create_and_import_component(data, "Produkttyp")
+        self.product_type.add(product_type)
+
+        # Typ av behållare
+        container_type: Component | None = create_and_import_component(data, "Typ av behållare")
+        self.container_type.add(container_type)
+
+        # Typ av rengöringsmedel
+        cleaning_agent_type: Component | None = create_and_import_component(data, "Typ av rengöringsmedel")
+        self.cleaning_agent_type.add(cleaning_agent_type)
+
+        # Rengöringsmetod
+        cleaning_method: Component | None = create_and_import_component(data, "Rengöringsmetod")
+        self.cleaning_method.add(cleaning_method)
+
+        # Tankkapacitet
+        tank_capacity: Component | None = create_and_import_component(data, "Tankkapacitet")
+        self.tank_capacity.add(tank_capacity)
+
+        # Dammåteremissionsklass
+        dust_emission_class: Component | None = create_and_import_component(data, "Dammåteremissionsklass")
+        self.dust_emission_class.add(dust_emission_class)
+
+        # Mattrengöringsprestandaklass
+        material_cleaning_performance_class: Component | None = create_and_import_component(
+            data,
+            "Mattrengöringsprestandaklass",
+        )
+        self.material_cleaning_performance_class.add(material_cleaning_performance_class)
+
+        # Rengöringsprestandaklass för hårt golv
+        cleaning_performance_class_for_hard_floor: Component | None = create_and_import_component(
+            data,
+            "Rengöringsprestandaklass för hårt golv",
+        )
+        self.cleaning_performance_class_for_hard_floor.add(cleaning_performance_class_for_hard_floor)
+
+        # Typ av filter
+        filter_type: Component | None = create_and_import_component(data, "Typ av filter")
+        self.filter_type.add(filter_type)
+
+        # Användningsområde
+        area_of_use: Component | None = create_and_import_component(data, "Användningsområde")
+        self.area_of_use.add(area_of_use)
+
+        # Maximal motoreffekt
+        maximum_motor_power: Component | None = create_and_import_component(data, "Maximal motoreffekt")
+        self.maximum_motor_power.add(maximum_motor_power)
+
+        # Max. sugkraft (luftwatt)
+        max_suction_power_air_watts: Component | None = create_and_import_component(data, "Max. sugkraft (luftwatt)")
+        self.max_suction_power_air_watts.add(max_suction_power_air_watts)
+
 
 class FlashMemory(auto_prefetch.Model):
-    """Flash memory."""
+    """Flash-minne."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the flash memory was created")
@@ -6814,9 +7067,96 @@ class FlashMemory(auto_prefetch.Model):
         related_name="flash_memory_supported_flash_memory_cards",
     )
 
+    def __str__(self) -> str:
+        return "Flash memory"
+
+    def import_json(self, data: dict) -> None:  # noqa: PLR0914
+        """Import JSON data."""
+        # Läshastighet
+        read_speed: Component | None = create_and_import_component(data, "Läshastighet")
+        self.read_speed.add(read_speed)
+
+        # Formfaktor
+        form_factor: Component | None = create_and_import_component(data, "Formfaktor")
+        self.form_factor.add(form_factor)
+
+        # Produkttyp
+        product_type: Component | None = create_and_import_component(data, "Produkttyp")
+        self.product_type.add(product_type)
+
+        # Lagringskapacitet
+        storage_capacity: Component | None = create_and_import_component(data, "Lagringskapacitet")
+        self.storage_capacity.add(storage_capacity)
+
+        # Lagringshastighet
+        storage_speed: Component | None = create_and_import_component(data, "Lagringshastighet")
+        self.storage_speed.add(storage_speed)
+
+        # Installerad storlek
+        installed_size: Component | None = create_and_import_component(data, "Installerad storlek")
+        self.installed_size.add(installed_size)
+
+        # Gränssnittstyp
+        interface_type: Component | None = create_and_import_component(data, "Gränssnittstyp")
+        self.interface_type.add(interface_type)
+
+        # Internminneskapacitet
+        internal_memory_capacity: Component | None = create_and_import_component(data, "Intern minneskapacitet")
+        self.internal_memory_capacity.add(internal_memory_capacity)
+
+        # Medföljande minnesadapter
+        included_memory_adapter: Component | None = create_and_import_component(data, "Minnesadapter som medföljer")
+        self.included_memory_adapter.add(included_memory_adapter)
+
+        # Hastighetsklass
+        speed_class: Component | None = create_and_import_component(data, "Hastighetsklass")
+        self.speed_class.add(speed_class)
+
+        # Stödda minneskort
+        supported_memory_cards: Component | None = create_and_import_component(data, "Minneskort som stöds")
+        self.supported_memory_cards.add(supported_memory_cards)
+
+        # Teknologi
+        technology: Component | None = create_and_import_component(data, "Teknik")
+        self.technology.add(technology)
+
+        # Användarminne
+        user_memory: Component | None = create_and_import_component(data, "Användarminne")
+        self.user_memory.add(user_memory)
+
+        # Maximal storlek som stöds
+        max_size_supported: Component | None = create_and_import_component(data, "Maxstorlek som stöds")
+        self.max_size_supported.add(max_size_supported)
+
+        # Stödda flashminneskort
+        supported_flash_memory_cards: Component | None = create_and_import_component(data, "Flash-minneskort som stöds")
+        self.supported_flash_memory_cards.add(supported_flash_memory_cards)
+
+        # Warn if there are new fields in the JSON data
+        available_fields: list[str] = [
+            "Läshastighet",
+            "Formfaktor",
+            "Produkttyp",
+            "Lagringskapacitet",
+            "Lagringshastighet",
+            "Installerad storlek",
+            "Gränssnittstyp",
+            "Intern minneskapacitet",
+            "Minnesadapter som medföljer",
+            "Hastighetsklass",
+            "Minneskort som stöds",
+            "Teknik",
+            "Användarminne",
+            "Maxstorlek som stöds",
+            "Flash-minneskort som stöds",
+        ]
+        for key in data:
+            if key not in available_fields:
+                logger.warning("New field found in FlashMemory: %s", key)
+
 
 class RadioSystem(auto_prefetch.Model):
-    """Radio system."""
+    """Radiosystem."""
 
     # Django fields
     created_at = models.DateTimeField(auto_now_add=True, help_text="When the radio system was created")
@@ -6838,6 +7178,29 @@ class RadioSystem(auto_prefetch.Model):
         help_text="Number of presets",
         related_name="radio_system_number_of_presets",
     )
+
+    def __str__(self) -> str:
+        return "Radio system"
+
+    def import_json(self, data: dict) -> None:
+        """Import JSON data."""
+        # Mottagarband
+        receiver_band: Component | None = create_and_import_component(data, "Mottagarband")
+        self.receiver_band.add(receiver_band)
+
+        # Mottagartyp
+        receiver_type: Component | None = create_and_import_component(data, "Mottagartyp")
+        self.receiver_type.add(receiver_type)
+
+        # Antal förinställda stationer
+        number_of_presets: Component | None = create_and_import_component(data, "Antal förinställda stationer")
+        self.number_of_presets.add(number_of_presets)
+
+        # Warn if there are new fields in the JSON data
+        available_fields: list[str] = ["Mottagarband", "Mottagartyp", "Antal förinställda stationer"]
+        for key in data:
+            if key not in available_fields:
+                logger.warning("New field found in RadioSystem: %s", key)
 
 
 class Data(auto_prefetch.Model):
@@ -6999,6 +7362,502 @@ class Data(auto_prefetch.Model):
     cleaning = models.ManyToManyField(Cleaning, help_text="Cleaning", related_name="data_cleaning")
     flash_memory = models.ManyToManyField(FlashMemory, help_text="Flash memory", related_name="data_flash_memory")
     radio_system = models.ManyToManyField(RadioSystem, help_text="Radio system", related_name="data_radio_system")
+
+    # TODO(TheLovinator): Also add the following fields:  # noqa: TD003
+    # Inbyggd display
+    # IP-telefoni
+    # DVD
+    # CE-system
+    # Nätverks- och Internet-multimedia
+    # Bildskärm
+    # TV-tuner
+    # Optisk sensor
+    # Övervakningskamera
+    # Spelkonsol
+    # Snabbframkallningsfilm
+    # Film
+    # Kablar och ledningar
+    # Nätverkstestare
+    # Väska
+    # Moderkort
+    # Chassi
+    # Mobil
+    # Kommunikationer
+    # Processor
+    # Brödrostar
+    # Miljöstandarder
+    # Videominne
+    # Kylskåp
+    # Timer
+    # Stativ
+    # Tillbehör
+    # Objektivsystem
+    # Notebook-kompatibla dimensioner
+    # Kaffemaskiner
+    # Rakapparater, trimmers och epilatorer
+    # Förstärkare
+    # Hållare
+    # Skärm
+    # Kontorsapparat
+    # Anslutningsmöjlighet
+    # Utskrift
+    # Dokument- och mediehantering
+    # Kopiering
+    # Skanning
+    # Huvud
+    # Belysningssystem
+    # Medföljande OS
+    # Vridbar
+    # Licensiering
+    # Innermått
+    # Fläktinformation
+    # Kortläsare
+    # GPS-system
+    # Gränssnittssammanfattning
+    # Cacheminne
+    # Band
+    # Fodral
+    # Inmatningsenhet (CE)
+    # Främre kamera
+    # Bakre kamera
+    # Funktioner
+    # Övervakningssats
+    # Bakgrund
+    # Faxapparat
+    # Vattenkokare
+    # Övriga attribut
+    # Videosystem
+    # Skrivare
+    # 3D-skrivare
+    # 3D-skrivarförbrukningsartiklar
+    # Digitalkamera
+    # Gränssnitt
+    # Klocka och larm
+    # Projektor
+    # Linser
+    # Armstöd
+    # Huvudstöd
+    # Bas
+    # Ryggstöd
+    # Sittplats
+    # Kamerablixt
+    # Sökare
+    # Projektorlampa
+    # Miljöparametrar
+    # Tangentbord
+    # Kylskåpsfunktioner
+    # Vinkylare
+    # Energi- och vattenkonsumtion
+    # Skanner
+    # Etikettskrivare
+    # Medier
+    # Utskriftssystem
+    # Glassmaskin
+    # Strykjärn
+    # Matberedare
+    # Mixers
+    # Television
+    # Mediespelare
+    # Hårddisk (andra)
+    # Videokameraegenskaper
+    # Lameradisplay
+    # Kameraminne
+    # Kamerafunktioner
+    # Linssystem i projektor
+    # Sidor och fodral
+    # Arkivering
+    # Fotoalbum
+    # Funktioner hos 360 kamera
+    # Digitalspelare
+    # Digital lagring
+    # Studio- och produktionsutrustning
+    # Grafiksystem
+    # Elektriska krydd- och kaffekvarnar
+    # Ställ och hållare
+    # Programvarufamilj
+    # Filter
+    # Eltandborstar
+    # Hårborttagningssystem
+    # Digitala multimediaenheter
+    # Hårvård
+    # Digitalt ljud
+    # Slutare
+    # Spelfilm
+    # Stillbilder
+    # Linssystem (2:a)
+    # GPS-kompatibilitet
+    # Kontrollerkort (2:a)
+    # Switch och dimmer
+    # Varmluftsfritöser
+    # Hållbarhet
+
+    def __str__(self) -> str:
+        return "Data"
+
+    @staticmethod
+    def create_and_import_data(
+        model: type[T],
+        data: dict,
+        key: str,
+    ) -> auto_prefetch.Model | None:
+        """Generalized method to create and import data.
+
+        Returns:
+            auto_prefetch.Model | None: The created or imported model instance.
+        """
+        if key not in data:
+            return None
+
+        product_instance, _ = model.objects.get_or_create(name=key)  # type: ignore  # noqa: PGH003
+        product_instance.import_json(data[key])
+        return product_instance
+
+    def import_json(self, data: dict) -> None:  # noqa: PLR0914, PLR0915
+        """Import JSON data."""
+        # cable
+        cable: auto_prefetch.Model | None = self.create_and_import_data(Cable, data, "Kabel")
+        self.cable = cable
+
+        # header
+        header: auto_prefetch.Model | None = self.create_and_import_data(Header, data, "Header")
+        self.header = header
+
+        # dimensions_and_weight
+        dimensions_and_weight: auto_prefetch.Model | None = self.create_and_import_data(
+            DimensionsAndWeight,
+            data,
+            "Mått och vikt",
+        )
+        self.dimensions_and_weight = dimensions_and_weight
+
+        # general
+        general: auto_prefetch.Model | None = self.create_and_import_data(General, data, "Allmänt")
+        self.general = general
+
+        # miscellaneous
+        miscellaneous: auto_prefetch.Model | None = self.create_and_import_data(Miscellaneous, data, "Diverse")
+        self.miscellaneous = miscellaneous
+
+        # input_device
+        input_device: auto_prefetch.Model | None = self.create_and_import_data(InputDevice, data, "Inmatningsenhet")
+        self.input_device = input_device
+
+        # service_and_support
+        service_and_support: auto_prefetch.Model | None = self.create_and_import_data(
+            ServiceAndSupport,
+            data,
+            "Service och support",
+        )
+        self.service_and_support = service_and_support
+
+        # gross_dimensions_and_weight
+        gross_dimensions_and_weight: auto_prefetch.Model | None = self.create_and_import_data(
+            GrossDimensionsAndWeight,
+            data,
+            "Mått och vikt (brutto)",
+        )
+        self.gross_dimensions_and_weight = gross_dimensions_and_weight
+
+        # consumables
+        consumables: auto_prefetch.Model | None = self.create_and_import_data(Consumables, data, "Förbrukningsartiklar")
+        self.consumables = consumables
+
+        # battery
+        battery: auto_prefetch.Model | None = self.create_and_import_data(Battery, data, "Batteri")
+        self.battery = battery
+
+        # av_components
+        av_components: auto_prefetch.Model | None = self.create_and_import_data(AVComponent, data, "AV-komponenter")
+        self.av_components = av_components
+
+        # remote_control
+        remote_control: auto_prefetch.Model | None = self.create_and_import_data(RemoteControl, data, "Fjärrkontroll")
+        self.remote_control = remote_control
+
+        # video_input
+        video_input: auto_prefetch.Model | None = self.create_and_import_data(VideoInput, data, "Videoingång")
+        self.video_input = video_input
+
+        # system_requirements
+        system_requirements: auto_prefetch.Model | None = self.create_and_import_data(
+            SystemRequirements,
+            data,
+            "Systemkrav",
+        )
+        self.system_requirements = system_requirements
+
+        # network
+        network: auto_prefetch.Model | None = self.create_and_import_data(Network, data, "Nätverk")
+        self.network = network
+
+        # speaker_system
+        speaker_system: auto_prefetch.Model | None = self.create_and_import_data(SpeakerSystem, data, "Högtalarsystem")
+        self.speaker_system = speaker_system
+
+        # sound_system
+        sound_system: auto_prefetch.Model | None = self.create_and_import_data(SoundSystem, data, "Ljudsystem")
+        self.sound_system = sound_system
+
+        # power_supply
+        power_supply: auto_prefetch.Model | None = self.create_and_import_data(PowerSupply, data, "Nätdel")
+        self.power_supply = power_supply
+
+        # settings_controls_and_indicators
+        settings_controls_and_indicators: auto_prefetch.Model | None = self.create_and_import_data(
+            SettingsControlsAndIndicators,
+            data,
+            "Inställningar, reglage och indikatorer",
+        )
+        self.settings_controls_and_indicators = settings_controls_and_indicators
+
+        # power
+        power: auto_prefetch.Model | None = self.create_and_import_data(Power, data, "Ström")
+        self.power = power
+
+        # heating_and_cooling
+        heating_and_cooling: auto_prefetch.Model | None = self.create_and_import_data(
+            HeatingAndCooling,
+            data,
+            "Värme och kyla",
+        )
+        self.heating_and_cooling = heating_and_cooling
+
+        # ram
+        ram: auto_prefetch.Model | None = self.create_and_import_data(RAM, data, "RAM")
+        self.ram = ram
+
+        # audio_output
+        audio_output: auto_prefetch.Model | None = self.create_and_import_data(AudioOutput, data, "Ljudutgång")
+        self.audio_output = audio_output
+
+        # heatsink_and_fan
+        heatsink_and_fan: auto_prefetch.Model | None = self.create_and_import_data(
+            HeatsinkAndFan,
+            data,
+            "Kylfläns och fläkt",
+        )
+        self.heatsink_and_fan = heatsink_and_fan
+
+        # storage
+        storage: auto_prefetch.Model | None = self.create_and_import_data(Storage, data, "Lagring")
+        self.storage = storage
+
+        # optical_storage_secondary
+        optical_storage_secondary: auto_prefetch.Model | None = self.create_and_import_data(
+            OpticalStorageSecondary,
+            data,
+            "Optisk lagring (sekundär)",
+        )
+        self.optical_storage_secondary = optical_storage_secondary
+
+        # portable_storage_solution
+        portable_storage_solution: auto_prefetch.Model | None = self.create_and_import_data(
+            PortableStorageSolution,
+            data,
+            "Flyttbar lagringslösning",
+        )
+        self.portable_storage_solution = portable_storage_solution
+
+        # optical_storage
+        optical_storage: auto_prefetch.Model | None = self.create_and_import_data(
+            OpticalStorage,
+            data,
+            "Optisk lagring",
+        )
+        self.optical_storage = optical_storage
+
+        # memory_module
+        memory_module: auto_prefetch.Model | None = self.create_and_import_data(MemoryModule, data, "Minnesmodul")
+        self.memory_module = memory_module
+
+        # antenna
+        antenna: auto_prefetch.Model | None = self.create_and_import_data(Antenna, data, "Antenn")
+        self.antenna = antenna
+
+        # system
+        system: auto_prefetch.Model | None = self.create_and_import_data(System, data, "System")
+        self.system = system
+
+        # controller_card
+        controller_card: auto_prefetch.Model | None = self.create_and_import_data(
+            ControllerCard,
+            data,
+            "Kontrollerkort",
+        )
+        self.controller_card = controller_card
+
+        # personal_hygiene
+        personal_hygiene: auto_prefetch.Model | None = self.create_and_import_data(
+            PersonalHygiene,
+            data,
+            "Personlig hygien",
+        )
+        self.personal_hygiene = personal_hygiene
+
+        # warranty
+        warranty: auto_prefetch.Model | None = self.create_and_import_data(Warranty, data, "Garanti")
+        self.warranty = warranty
+
+        # accessories_for_devices
+        accessories_for_devices: auto_prefetch.Model | None = self.create_and_import_data(
+            AccessoriesForDevices,
+            data,
+            "Tillbehör till apparater",
+        )
+        self.accessories_for_devices = accessories_for_devices
+
+        # video_output
+        video_output: auto_prefetch.Model | None = self.create_and_import_data(VideoOutput, data, "Videoutgång")
+        self.video_output = video_output
+
+        # small_devices
+        small_devices: auto_prefetch.Model | None = self.create_and_import_data(SmallDevices, data, "Små apparater")
+        self.small_devices = small_devices
+
+        # camera
+        camera: auto_prefetch.Model | None = self.create_and_import_data(Camera, data, "Kamera")
+        self.camera = camera
+
+        # light_source
+        light_source: auto_prefetch.Model | None = self.create_and_import_data(LightSource, data, "Ljuskälla")
+        self.light_source = light_source
+
+        # software
+        software: auto_prefetch.Model | None = self.create_and_import_data(Software, data, "Programvara")
+        self.software = software
+
+        # ce_accessories
+        ce_accessories: auto_prefetch.Model | None = self.create_and_import_data(CEAccessories, data, "CE-tillbehör")
+        self.ce_accessories = ce_accessories
+
+        # game
+        game: auto_prefetch.Model | None = self.create_and_import_data(Game, data, "Spel")
+        self.game = game
+
+        # toasters_and_grills
+        toasters_and_grills: auto_prefetch.Model | None = self.create_and_import_data(
+            ToastersAndGrills,
+            data,
+            "Brödrostar och grillar",
+        )
+        self.toasters_and_grills = toasters_and_grills
+
+        # scale
+        scale: auto_prefetch.Model | None = self.create_and_import_data(Scale, data, "Våg")
+        self.scale = scale
+
+        # hard_drive
+        hard_drive: auto_prefetch.Model | None = self.create_and_import_data(HDD, data, "Hårddisk")
+        self.hard_drive = hard_drive
+
+        # external_hard_drive
+        external_hard_drive: auto_prefetch.Model | None = self.create_and_import_data(
+            ExternalHardDrive,
+            data,
+            "Extern hårddisk",
+        )
+        self.external_hard_drive = external_hard_drive
+
+        # modem
+        modem: auto_prefetch.Model | None = self.create_and_import_data(Modem, data, "Modem")
+        self.modem = modem
+
+        # mobile_broadband
+        mobile_broadband: auto_prefetch.Model | None = self.create_and_import_data(
+            MobileBroadband,
+            data,
+            "Mobilt bredband",
+        )
+        self.mobile_broadband = mobile_broadband
+
+        # audio_input
+        audio_input: auto_prefetch.Model | None = self.create_and_import_data(AudioInput, data, "Ljudingång")
+        self.audio_input = audio_input
+
+        # memory_adapter
+        memory_adapter: auto_prefetch.Model | None = self.create_and_import_data(MemoryAdapter, data, "Minnesadapter")
+        self.memory_adapter = memory_adapter
+
+        # internet_of_things
+        internet_of_things: auto_prefetch.Model | None = self.create_and_import_data(
+            InternetOfThings,
+            data,
+            "Internet of Things (IoT)",
+        )
+        self.internet_of_things = internet_of_things
+
+        # cleaning
+        cleaning: auto_prefetch.Model | None = self.create_and_import_data(Cleaning, data, "Rengöring")
+        self.cleaning = cleaning
+
+        # flash_memory
+        flash_memory: auto_prefetch.Model | None = self.create_and_import_data(FlashMemory, data, "Flash-minne")
+        self.flash_memory = flash_memory
+
+        # radio_system
+        radio_system: auto_prefetch.Model | None = self.create_and_import_data(RadioSystem, data, "Radiosystem")
+        self.radio_system = radio_system
+
+        # Warn if there are new fields in the JSON data
+        available_fields: list[str] = [
+            "Kabel",
+            "Rubrik",
+            "Mått och vikt",
+            "Allmänt",
+            "Övrigt",
+            "Inmatningsenhet",
+            "Service och support",
+            "Brutmått och vikt",
+            "Förbrukningsmaterial",
+            "Batteri",
+            "AV-komponenter",
+            "Fjärrkontroll",
+            "Videoingång",
+            "Systemkrav",
+            "Nätverk",
+            "Högtalarsystem",
+            "Ljudsystem",
+            "Strömförsörjning",
+            "Inställningar, reglage och indikatorer",
+            "Effekt",
+            "Uppvärmning och kylning",
+            "RAM",
+            "Ljudutgång",
+            "Kylfläns och fläkt",
+            "Lagring",
+            "Optisk lagring sekundär",
+            "Bärbar lagringslösning",
+            "Optisk lagring",
+            "Minnesmodul",
+            "Antenn",
+            "System",
+            "Kontrollerkort",
+            "Personlig hygien",
+            "Garanti",
+            "Tillbehör för enheter",
+            "Video utgång",
+            "Små enheter",
+            "Kamera",
+            "Ljuskällor",
+            "Programvara",
+            "CE-tillbehör",
+            "Spel",
+            "Brödrostar och grillar",
+            "Våg",
+            "Hårddisk",
+            "Extern hårddisk",
+            "Modem",
+            "Mobilt bredband",
+            "Ljudingång",
+            "Minnesadapter",
+            "Internet of things",
+            "Rengöring",
+            "Flash-minne",
+            "Radiosystem",
+        ]
+        for key in data:
+            if key not in available_fields:
+                logger.warning("New field found in Data: %s", key)
 
 
 class Manufacturer(auto_prefetch.Model):
