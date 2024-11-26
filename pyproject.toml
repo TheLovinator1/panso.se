@@ -35,7 +35,7 @@ coverage = "^7.6.8"
 djlint = "^1.36.1"
 pre-commit = "^4.0.1"
 pytest = "^8.3.3"
-pytest-cov = "^5.0.0"
+pytest-cov = "^6.0.0"
 pytest-mock = "^3.14.0"
 
 [build-system]
