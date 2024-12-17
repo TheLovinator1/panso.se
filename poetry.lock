@@ -710,13 +710,13 @@ django = ">=4"
 
 [[package]]
 name = "django-pictures"
-version = "1.3.3"
+version = "1.4.0"
 description = "Responsive cross-browser image library using modern codes like AVIF & WebP."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "django_pictures-1.3.3-py3-none-any.whl", hash = "sha256:4709428626c2718d7252c39119c5b99942c5e3719a2112331fa625734bdb6c53"},
-    {file = "django_pictures-1.3.3.tar.gz", hash = "sha256:e43608c9c36155e29454dbadd7007fff3fe8de12bd33c0afaf299a19e7a40bf3"},
+    {file = "django_pictures-1.4.0-py3-none-any.whl", hash = "sha256:4ef318525e70c1d2ae9f6f7ca370e99518283ee501ea77984cbb2da7c212c288"},
+    {file = "django_pictures-1.4.0.tar.gz", hash = "sha256:7133ac74a1c054cd5666c921fe76eee4d00d171c68d19d508ddf196f862f2d77"},
 ]
 
 [package.dependencies]
@@ -729,7 +729,7 @@ cleanup = ["django-cleanup"]
 django-rq = ["django-rq"]
 dramatiq = ["django-dramatiq"]
 drf = ["djangorestframework"]
-lint = ["bandit (==1.7.9)", "black (==24.4.2)", "flake8 (==7.1.0)", "isort (==5.13.2)", "pydocstyle[toml] (==6.3.0)"]
+lint = ["bandit (==1.8.0)", "black (==24.10.0)", "flake8 (==7.1.1)", "isort (==5.13.2)", "pydocstyle[toml] (==6.3.0)"]
 test = ["pytest", "pytest-cov", "pytest-django", "redis"]
 
 [[package]]
